@@ -223,6 +223,7 @@ func (s *NftLend) GetAseetTransactions(ctx context.Context, assetId uint, page i
 		for _, r := range rs {
 			txnAt := time.Unix(r.BlockTime, 0)
 			m := models.AssetTransaction{
+				Source:        "magiceden.io",
 				Network:       models.ChainSOL,
 				AssetID:       asset.ID,
 				Type:          models.AssetTransactionTypeExchange,
