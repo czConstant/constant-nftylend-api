@@ -77,7 +77,7 @@ func (s *NftLend) GetAssetDetail(ctx context.Context, seoURL string) (*models.As
 			"NewLoan.Currency": []interface{}{},
 			"NewLoan.Offers": []interface{}{
 				func(db *gorm.DB) *gorm.DB {
-					return db.Order("nfty_lend_loan_offers.id DESC")
+					return db.Order("loan_offers.id DESC")
 				},
 			},
 		},
@@ -96,10 +96,10 @@ func (s *NftLend) GetCollections(ctx context.Context, page int, limit int) ([]*m
 		map[string][]interface{}{
 			"ListingAsset": []interface{}{
 				`id in (
-					select nfty_lend_asset_id
-					from nfty_lend_loans
-					where nfty_lend_asset_id = nfty_lend_assets.id
-					  and nfty_lend_loans.status in (?)
+					select asset_id
+					from loans
+					where asset_id = assets.id
+					  and loans.status in (?)
 				)`,
 				[]models.LoanOfferStatus{
 					models.LoanOfferStatusNew,
@@ -107,10 +107,10 @@ func (s *NftLend) GetCollections(ctx context.Context, page int, limit int) ([]*m
 				func(db *gorm.DB) *gorm.DB {
 					return db.Order(`
 					(
-						select max(nfty_lend_loans.created_at)
-						from nfty_lend_loans
-						where nfty_lend_asset_id = nfty_lend_assets.id
-						  and nfty_lend_loans.status in ('new')
+						select max(loans.created_at)
+						from loans
+						where asset_id = assets.id
+						  and loans.status in ('new')
 					) desc
 					`)
 				},

@@ -19,9 +19,9 @@ func (s *NftLend) GetListingLoans(ctx context.Context, collectionId uint, minPri
 		filters[`
 		exists(
 			select 1
-			from nfty_lend_assets
-			where nfty_lend_asset_id = nfty_lend_assets.id
-			  and nfty_lend_assets.nfty_lend_collection_id = ?
+			from assets
+			where asset_id = assets.id
+			  and assets.collection_id = ?
 		)
 		`] = []interface{}{collectionId}
 	}
@@ -65,7 +65,7 @@ func (s *NftLend) GetLoans(ctx context.Context, owner string, lender string, ass
 		filters["lender = ?"] = []interface{}{lender}
 	}
 	if assetId > 0 {
-		filters["nfty_lend_asset_id = ?"] = []interface{}{assetId}
+		filters["asset_id = ?"] = []interface{}{assetId}
 	}
 	if len(statues) > 0 {
 		filters["status in (?)"] = []interface{}{statues}
@@ -98,9 +98,9 @@ func (s *NftLend) GetLoanOffers(ctx context.Context, borrower string, lender str
 		filters[`
 		exists(
 			select 1
-			from nfty_lend_loans
-			where nfty_lend_loan_id = nfty_lend_loans.id
-			  and nfty_lend_loans.owner = ?
+			from loans
+			where loan_id = loans.id
+			  and loans.owner = ?
 		)
 		`] = []interface{}{borrower}
 	}
@@ -139,9 +139,9 @@ func (s *NftLend) GetLastListingLoanByCollection(ctx context.Context, collection
 	filters[`
 		exists(
 			select 1
-			from nfty_lend_assets
-			where nfty_lend_asset_id = nfty_lend_assets.id
-			  and nfty_lend_assets.nfty_lend_collection_id = ?
+			from assets
+			where asset_id = assets.id
+			  and assets.collection_id = ?
 		)
 		`] = []interface{}{collectionId}
 	loan, err := s.nlld.First(
@@ -182,9 +182,9 @@ func (s *NftLend) GetLoanTransactions(ctx context.Context, assetId uint, page in
 		filters[`
 		exists(
 			select 1
-			from nfty_lend_loans
-			where nfty_lend_loan_id = nfty_lend_loans.id
-			  and nfty_lend_loans.nfty_lend_asset_id = ?
+			from loans
+			where loan_id = loans.id
+			  and loans.asset_id = ?
 		)
 		`] = []interface{}{assetId}
 	}

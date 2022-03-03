@@ -58,15 +58,15 @@ func (d *Asset) Find4Page(tx *gorm.DB, filters map[string][]interface{}, preload
 func (d *Asset) GetRPTListingCollection(tx *gorm.DB) ([]*models.NftyRPTListingCollection, error) {
 	var rs []*models.NftyRPTListingCollection
 	err := tx.Raw(`
-	select nfty_lend_collection_id, count(1) total
-	from nfty_lend_assets
+	select collection_id, count(1) total
+	from assets
 	where exists(
 				select 1
-				from nfty_lend_loans
-				where nfty_lend_asset_id = nfty_lend_assets.id
-					and nfty_lend_loans.status in (?)
+				from loans
+				where asset_id = assets.id
+					and loans.status in (?)
 			)
-	group by nfty_lend_collection_id
+	group by collection_id
 	`,
 		[]models.LoanStatus{
 			models.LoanStatusNew,
