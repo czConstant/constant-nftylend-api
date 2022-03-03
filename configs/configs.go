@@ -38,15 +38,20 @@ func GetConfig() *Config {
 }
 
 type Config struct {
-	Env               string          `json:"env"`
-	EvnURL            string          `json:"evn_url"`
-	RavenDNS          string          `json:"raven_dns"`
-	RavenENV          string          `json:"raven_env"`
-	Port              int             `json:"port"`
-	LogPath           string          `json:"log_path"`
-	DbURL             string          `json:"db_url"`
-	Debug             bool            `json:"debug"`
-	RecaptchaV3Serect string          `json:"recaptcha_v3_serect"`
-	JobToken          string          `json:"job_token"`
-	Blockchain        bcclient.Config `json:"blockchain"`
+	Env               string `json:"env"`
+	EvnURL            string `json:"evn_url"`
+	RavenDNS          string `json:"raven_dns"`
+	RavenENV          string `json:"raven_env"`
+	Port              int    `json:"port"`
+	LogPath           string `json:"log_path"`
+	DbURL             string `json:"db_url"`
+	Debug             bool   `json:"debug"`
+	RecaptchaV3Serect string `json:"recaptcha_v3_serect"`
+	JobToken          string `json:"job_token"`
+	Datadog           struct {
+		Env     string `json:"env"`
+		Service string `json:"service"`
+		Version string `json:"version"`
+	} `json:"datadog"`
+	Blockchain bcclient.Config `json:"blockchain"`
 }
