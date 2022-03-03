@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (s *Server) LendGetListingLoans(c *gin.Context) {
+func (s *Server) GetListingLoans(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)
 	collectionId, _ := s.uintFromContextQuery(c, "collection_id")
@@ -23,7 +23,7 @@ func (s *Server) LendGetListingLoans(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewLoanRespArr(loans), Count: &count})
 }
 
-func (s *Server) LendGetLoans(c *gin.Context) {
+func (s *Server) GetLoans(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)
 	assetId, _ := s.uintFromContextQuery(c, "asset_id")
@@ -43,7 +43,7 @@ func (s *Server) LendGetLoans(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewLoanRespArr(loans), Count: &count})
 }
 
-func (s *Server) LendGetLoanOffers(c *gin.Context) {
+func (s *Server) GetLoanOffers(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)
 	offers, count, err := s.nls.GetLoanOffers(
@@ -61,7 +61,7 @@ func (s *Server) LendGetLoanOffers(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewLoanOfferRespArr(offers), Count: &count})
 }
 
-func (s *Server) LendGetLoanTransactions(c *gin.Context) {
+func (s *Server) GetLoanTransactions(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)
 	assetId, err := s.uintFromContextQuery(c, "asset_id")

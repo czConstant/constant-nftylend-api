@@ -48,26 +48,26 @@ func (s *Server) Routers() {
 			ctxJSON(c, http.StatusOK, &serializers.Resp{Error: nil})
 		})
 	}
-	nftAPI.POST("/blockchain/update-block/:block", s.LendNftLendUpdateBlock)
+	nftAPI.POST("/blockchain/update-block/:block", s.NftLendUpdateBlock)
 	currencynftAPI := nftAPI.Group("/currencies")
 	{
-		currencynftAPI.GET("/list", s.LendGetCurrencies)
+		currencynftAPI.GET("/list", s.GetCurrencies)
 	}
 	assetnftAPI := nftAPI.Group("/assets")
 	{
-		assetnftAPI.GET("/detail/:seo_url", s.LendGetAssetDetail)
+		assetnftAPI.GET("/detail/:seo_url", s.GetAssetDetail)
 	}
 	collectionnftAPI := nftAPI.Group("/collections")
 	{
-		collectionnftAPI.GET("/list", s.LendGetCollections)
-		collectionnftAPI.GET("/detail/:seo_url", s.LendGetCollectionDetail)
+		collectionnftAPI.GET("/list", s.GetCollections)
+		collectionnftAPI.GET("/detail/:seo_url", s.GetCollectionDetail)
 	}
 	loannftAPI := nftAPI.Group("/loans")
 	{
-		loannftAPI.GET("/listing", s.LendGetListingLoans)
-		loannftAPI.GET("/list", s.LendGetLoans)
-		loannftAPI.GET("/offers", s.LendGetLoanOffers)
-		loannftAPI.GET("/transactions", s.LendGetLoanTransactions)
+		loannftAPI.GET("/listing", s.GetListingLoans)
+		loannftAPI.GET("/list", s.GetLoans)
+		loannftAPI.GET("/offers", s.GetLoanOffers)
+		loannftAPI.GET("/transactions", s.GetLoanTransactions)
 	}
 	hookInternalnftAPI := nftAPI.Group("/hook/internal")
 	{

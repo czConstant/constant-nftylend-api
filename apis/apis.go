@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (s *Server) LendNftLendUpdateBlock(c *gin.Context) {
+func (s *Server) NftLendUpdateBlock(c *gin.Context) {
 	ctx := s.requestContext(c)
 	blockNumber, err := s.uint64FromContextParam(c, "block")
 	if err != nil {
@@ -47,7 +47,7 @@ func (s *Server) LenInternalHookSolanaInstruction(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
 }
 
-func (s *Server) LendGetAssetDetail(c *gin.Context) {
+func (s *Server) GetAssetDetail(c *gin.Context) {
 	ctx := s.requestContext(c)
 	m, err := s.nls.GetAssetDetail(ctx, s.stringFromContextParam(c, "seo_url"))
 	if err != nil {
@@ -57,7 +57,7 @@ func (s *Server) LendGetAssetDetail(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssetResp(m)})
 }
 
-func (s *Server) LendGetCollections(c *gin.Context) {
+func (s *Server) GetCollections(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)
 	collections, count, err := s.nls.GetCollections(ctx, page, limit)
@@ -81,7 +81,7 @@ func (s *Server) LendGetCollections(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: resps, Count: &count})
 }
 
-func (s *Server) LendGetCollectionDetail(c *gin.Context) {
+func (s *Server) GetCollectionDetail(c *gin.Context) {
 	ctx := s.requestContext(c)
 	m, err := s.nls.GetCollectionDetail(ctx, s.stringFromContextParam(c, "seo_url"))
 	if err != nil {
@@ -104,7 +104,7 @@ func (s *Server) LendGetCollectionDetail(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: resp})
 }
 
-func (s *Server) LendGetCurrencies(c *gin.Context) {
+func (s *Server) GetCurrencies(c *gin.Context) {
 	ctx := s.requestContext(c)
 	currencies, err := s.nls.GetCurrencies(ctx)
 	if err != nil {
