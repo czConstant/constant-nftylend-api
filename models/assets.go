@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/jinzhu/gorm"
 )
 
@@ -22,4 +24,7 @@ type Asset struct {
 	MetaJson            string  `gorm:"type:text"`
 	MetaJsonUrl         string
 	NewLoan             *Loan
+	MagicEdenCrawAt     *time.Time
+	SolMartCrawAt       *time.Time
+	SolSeaCrawAt        *time.Time
 }

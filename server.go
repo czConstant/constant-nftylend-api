@@ -20,6 +20,7 @@ import (
 	"github.com/czConstant/constant-nftlend-api/databases"
 	"github.com/czConstant/constant-nftlend-api/logger"
 	"github.com/czConstant/constant-nftlend-api/services"
+	"github.com/czConstant/constant-nftlend-api/services/3rd/saletrack"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
@@ -95,16 +96,21 @@ func main() {
 		nlcd  = &daos.Currency{}
 		nlcld = &daos.Collection{}
 		nlad  = &daos.Asset{}
+		nlatd = &daos.AssetTransaction{}
 		nlld  = &daos.Loan{}
 		nllod = &daos.LoanOffer{}
 		nlltd = &daos.LoanTransaction{}
 		nlid  = &daos.Instruction{}
 
+		stc = &saletrack.Client{}
+
 		nls = services.NewNftLend(
 			bcs,
+			stc,
 			nlcd,
 			nlcld,
 			nlad,
+			nlatd,
 			nlld,
 			nllod,
 			nlltd,

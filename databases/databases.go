@@ -32,6 +32,7 @@ func MigrateDBMain(db *gorm.DB) error {
 	allTables := []interface{}{
 		(*models.Currency)(nil),
 		(*models.Asset)(nil),
+		(*models.AssetTransaction)(nil),
 		(*models.Collection)(nil),
 		(*models.Loan)(nil),
 		(*models.LoanOffer)(nil),
