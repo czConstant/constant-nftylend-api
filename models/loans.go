@@ -20,6 +20,7 @@ const (
 
 	ChainSOL   Chain = "SOL"
 	ChainMATIC Chain = "MATIC"
+	ChainETH   Chain = "ETH"
 )
 
 type Loan struct {

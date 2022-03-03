@@ -11,4 +11,5 @@ type Currency struct {
 	Name            string
 	IconURL         string
 	AdminFeeAddress string
+	Enabled         float64 `gorm:"default:0"`
 }

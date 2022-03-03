@@ -7,11 +7,15 @@ import (
 
 type Collection struct {
 	gorm.Model
-	Network      Chain
-	SeoURL       string
-	Name         string
-	Description  string
-	ListingAsset *Asset
+	Network        Chain
+	SeoURL         string
+	Name           string
+	Description    string
+	Creator        string
+	OriginNetwork  Chain
+	OriginContract string
+	IsWhiteListed  float64 `gorm:"default:0"`
+	ListingAsset   *Asset
 }
 
 type NftyRPTListingCollection struct {
