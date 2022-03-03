@@ -1,0 +1,73 @@
+{
+  "env": "staging",
+  "evn_url": "http://constant-evn",
+  "port": 8480,
+  "debug": true,
+  "raven_dns": "https://f17d41a720914753acc0a4bee69f485c@sentry.io/1484319",
+  "raven_env": "staging",
+  "log_path": "",
+  "recaptcha_v3_serect_": "",
+  "job_token": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+  "datadog": {
+    "env": "staging",
+    "service": "constant-nftlend-api",
+    "version": "1"
+  },
+  "backend": {
+    "url1": "http://backend-service:6666/api",
+    "url": "https://staging.constant.money/api"
+  },
+  "core": {
+    "url": "http://constant-core-service:9090"
+  },
+  "mailer": {
+    "url": "http://constant-email:8888"
+  },
+  "axie_marketplace": {
+    "url": "https://graphql-gateway.axieinfinity.com/graphql"
+  },
+  "axie_gameapi": {
+    "url1": "https://game-api.skymavis.com",
+    "url": "https://staging.constant.money/nft-marketplace-api/admin"
+  },
+  "axie_tracker": {
+    "url": "https://axie-infinity.p.rapidapi.com",
+    "host": "axie-infinity.p.rapidapi.com",
+    "key": "e031a09b16msh2a4b14ef465b67ep181a39jsn91b73f011e17"
+  },
+  "liquidation": {
+    "url": "http://liquidating-service:8080"
+  },
+  "contract_ronin": {
+    "ronin": {
+      "admin_address": "0xfE81aE50BB45deAcA706A0b2aFEE158dC173FB40",
+      "axie_address": "0x32950db2a7164ae833121501c797d79e7b79d74c",
+      "axie_marketplace_address": "0x213073989821f738a7ba3520c3d31a1f9ad31bbd",
+      "axie_ether_token_address": "0xc99a6a985ed2cac1ef41640596c5a5f9f4e19ef5",
+      "axie_slp_token_address": "0xa8754b9Fa15fc18BB59458815510E40a12cD2014"
+    }
+  },
+  "contract": {
+    "ronin": {
+      "admin_address": "0x088D8A4a03266870EDcbbbADdA3F475f404dB9B2",
+      "axie_address": "0x4964CFBc455C1Cce970B87B21B7C4FB662Ff9B19",
+      "axie_marketplace_address": "0x4964CFBc455C1Cce970B87B21B7C4FB662Ff9B19",
+      "axie_ether_token_address": "0x4964CFBc455C1Cce970B87B21B7C4FB662Ff9B19"
+    }
+  },
+  "blockchain": {
+    "ethereum": {
+      "url": "http://blockchain-ethereum-service:8080/ethereum/rinkeby"
+    },
+    "ronin": {
+      "url": "http://blockchain-ethereum-service:8080/matic/testnet",
+      "url_": "http://blockchain-ethereum-service:8080/ronin/mainnet"
+    },
+    "solana": {
+      "url": "http://blockchain-solana-service:8080/solana/devnet"
+    }
+  },
+  "chat": {
+    "url": "http://chat-service:8404"
+  }
+}
