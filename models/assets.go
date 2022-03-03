@@ -25,6 +25,6 @@ type Asset struct {
 	MetaJsonUrl         string
 	NewLoan             *Loan
 	MagicEdenCrawAt     *time.Time
-	SolMartCrawAt       *time.Time
+	SolanartCrawAt      *time.Time
 	SolSeaCrawAt        *time.Time
 }

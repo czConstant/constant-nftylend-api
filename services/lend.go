@@ -8,6 +8,7 @@ import (
 	"github.com/czConstant/blockchain-api/bcclient"
 	"github.com/czConstant/constant-nftlend-api/daos"
 	"github.com/czConstant/constant-nftlend-api/errs"
+	"github.com/czConstant/constant-nftlend-api/helpers"
 	"github.com/czConstant/constant-nftlend-api/models"
 	"github.com/czConstant/constant-nftlend-api/services/3rd/saletrack"
 	"github.com/czConstant/constant-nftlend-api/types/numeric"
@@ -216,27 +217,57 @@ func (s *NftLend) GetAseetTransactions(ctx context.Context, assetId uint, page i
 			return nil, 0, errs.NewError(err)
 		}
 		tokenAddress := asset.ContractAddress
-		if asset.TestContractAddress == "" {
+		if asset.TestContractAddress != "" {
 			tokenAddress = asset.TestContractAddress
 		}
 		rs, _ := s.stc.GetMagicEdenSaleHistories(tokenAddress)
 		for _, r := range rs {
-			txnAt := time.Unix(r.BlockTime, 0)
-			m := models.AssetTransaction{
-				Source:        "magiceden.io",
-				Network:       models.ChainSOL,
-				AssetID:       asset.ID,
-				Type:          models.AssetTransactionTypeExchange,
-				Seller:        r.SellerAddress,
-				Buyer:         r.BuyerAddress,
-				TransactionAt: &txnAt,
-				Amount:        numeric.BigFloat{*models.ConvertWeiToBigFloat(big.NewInt(int64(r.ParsedTransaction.TotalAmount)), 9)},
-				CurrencyID:    c.ID,
+			if r.TxType == "exchange" {
+				txnAt := time.Unix(r.BlockTime, 0)
+				_ = s.atd.Create(
+					daos.GetDBMainCtx(ctx),
+					&models.AssetTransaction{
+						Source:        "magiceden.io",
+						Network:       models.ChainSOL,
+						AssetID:       asset.ID,
+						Type:          models.AssetTransactionTypeExchange,
+						Seller:        r.SellerAddress,
+						Buyer:         r.BuyerAddress,
+						TransactionAt: &txnAt,
+						Amount:        numeric.BigFloat{*models.ConvertWeiToBigFloat(big.NewInt(int64(r.ParsedTransaction.TotalAmount)), 9)},
+						CurrencyID:    c.ID,
+					},
+				)
 			}
-			_ = s.atd.Create(
-				daos.GetDBMainCtx(ctx),
-				m,
-			)
+		}
+		err = daos.WithTransaction(
+			daos.GetDBMainCtx(ctx),
+			func(tx *gorm.DB) error {
+				asset, err := s.ad.FirstByID(
+					tx,
+					asset.ID,
+					map[string][]interface{}{},
+					true,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if asset == nil {
+					return errs.NewError(errs.ErrBadRequest)
+				}
+				asset.MagicEdenCrawAt = helpers.TimeNow()
+				err = s.ad.Save(
+					tx,
+					asset,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				return nil
+			},
+		)
+		if err != nil {
+			return nil, 0, errs.NewError(err)
 		}
 	}
 	return nil, 0, nil
