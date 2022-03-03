@@ -11,41 +11,41 @@ import (
 )
 
 type NftLend struct {
-	bcs   *bcclient.Client
-	nlcd  *daos.Currency
-	nlcld *daos.Collection
-	nlad  *daos.Asset
-	nlld  *daos.Loan
-	nllod *daos.LoanOffer
-	nlltd *daos.LoanTransaction
-	nlid  *daos.Instruction
+	bcs *bcclient.Client
+	cd  *daos.Currency
+	cld *daos.Collection
+	ad  *daos.Asset
+	ld  *daos.Loan
+	lod *daos.LoanOffer
+	ltd *daos.LoanTransaction
+	id  *daos.Instruction
 }
 
 func NewNftLend(
 	bcs *bcclient.Client,
-	nlcd *daos.Currency,
-	nlcld *daos.Collection,
-	nlad *daos.Asset,
-	nlld *daos.Loan,
-	nllod *daos.LoanOffer,
-	nlltd *daos.LoanTransaction,
-	nlid *daos.Instruction,
+	cd *daos.Currency,
+	cld *daos.Collection,
+	ad *daos.Asset,
+	ld *daos.Loan,
+	lod *daos.LoanOffer,
+	ltd *daos.LoanTransaction,
+	id *daos.Instruction,
 
 ) *NftLend {
 	return &NftLend{
-		bcs:   bcs,
-		nlcd:  nlcd,
-		nlcld: nlcld,
-		nlad:  nlad,
-		nlld:  nlld,
-		nllod: nllod,
-		nlltd: nlltd,
-		nlid:  nlid,
+		bcs: bcs,
+		cd:  cd,
+		cld: cld,
+		ad:  ad,
+		ld:  ld,
+		lod: lod,
+		ltd: ltd,
+		id:  id,
 	}
 }
 
 func (s *NftLend) getLendCurrency(tx *gorm.DB, address string) (*models.Currency, error) {
-	c, err := s.nlcd.First(
+	c, err := s.cd.First(
 		tx,
 		map[string][]interface{}{
 			"contract_address = ?": []interface{}{address},
@@ -63,7 +63,7 @@ func (s *NftLend) getLendCurrency(tx *gorm.DB, address string) (*models.Currency
 }
 
 func (s *NftLend) GetAssetDetail(ctx context.Context, seoURL string) (*models.Asset, error) {
-	m, err := s.nlad.First(
+	m, err := s.ad.First(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
 			"seo_url = ?": []interface{}{seoURL},
@@ -90,7 +90,7 @@ func (s *NftLend) GetAssetDetail(ctx context.Context, seoURL string) (*models.As
 }
 
 func (s *NftLend) GetCollections(ctx context.Context, page int, limit int) ([]*models.Collection, uint, error) {
-	categories, count, err := s.nlcld.Find4Page(
+	categories, count, err := s.cld.Find4Page(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{},
 		map[string][]interface{}{
@@ -127,7 +127,7 @@ func (s *NftLend) GetCollections(ctx context.Context, page int, limit int) ([]*m
 }
 
 func (s *NftLend) GetCollectionDetail(ctx context.Context, seoURL string) (*models.Collection, error) {
-	m, err := s.nlcld.First(
+	m, err := s.cld.First(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
 			"seo_url = ?": []interface{}{seoURL},
@@ -142,7 +142,7 @@ func (s *NftLend) GetCollectionDetail(ctx context.Context, seoURL string) (*mode
 }
 
 func (s *NftLend) GetCurrencies(ctx context.Context) ([]*models.Currency, error) {
-	currencies, err := s.nlcd.Find(
+	currencies, err := s.cd.Find(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{},
 		map[string][]interface{}{},
@@ -157,7 +157,7 @@ func (s *NftLend) GetCurrencies(ctx context.Context) ([]*models.Currency, error)
 }
 
 func (s *NftLend) GetRPTListingCollection(ctx context.Context) ([]*models.NftyRPTListingCollection, error) {
-	ms, err := s.nlad.GetRPTListingCollection(
+	ms, err := s.ad.GetRPTListingCollection(
 		daos.GetDBMainCtx(ctx),
 	)
 	if err != nil {

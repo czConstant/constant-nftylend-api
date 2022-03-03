@@ -28,7 +28,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			ins, err := s.nlid.FirstByID(
+			ins, err := s.id.FirstByID(
 				tx,
 				insId,
 				map[string][]interface{}{},
@@ -59,7 +59,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					if err != nil {
 						return errs.NewError(err)
 					}
-					loan, err := s.nlld.First(
+					loan, err := s.ld.First(
 						tx,
 						map[string][]interface{}{
 							"data_loan_address =?": []interface{}{req.LoanInfoAccount},
@@ -73,7 +73,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					if loan != nil {
 						return errs.NewError(errs.ErrBadRequest)
 					}
-					asset, err := s.nlad.First(
+					asset, err := s.ad.First(
 						tx,
 						map[string][]interface{}{
 							"contract_address =?": []interface{}{req.NftCollateralContract},
@@ -104,7 +104,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 						if collectionName == "" {
 							return errs.NewError(errs.ErrBadRequest)
 						}
-						collection, err := s.nlcld.First(
+						collection, err := s.cld.First(
 							tx,
 							map[string][]interface{}{
 								"name = ?": []interface{}{collectionName},
@@ -122,7 +122,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 								Name:        collectionName,
 								Description: metaInfo.Description,
 							}
-							err = s.nlcld.Create(
+							err = s.cld.Create(
 								tx,
 								collection,
 							)
@@ -161,7 +161,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							MetaJson:        string(metaJson),
 							MetaJsonUrl:     meta.Data.Uri,
 						}
-						err = s.nlad.Create(
+						err = s.ad.Create(
 							tx,
 							asset,
 						)
@@ -186,14 +186,14 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 						Status:           models.LoanStatusNew,
 						InitTxHash:       ins.TransactionHash,
 					}
-					err = s.nlld.Create(
+					err = s.ld.Create(
 						tx,
 						loan,
 					)
 					if err != nil {
 						return errs.NewError(err)
 					}
-					err = s.nlltd.Create(
+					err = s.ltd.Create(
 						tx,
 						&models.LoanTransaction{
 							Network:         models.ChainSOL,
@@ -232,7 +232,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					if err != nil {
 						return errs.NewError(err)
 					}
-					loan, err := s.nlld.First(
+					loan, err := s.ld.First(
 						tx,
 						map[string][]interface{}{
 							"data_loan_address =?": []interface{}{req.LoanID},
@@ -248,7 +248,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					if loan == nil {
 						return errs.NewError(errs.ErrBadRequest)
 					}
-					offer, err := s.nllod.First(
+					offer, err := s.lod.First(
 						tx,
 						map[string][]interface{}{
 							"data_offer_address =?": []interface{}{req.OfferInfoAccount},
@@ -280,7 +280,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					if loan.Status != models.LoanStatusNew {
 						offer.Status = models.LoanOfferStatusRejected
 					}
-					err = s.nllod.Create(
+					err = s.lod.Create(
 						tx,
 						offer,
 					)
@@ -305,7 +305,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					if err != nil {
 						return errs.NewError(err)
 					}
-					loan, err := s.nlld.First(
+					loan, err := s.ld.First(
 						tx,
 						map[string][]interface{}{
 							"data_loan_address =?": []interface{}{req.LoanID},
@@ -322,7 +322,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					if loan.Status != models.LoanStatusNew {
 						return errs.NewError(errs.ErrBadRequest)
 					}
-					offer, err := s.nllod.First(
+					offer, err := s.lod.First(
 						tx,
 						map[string][]interface{}{
 							"data_offer_address =?": []interface{}{req.OfferID},
@@ -343,7 +343,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					offer.ExpiredAt = helpers.TimeAdd(*offer.StartedAt, time.Second*time.Duration(offer.Duration))
 					offer.Status = models.LoanOfferStatusApproved
 					offer.AcceptTxHash = ins.TransactionHash
-					err = s.nllod.Save(
+					err = s.lod.Save(
 						tx,
 						offer,
 					)
@@ -357,7 +357,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					loan.OfferPrincipalAmount = offer.PrincipalAmount
 					loan.OfferInterestRate = offer.InterestRate
 					loan.Status = models.LoanStatusCreated
-					err = s.nlld.Save(
+					err = s.ld.Save(
 						tx,
 						loan,
 					)
@@ -368,7 +368,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 						if otherOffer.ID != offer.ID {
 							if otherOffer.Status == models.LoanOfferStatusNew {
 								otherOffer.Status = models.LoanOfferStatusRejected
-								err = s.nllod.Save(
+								err = s.lod.Save(
 									tx,
 									otherOffer,
 								)
@@ -378,7 +378,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							}
 						}
 					}
-					err = s.nlltd.Create(
+					err = s.ltd.Create(
 						tx,
 						&models.LoanTransaction{
 							Network:         models.ChainSOL,
@@ -407,7 +407,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					if err != nil {
 						return errs.NewError(err)
 					}
-					loan, err := s.nlld.First(
+					loan, err := s.ld.First(
 						tx,
 						map[string][]interface{}{
 							"data_loan_address = ?": []interface{}{req.LoanID},
@@ -429,7 +429,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					loan.FinishedAt = ins.BlockTime
 					loan.Status = models.LoanStatusCancelled
 					loan.CancelTxHash = ins.TransactionHash
-					err = s.nlld.Save(
+					err = s.ld.Save(
 						tx,
 						loan,
 					)
@@ -439,7 +439,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					for _, otherOffer := range loan.Offers {
 						if otherOffer.Status == models.LoanOfferStatusNew {
 							otherOffer.Status = models.LoanOfferStatusRejected
-							err = s.nllod.Save(
+							err = s.lod.Save(
 								tx,
 								otherOffer,
 							)
@@ -448,7 +448,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							}
 						}
 					}
-					err = s.nlltd.Create(
+					err = s.ltd.Create(
 						tx,
 						&models.LoanTransaction{
 							Network:         models.ChainSOL,
@@ -476,7 +476,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					if err != nil {
 						return errs.NewError(err)
 					}
-					offer, err := s.nllod.First(
+					offer, err := s.lod.First(
 						tx,
 						map[string][]interface{}{
 							"data_offer_address =?": []interface{}{req.OfferID},
@@ -497,7 +497,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					offer.FinishedAt = ins.BlockTime
 					offer.Status = models.LoanOfferStatusCancelled
 					offer.CancelTxHash = ins.TransactionHash
-					err = s.nllod.Save(
+					err = s.lod.Save(
 						tx,
 						offer,
 					)
@@ -516,7 +516,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					if err != nil {
 						return errs.NewError(err)
 					}
-					loan, err := s.nlld.First(
+					loan, err := s.ld.First(
 						tx,
 						map[string][]interface{}{
 							"data_loan_address =?": []interface{}{req.LoanID},
@@ -533,7 +533,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					if loan.Status != models.LoanStatusCreated {
 						return errs.NewError(errs.ErrBadRequest)
 					}
-					currency, err := s.nlcd.FirstByID(
+					currency, err := s.cd.FirstByID(
 						tx,
 						loan.CurrencyID,
 						map[string][]interface{}{},
@@ -548,14 +548,14 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					loan.Status = models.LoanStatusDone
 					loan.PayTxHash = ins.TransactionHash
 					loan.FeeRate = 0.01
-					err = s.nlld.Save(
+					err = s.ld.Save(
 						tx,
 						loan,
 					)
 					if err != nil {
 						return errs.NewError(err)
 					}
-					offer, err := s.nllod.First(
+					offer, err := s.lod.First(
 						tx,
 						map[string][]interface{}{
 							"data_offer_address =?": []interface{}{req.OfferID},
@@ -572,14 +572,14 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					offer.RepaidAt = ins.BlockTime
 					offer.RepaidAmount = numeric.BigFloat{*payAmount}
 					offer.Status = models.LoanOfferStatusRepaid
-					err = s.nllod.Save(
+					err = s.lod.Save(
 						tx,
 						offer,
 					)
 					if err != nil {
 						return errs.NewError(err)
 					}
-					err = s.nlltd.Create(
+					err = s.ltd.Create(
 						tx,
 						&models.LoanTransaction{
 							Network:         models.ChainSOL,
@@ -609,7 +609,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					if err != nil {
 						return errs.NewError(err)
 					}
-					loan, err := s.nlld.First(
+					loan, err := s.ld.First(
 						tx,
 						map[string][]interface{}{
 							"data_loan_address =?": []interface{}{req.LoanID},
@@ -629,14 +629,14 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					loan.FinishedAt = ins.BlockTime
 					loan.Status = models.LoanStatusLiquidated
 					loan.LiquidateTxHash = ins.TransactionHash
-					err = s.nlld.Save(
+					err = s.ld.Save(
 						tx,
 						loan,
 					)
 					if err != nil {
 						return errs.NewError(err)
 					}
-					offer, err := s.nllod.First(
+					offer, err := s.lod.First(
 						tx,
 						map[string][]interface{}{
 							"data_offer_address =?": []interface{}{req.OfferID},
@@ -651,14 +651,14 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 						return errs.NewError(errs.ErrBadRequest)
 					}
 					offer.Status = models.LoanOfferStatusLiquidated
-					err = s.nllod.Save(
+					err = s.lod.Save(
 						tx,
 						offer,
 					)
 					if err != nil {
 						return errs.NewError(err)
 					}
-					err = s.nlltd.Create(
+					err = s.ltd.Create(
 						tx,
 						&models.LoanTransaction{
 							Network:         models.ChainSOL,
@@ -687,7 +687,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					if err != nil {
 						return errs.NewError(err)
 					}
-					offer, err := s.nllod.First(
+					offer, err := s.lod.First(
 						tx,
 						map[string][]interface{}{
 							"data_offer_address =?": []interface{}{req.OfferID},
@@ -707,7 +707,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					offer.FinishedAt = ins.BlockTime
 					offer.Status = models.LoanOfferStatusDone
 					offer.CloseTxHash = ins.TransactionHash
-					err = s.nllod.Save(
+					err = s.lod.Save(
 						tx,
 						offer,
 					)
@@ -727,7 +727,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					if err != nil {
 						return errs.NewError(err)
 					}
-					loan, err := s.nlld.First(
+					loan, err := s.ld.First(
 						tx,
 						map[string][]interface{}{
 							"data_loan_address = ?": []interface{}{req.LoanID},
@@ -761,7 +761,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 						MakeTxHash:          ins.TransactionHash,
 						AcceptTxHash:        ins.TransactionHash,
 					}
-					err = s.nllod.Create(
+					err = s.lod.Create(
 						tx,
 						offer,
 					)
@@ -776,7 +776,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					loan.OfferInterestRate = offer.InterestRate
 					loan.Status = models.LoanStatusCreated
 					loan.InitTxHash = ins.TransactionHash
-					err = s.nlld.Save(
+					err = s.ld.Save(
 						tx,
 						loan,
 					)
@@ -787,7 +787,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 						if otherOffer.ID != offer.ID {
 							if otherOffer.Status == models.LoanOfferStatusNew {
 								otherOffer.Status = models.LoanOfferStatusRejected
-								err = s.nllod.Save(
+								err = s.lod.Save(
 									tx,
 									otherOffer,
 								)
@@ -797,7 +797,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							}
 						}
 					}
-					err = s.nlltd.Create(
+					err = s.ltd.Create(
 						tx,
 						&models.LoanTransaction{
 							Network:         models.ChainSOL,
@@ -823,7 +823,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 				}
 			}
 			ins.Status = "done"
-			err = s.nlid.Save(
+			err = s.id.Save(
 				tx,
 				ins,
 			)
@@ -849,7 +849,7 @@ func (s *NftLend) InternalHookSolanaInstruction(ctx context.Context, blockNumber
 	err = daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			ins, err = s.nlid.First(
+			ins, err = s.id.First(
 				tx,
 				map[string][]interface{}{
 					"transaction_hash = ?":  []interface{}{transactionHash},
@@ -879,7 +879,7 @@ func (s *NftLend) InternalHookSolanaInstruction(ctx context.Context, blockNumber
 				Data:             string(dataJson),
 				Status:           "new",
 			}
-			err = s.nlid.Create(
+			err = s.id.Create(
 				tx,
 				ins,
 			)
@@ -906,7 +906,7 @@ func (s *NftLend) UpdateAssetInfo(ctx context.Context, address string) error {
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			asset, err := s.nlad.First(
+			asset, err := s.ad.First(
 				tx,
 				map[string][]interface{}{
 					"contract_address =?": []interface{}{address},
@@ -954,7 +954,7 @@ func (s *NftLend) UpdateAssetInfo(ctx context.Context, address string) error {
 			asset.Attributes = string(attributes)
 			asset.MetaJson = string(metaJson)
 			asset.MetaJsonUrl = meta.Data.Uri
-			err = s.nlad.Save(
+			err = s.ad.Save(
 				tx,
 				asset,
 			)

@@ -34,7 +34,7 @@ func (s *NftLend) GetListingLoans(ctx context.Context, collectionId uint, minPri
 	if len(excludeIds) > 0 {
 		filters["id not in (?)"] = []interface{}{excludeIds}
 	}
-	loans, count, err := s.nlld.Find4Page(
+	loans, count, err := s.ld.Find4Page(
 		daos.GetDBMainCtx(ctx),
 		filters,
 		map[string][]interface{}{
@@ -70,7 +70,7 @@ func (s *NftLend) GetLoans(ctx context.Context, owner string, lender string, ass
 	if len(statues) > 0 {
 		filters["status in (?)"] = []interface{}{statues}
 	}
-	loans, count, err := s.nlld.Find4Page(
+	loans, count, err := s.ld.Find4Page(
 		daos.GetDBMainCtx(ctx),
 		filters,
 		map[string][]interface{}{
@@ -110,7 +110,7 @@ func (s *NftLend) GetLoanOffers(ctx context.Context, borrower string, lender str
 	if len(statues) > 0 {
 		filters["status in (?)"] = []interface{}{statues}
 	}
-	offers, count, err := s.nllod.Find4Page(
+	offers, count, err := s.lod.Find4Page(
 		daos.GetDBMainCtx(ctx),
 		filters,
 		map[string][]interface{}{
@@ -144,7 +144,7 @@ func (s *NftLend) GetLastListingLoanByCollection(ctx context.Context, collection
 			  and assets.collection_id = ?
 		)
 		`] = []interface{}{collectionId}
-	loan, err := s.nlld.First(
+	loan, err := s.ld.First(
 		daos.GetDBMainCtx(ctx),
 		filters,
 		map[string][]interface{}{
@@ -163,7 +163,7 @@ func (s *NftLend) GetLastListingLoanByCollection(ctx context.Context, collection
 }
 
 func (s *NftLend) GetRPTCollectionLoan(ctx context.Context, collectionID uint) (*models.NftyRPTCollectionLoan, error) {
-	m, err := s.nlld.GetRPTCollectionLoan(
+	m, err := s.ld.GetRPTCollectionLoan(
 		daos.GetDBMainCtx(ctx),
 		collectionID,
 	)
@@ -188,7 +188,7 @@ func (s *NftLend) GetLoanTransactions(ctx context.Context, assetId uint, page in
 		)
 		`] = []interface{}{assetId}
 	}
-	txns, count, err := s.nlltd.Find4Page(
+	txns, count, err := s.ltd.Find4Page(
 		daos.GetDBMainCtx(ctx),
 		filters,
 		map[string][]interface{}{
