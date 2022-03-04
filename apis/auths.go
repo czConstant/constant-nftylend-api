@@ -3,7 +3,7 @@ package apis
 import (
 	"net/http"
 
-	"github.com/czConstant/constant-nftlend-api/serializers"
+	"github.com/czConstant/constant-nftylend-api/serializers"
 	"github.com/gin-gonic/gin"
 )
 

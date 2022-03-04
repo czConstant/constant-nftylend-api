@@ -1,8 +1,8 @@
 package daos
 
 import (
-	"github.com/czConstant/constant-nftlend-api/errs"
-	"github.com/czConstant/constant-nftlend-api/models"
+	"github.com/czConstant/constant-nftylend-api/errs"
+	"github.com/czConstant/constant-nftylend-api/models"
 	"github.com/jinzhu/gorm"
 )
 

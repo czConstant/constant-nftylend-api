@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/czConstant/constant-nftlend-api/types/numeric"
+	"github.com/czConstant/constant-nftylend-api/types/numeric"
 	"github.com/jinzhu/gorm"
 )
 

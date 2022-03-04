@@ -3,9 +3,9 @@ package services
 import (
 	"context"
 
-	"github.com/czConstant/constant-nftlend-api/daos"
-	"github.com/czConstant/constant-nftlend-api/errs"
-	"github.com/czConstant/constant-nftlend-api/models"
+	"github.com/czConstant/constant-nftylend-api/daos"
+	"github.com/czConstant/constant-nftylend-api/errs"
+	"github.com/czConstant/constant-nftylend-api/models"
 )
 
 func (s *NftLend) GetListingLoans(ctx context.Context, collectionId uint, minPrice float64, maxPrice float64, excludeIds []uint, page int, limit int) ([]*models.Loan, uint, error) {

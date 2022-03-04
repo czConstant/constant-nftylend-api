@@ -1,7 +1,7 @@
 package databases
 
 import (
-	"github.com/czConstant/constant-nftlend-api/models"
+	"github.com/czConstant/constant-nftylend-api/models"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"

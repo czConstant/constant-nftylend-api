@@ -3,8 +3,8 @@ package serializers
 import (
 	"time"
 
-	"github.com/czConstant/constant-nftlend-api/models"
-	"github.com/czConstant/constant-nftlend-api/types/numeric"
+	"github.com/czConstant/constant-nftylend-api/models"
+	"github.com/czConstant/constant-nftylend-api/types/numeric"
 )
 
 type LoanOfferResp struct {

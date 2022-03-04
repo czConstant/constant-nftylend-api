@@ -3,7 +3,7 @@ package serializers
 import (
 	"time"
 
-	"github.com/czConstant/constant-nftlend-api/models"
+	"github.com/czConstant/constant-nftylend-api/models"
 )
 
 type CurrencyResp struct {

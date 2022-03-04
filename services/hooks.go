@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/czConstant/constant-nftlend-api/daos"
-	"github.com/czConstant/constant-nftlend-api/errs"
-	"github.com/czConstant/constant-nftlend-api/helpers"
-	"github.com/czConstant/constant-nftlend-api/models"
-	"github.com/czConstant/constant-nftlend-api/types/numeric"
+	"github.com/czConstant/constant-nftylend-api/daos"
+	"github.com/czConstant/constant-nftylend-api/errs"
+	"github.com/czConstant/constant-nftylend-api/helpers"
+	"github.com/czConstant/constant-nftylend-api/models"
+	"github.com/czConstant/constant-nftylend-api/types/numeric"
 	"github.com/jinzhu/gorm"
 )
 

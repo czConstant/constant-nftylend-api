@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/czConstant/constant-nftlend-api/errs"
+	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 	gormtrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/jinzhu/gorm"

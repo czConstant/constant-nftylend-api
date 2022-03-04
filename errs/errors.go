@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/czConstant/constant-nftlend-api/helpers"
-	"github.com/czConstant/constant-nftlend-api/logger"
+	"github.com/czConstant/constant-nftylend-api/helpers"
+	"github.com/czConstant/constant-nftylend-api/logger"
 	"github.com/getsentry/raven-go"
 	"go.uber.org/zap"
 )

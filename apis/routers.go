@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/czConstant/constant-nftlend-api/configs"
-	"github.com/czConstant/constant-nftlend-api/serializers"
-	"github.com/czConstant/constant-nftlend-api/services"
+	"github.com/czConstant/constant-nftylend-api/configs"
+	"github.com/czConstant/constant-nftylend-api/serializers"
+	"github.com/czConstant/constant-nftylend-api/services"
 	"github.com/getsentry/raven-go"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"

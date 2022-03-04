@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/czConstant/constant-nftlend-api/models"
+	"github.com/czConstant/constant-nftylend-api/models"
 )
 
 type AssetResp struct {

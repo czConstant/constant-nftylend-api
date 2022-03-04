@@ -1,4 +1,4 @@
-module github.com/czConstant/constant-nftlend-api
+module github.com/czConstant/constant-nftylend-api
 
 go 1.16
 

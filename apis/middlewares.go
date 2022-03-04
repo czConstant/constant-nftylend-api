@@ -14,11 +14,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/czConstant/constant-nftlend-api/configs"
-	"github.com/czConstant/constant-nftlend-api/errs"
-	"github.com/czConstant/constant-nftlend-api/helpers"
-	"github.com/czConstant/constant-nftlend-api/logger"
-	"github.com/czConstant/constant-nftlend-api/serializers"
+	"github.com/czConstant/constant-nftylend-api/configs"
+	"github.com/czConstant/constant-nftylend-api/errs"
+	"github.com/czConstant/constant-nftylend-api/helpers"
+	"github.com/czConstant/constant-nftylend-api/logger"
+	"github.com/czConstant/constant-nftylend-api/serializers"
 	"github.com/getsentry/raven-go"
 	"go.uber.org/zap"
 
