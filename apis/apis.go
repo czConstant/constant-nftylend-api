@@ -57,6 +57,16 @@ func (s *Server) GetAssetDetail(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssetResp(m)})
 }
 
+func (s *Server) GetCollectionAssetVerified(c *gin.Context) {
+	ctx := s.requestContext(c)
+	m, err := s.nls.GetCollectionVerified(ctx, s.stringFromContextQuery(c, "mint"))
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewCollectionResp(m)})
+}
+
 func (s *Server) GetCollections(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)
