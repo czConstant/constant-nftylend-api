@@ -14,7 +14,7 @@ type Collection struct {
 	Creator        string
 	OriginNetwork  Chain
 	OriginContract string
-	IsWhiteListed  float64 `gorm:"default:0"`
+	Enabled        float64 `gorm:"default:0"`
 	ListingAsset   *Asset
 }
 
