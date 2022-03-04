@@ -25,7 +25,7 @@ type Asset struct {
 	NewLoan                   *Loan
 	OriginNetwork             Chain
 	OriginContractAddress     string
-	OriginTokenID             uint
+	OriginTokenID             string
 	TestOriginContractAddress string
 	TestOriginTokenID         uint
 	MagicEdenCrawAt           *time.Time
