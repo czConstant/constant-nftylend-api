@@ -14,7 +14,7 @@ type Collection struct {
 	Creator        string
 	OriginNetwork  Chain
 	OriginContract string
-	Enabled        float64 `gorm:"default:0"`
+	Enabled        bool `gorm:"default:0"`
 	ListingAsset   *Asset
 }
 
