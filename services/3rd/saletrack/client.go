@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 
 	cloudflarebp "github.com/DaRealFreak/cloudflare-bp-go"
 )
@@ -128,4 +129,34 @@ func (c *Client) GetMagicEdenSaleHistories(mint string) ([]*MagicEdenSaleResp, e
 		return nil, err
 	}
 	return rs.Results, nil
+}
+
+type SolnartSaleResp struct {
+	Date          *time.Time `json:"date"`
+	Mint          string     `json:"mint"`
+	BuyerAdd      string     `json:"buyerAdd"`
+	SellerAddress string     `json:"seller_address"`
+	Price         float64    `json:"price"`
+	Currency      string     `json:"currency"`
+}
+
+func (c *Client) GetSolnartSaleHistories(mint string) ([]*SolnartSaleResp, error) {
+	var rs []*SolnartSaleResp
+	client := &http.Client{}
+	resp, err := client.Get(fmt.Sprintf("https://api.solanart.io/last_sales_token?address=%s", mint))
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode >= 300 {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("http response bad status %d %s", resp.StatusCode, err.Error())
+		}
+		return nil, fmt.Errorf("http response bad status %d %s", resp.StatusCode, string(bodyBytes))
+	}
+	err = json.NewDecoder(resp.Body).Decode(&rs)
+	if err != nil {
+		return nil, err
+	}
+	return rs, nil
 }

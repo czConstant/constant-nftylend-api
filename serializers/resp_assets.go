@@ -15,7 +15,6 @@ type AssetResp struct {
 	Collection      *CollectionResp `json:"collection"`
 	SeoURL          string          `json:"seo_url"`
 	ContractAddress string          `json:"contract_address"`
-	TokenID         uint            `json:"token_id"`
 	TokenURL        string          `json:"token_url"`
 	Name            string          `json:"name"`
 	SellerFeeRate   float64         `json:"seller_fee_rate"`
@@ -37,7 +36,6 @@ func NewAssetResp(m *models.Asset) *AssetResp {
 		Collection:      NewCollectionResp(m.Collection),
 		SeoURL:          m.SeoURL,
 		ContractAddress: m.ContractAddress,
-		TokenID:         m.TokenID,
 		TokenURL:        m.TokenURL,
 		Name:            m.Name,
 		SellerFeeRate:   m.SellerFeeRate,

@@ -270,5 +270,94 @@ func (s *NftLend) GetAseetTransactions(ctx context.Context, assetId uint, page i
 			return nil, 0, errs.NewError(err)
 		}
 	}
+	if asset.SolanartCrawAt == nil ||
+		asset.SolanartCrawAt.Before(time.Now().Add(-24*time.Hour)) {
+		tokenAddress := asset.ContractAddress
+		if asset.TestContractAddress != "" {
+			tokenAddress = asset.TestContractAddress
+		}
+		rs, _ := s.stc.GetSolnartSaleHistories(tokenAddress)
+		for _, r := range rs {
+			c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), r.Currency)
+			if err != nil {
+				return nil, 0, errs.NewError(err)
+			}
+			_ = s.atd.Create(
+				daos.GetDBMainCtx(ctx),
+				&models.AssetTransaction{
+					Source:        "solanart.io",
+					Network:       models.ChainSOL,
+					AssetID:       asset.ID,
+					Type:          models.AssetTransactionTypeExchange,
+					Seller:        r.SellerAddress,
+					Buyer:         r.BuyerAdd,
+					TransactionAt: r.Date,
+					Amount:        numeric.BigFloat{*big.NewFloat(r.Price)},
+					CurrencyID:    c.ID,
+				},
+			)
+		}
+		err = daos.WithTransaction(
+			daos.GetDBMainCtx(ctx),
+			func(tx *gorm.DB) error {
+				asset, err := s.ad.FirstByID(
+					tx,
+					asset.ID,
+					map[string][]interface{}{},
+					true,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if asset == nil {
+					return errs.NewError(errs.ErrBadRequest)
+				}
+				asset.SolanartCrawAt = helpers.TimeNow()
+				err = s.ad.Save(
+					tx,
+					asset,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				return nil
+			},
+		)
+		if err != nil {
+			return nil, 0, errs.NewError(err)
+		}
+	}
+	if asset.SolSeaCrawAt == nil ||
+		asset.SolSeaCrawAt.Before(time.Now().Add(-24*time.Hour)) {
+		err = daos.WithTransaction(
+			daos.GetDBMainCtx(ctx),
+			func(tx *gorm.DB) error {
+				asset, err := s.ad.FirstByID(
+					tx,
+					asset.ID,
+					map[string][]interface{}{},
+					true,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if asset == nil {
+					return errs.NewError(errs.ErrBadRequest)
+				}
+				asset.SolSeaCrawAt = helpers.TimeNow()
+				err = s.ad.Save(
+					tx,
+					asset,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				return nil
+			},
+		)
+		if err != nil {
+			return nil, 0, errs.NewError(err)
+		}
+	}
 	return nil, 0, nil
 }
