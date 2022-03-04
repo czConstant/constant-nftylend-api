@@ -224,6 +224,7 @@ func (s *NftLend) getCollectionVerified(tx *gorm.DB, mintAddress string, meta *s
 			map[string][]interface{}{
 				"origin_network = ?":  []interface{}{chain},
 				"origin_contract = ?": []interface{}{vrs.AssetAddress},
+				"enabled = ?":         []interface{}{true},
 			},
 			map[string][]interface{}{},
 			[]string{"id desc"},
@@ -266,6 +267,7 @@ func (s *NftLend) getCollectionVerified(tx *gorm.DB, mintAddress string, meta *s
 			map[string][]interface{}{
 				"name = ?":       []interface{}{collectionName},
 				"creator in (?)": []interface{}{creators},
+				"enabled = ?":    []interface{}{true},
 			},
 			map[string][]interface{}{},
 			[]string{},
