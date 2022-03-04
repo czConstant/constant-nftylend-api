@@ -233,6 +233,7 @@ func (s *NftLend) GetAseetTransactions(ctx context.Context, assetId uint, page i
 						Type:          models.AssetTransactionTypeExchange,
 						Seller:        r.SellerAddress,
 						Buyer:         r.BuyerAddress,
+						TransactionID: r.TransactionID,
 						TransactionAt: &txnAt,
 						Amount:        numeric.BigFloat{*models.ConvertWeiToBigFloat(big.NewInt(int64(r.ParsedTransaction.TotalAmount)), 9)},
 						CurrencyID:    c.ID,
