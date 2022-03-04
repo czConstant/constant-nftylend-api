@@ -3,9 +3,11 @@ package services
 import (
 	"context"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/czConstant/blockchain-api/bcclient"
+	"github.com/czConstant/blockchain-api/bcclient/solana"
 	"github.com/czConstant/constant-nftylend-api/daos"
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/helpers"
@@ -195,6 +197,87 @@ func (s *NftLend) GetRPTListingCollection(ctx context.Context) ([]*models.NftyRP
 		return nil, errs.NewError(err)
 	}
 	return ms, nil
+}
+
+func (s *NftLend) GetCollectionVerified(ctx context.Context, mintAddress string) (*models.Collection, error) {
+	m, _, err := s.getCollectionVerified(
+		daos.GetDBMainCtx(ctx),
+		mintAddress,
+		nil,
+		nil,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return m, nil
+}
+
+func (s *NftLend) getCollectionVerified(tx *gorm.DB, mintAddress string, meta *solana.MetadataResp, metaInfo *solana.MetadataInfoResp) (*models.Collection, string, error) {
+	vrs, err := s.bcs.SolanaNftVerifier.GetNftVerifier(mintAddress)
+	if err != nil {
+		return nil, "", errs.NewError(err)
+	}
+	if vrs.IsWrapped {
+		chain := s.bcs.SolanaNftVerifier.ParseChain(vrs.ChainID)
+		m, err := s.cld.First(
+			tx,
+			map[string][]interface{}{
+				"origin_network = ?":  []interface{}{chain},
+				"origin_contract = ?": []interface{}{vrs.AssetAddress},
+			},
+			map[string][]interface{}{},
+			[]string{"id desc"},
+		)
+		if err != nil {
+			return nil, "", errs.NewError(err)
+		}
+		if m != nil {
+			return m, vrs.TokenID, nil
+		}
+	} else {
+		if meta == nil {
+			meta, err = s.bcs.Solana.GetMetadata(mintAddress)
+			if err != nil {
+				return nil, "", errs.NewError(err)
+			}
+		}
+		if metaInfo == nil {
+			metaInfo, err = s.bcs.Solana.GetMetadataInfo(meta.Data.Uri)
+			if err != nil {
+				return nil, "", errs.NewError(err)
+			}
+		}
+		collectionName := metaInfo.Collection.Family
+		if collectionName == "" {
+			names := strings.Split(metaInfo.Name, "#")
+			if len(names) >= 2 {
+				collectionName = strings.TrimSpace(names[0])
+			}
+		}
+		if collectionName == "" {
+			return nil, "", errs.NewError(err)
+		}
+		var creators []string
+		for _, ct := range meta.Data.Creators {
+			creators = append(creators, ct.Address)
+		}
+		m, err := s.cld.First(
+			tx,
+			map[string][]interface{}{
+				"name = ?":       []interface{}{collectionName},
+				"creator in (?)": []interface{}{creators},
+			},
+			map[string][]interface{}{},
+			[]string{},
+		)
+		if err != nil {
+			return nil, "", errs.NewError(err)
+		}
+		if m != nil {
+			return m, "", nil
+		}
+	}
+	return nil, "", nil
 }
 
 func (s *NftLend) GetAseetTransactions(ctx context.Context, assetId uint, page int, limit int) ([]*models.AssetTransaction, uint, error) {
