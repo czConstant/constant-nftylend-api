@@ -113,3 +113,24 @@ func (s *Server) GetCurrencies(c *gin.Context) {
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewCurrencyRespArr(currencies)})
 }
+
+func (s *Server) GetAseetTransactions(c *gin.Context) {
+	ctx := s.requestContext(c)
+	page, limit := s.pagingFromContext(c)
+	assetId, err := s.uintFromContextQuery(c, "asset_id")
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	tnxs, count, err := s.nls.GetAseetTransactions(
+		ctx,
+		assetId,
+		page,
+		limit,
+	)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssetTransactionRespArr(tnxs), Count: &count})
+}

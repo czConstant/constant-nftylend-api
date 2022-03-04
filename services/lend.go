@@ -360,5 +360,23 @@ func (s *NftLend) GetAseetTransactions(ctx context.Context, assetId uint, page i
 			return nil, 0, errs.NewError(err)
 		}
 	}
-	return nil, 0, nil
+	filters := map[string][]interface{}{}
+	if assetId > 0 {
+		filters["asset_id = ?"] = []interface{}{assetId}
+	}
+	txns, count, err := s.atd.Find4Page(
+		daos.GetDBMainCtx(ctx),
+		filters,
+		map[string][]interface{}{
+			"Asset":            []interface{}{},
+			"Asset.Collection": []interface{}{},
+		},
+		[]string{"transaction_at desc"},
+		page,
+		limit,
+	)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	return txns, count, nil
 }
