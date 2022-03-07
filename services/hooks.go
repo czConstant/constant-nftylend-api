@@ -172,7 +172,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							MetaJson:              string(metaJson),
 							MetaJsonUrl:           meta.Data.Uri,
 							OriginNetwork:         collection.OriginNetwork,
-							OriginContractAddress: collection.OriginContract,
+							OriginContractAddress: collection.OriginContractAddress,
 							OriginTokenID:         tokenId,
 						}
 						err = s.ad.Create(
