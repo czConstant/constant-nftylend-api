@@ -222,9 +222,9 @@ func (s *NftLend) getCollectionVerified(tx *gorm.DB, mintAddress string, meta *s
 		m, err := s.cld.First(
 			tx,
 			map[string][]interface{}{
-				"origin_network = ?":  []interface{}{chain},
-				"origin_contract = ?": []interface{}{vrs.AssetAddress},
-				"enabled = ?":         []interface{}{true},
+				"origin_network = ?":          []interface{}{chain},
+				"origin_contract_address = ?": []interface{}{vrs.AssetAddress},
+				"enabled = ?":                 []interface{}{true},
 			},
 			map[string][]interface{}{},
 			[]string{"id desc"},
