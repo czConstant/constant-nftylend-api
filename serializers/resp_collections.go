@@ -8,17 +8,19 @@ import (
 )
 
 type CollectionResp struct {
-	ID           uint             `json:"id"`
-	CreatedAt    time.Time        `json:"created_at"`
-	UpdatedAt    time.Time        `json:"updated_at"`
-	SeoURL       string           `json:"seo_url"`
-	Name         string           `json:"name"`
-	Description  string           `json:"description"`
-	ListingAsset *AssetResp       `json:"listing_asset"`
-	ListingTotal uint             `json:"listing_total"`
-	TotalVolume  numeric.BigFloat `json:"total_volume"`
-	TotalListed  uint             `json:"total_listed"`
-	Avg24hAmount numeric.BigFloat `json:"avg24h_amount"`
+	ID                    uint             `json:"id"`
+	CreatedAt             time.Time        `json:"created_at"`
+	UpdatedAt             time.Time        `json:"updated_at"`
+	SeoURL                string           `json:"seo_url"`
+	Name                  string           `json:"name"`
+	Description           string           `json:"description"`
+	ListingAsset          *AssetResp       `json:"listing_asset"`
+	ListingTotal          uint             `json:"listing_total"`
+	TotalVolume           numeric.BigFloat `json:"total_volume"`
+	TotalListed           uint             `json:"total_listed"`
+	Avg24hAmount          numeric.BigFloat `json:"avg24h_amount"`
+	OriginNetwork         models.Chain     `json:"origin_network"`
+	OriginContractAddress string           `json:"origin_contract_address"`
 }
 
 func NewCollectionResp(m *models.Collection) *CollectionResp {
@@ -26,13 +28,15 @@ func NewCollectionResp(m *models.Collection) *CollectionResp {
 		return nil
 	}
 	resp := &CollectionResp{
-		ID:           m.ID,
-		CreatedAt:    m.CreatedAt,
-		UpdatedAt:    m.UpdatedAt,
-		SeoURL:       m.SeoURL,
-		Name:         m.Name,
-		Description:  m.Description,
-		ListingAsset: NewAssetResp(m.ListingAsset),
+		ID:                    m.ID,
+		CreatedAt:             m.CreatedAt,
+		UpdatedAt:             m.UpdatedAt,
+		SeoURL:                m.SeoURL,
+		Name:                  m.Name,
+		Description:           m.Description,
+		OriginNetwork:         m.OriginNetwork,
+		OriginContractAddress: m.OriginContractAddress,
+		ListingAsset:          NewAssetResp(m.ListingAsset),
 	}
 	return resp
 }
