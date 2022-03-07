@@ -8,7 +8,20 @@ import (
 	"github.com/czConstant/constant-nftylend-api/models"
 )
 
-func (s *NftLend) GetListingLoans(ctx context.Context, collectionId uint, minPrice float64, maxPrice float64, excludeIds []uint, page int, limit int) ([]*models.Loan, uint, error) {
+func (s *NftLend) GetListingLoans(
+	ctx context.Context,
+	collectionId uint,
+	minPrice float64,
+	maxPrice float64,
+	minDuration uint,
+	maxDuration uint,
+	minInterestRate float64,
+	maxInterestRate float64,
+	excludeIds []uint,
+	sort []string,
+	page int,
+	limit int,
+) ([]*models.Loan, uint, error) {
 	filters := map[string][]interface{}{
 		"status in (?)": []interface{}{
 			[]models.LoanStatus{
@@ -31,8 +44,26 @@ func (s *NftLend) GetListingLoans(ctx context.Context, collectionId uint, minPri
 	if maxPrice > 0 {
 		filters["principal_amount <= ?"] = []interface{}{maxPrice}
 	}
+	if minDuration > 0 {
+		filters["duration >= ?"] = []interface{}{minDuration}
+	}
+	if maxDuration > 0 {
+		filters["duration <= ?"] = []interface{}{maxDuration}
+	}
 	if len(excludeIds) > 0 {
 		filters["id not in (?)"] = []interface{}{excludeIds}
+	}
+	if minInterestRate > 0 {
+		filters["interest_rate >= ?"] = []interface{}{minInterestRate}
+	}
+	if maxInterestRate > 0 {
+		filters["interest_rate <= ?"] = []interface{}{maxInterestRate}
+	}
+	if len(excludeIds) > 0 {
+		filters["id not in (?)"] = []interface{}{excludeIds}
+	}
+	if len(sort) == 0 {
+		sort = []string{"id desc"}
 	}
 	loans, count, err := s.ld.Find4Page(
 		daos.GetDBMainCtx(ctx),
@@ -46,7 +77,7 @@ func (s *NftLend) GetListingLoans(ctx context.Context, collectionId uint, minPri
 				models.LoanOfferStatusApproved,
 			},
 		},
-		[]string{"id desc"},
+		sort,
 		page,
 		limit,
 	)

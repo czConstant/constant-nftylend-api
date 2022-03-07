@@ -14,8 +14,44 @@ func (s *Server) GetListingLoans(c *gin.Context) {
 	collectionId, _ := s.uintFromContextQuery(c, "collection_id")
 	minPrice, _ := s.float64FromContextQuery(c, "min_price")
 	maxPrice, _ := s.float64FromContextQuery(c, "max_price")
+	minDuration, _ := s.uintFromContextQuery(c, "min_duration")
+	maxDuration, _ := s.uintFromContextQuery(c, "max_duration")
+	minInterestRate, _ := s.float64FromContextQuery(c, "min_interest_rate")
+	maxInterestRate, _ := s.float64FromContextQuery(c, "max_interest_rate")
 	excludeIds, _ := s.uintArrayFromContextQuery(c, "exclude_ids")
-	loans, count, err := s.nls.GetListingLoans(ctx, collectionId, minPrice, maxPrice, excludeIds, page, limit)
+	var sort []string
+	switch s.stringFromContextQuery(c, "sort") {
+	case "created_at":
+		{
+			sort = []string{"created_at asc"}
+		}
+	case "-created_at":
+		{
+			sort = []string{"created_at desc"}
+		}
+	case "principal_amount":
+		{
+			sort = []string{"principal_amount asc"}
+		}
+	case "-principal_amount":
+		{
+			sort = []string{"principal_amount desc"}
+		}
+	}
+	loans, count, err := s.nls.GetListingLoans(
+		ctx,
+		collectionId,
+		minPrice,
+		maxPrice,
+		minDuration,
+		maxDuration,
+		minInterestRate,
+		maxInterestRate,
+		excludeIds,
+		sort,
+		page,
+		limit,
+	)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
