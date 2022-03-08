@@ -8,6 +8,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func (s *Server) AppConfigs(c *gin.Context) {
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: gin.H{
+		"program_id": s.conf.Contract.ProgramID,
+	}})
+}
+
 func (s *Server) NftLendUpdateBlock(c *gin.Context) {
 	ctx := s.requestContext(c)
 	blockNumber, err := s.uint64FromContextParam(c, "block")
