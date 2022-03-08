@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"strings"
 	"time"
@@ -258,25 +259,23 @@ func (s *NftLend) getCollectionVerified(tx *gorm.DB, mintAddress string, meta *s
 		if collectionName == "" {
 			return nil, "", errs.NewError(err)
 		}
-		var creators []string
-		for _, ct := range meta.Data.Creators {
-			creators = append(creators, ct.Address)
-		}
-		m, err := s.cld.First(
-			tx,
-			map[string][]interface{}{
-				"name = ?":       []interface{}{collectionName},
-				"creator in (?)": []interface{}{creators},
-				"enabled = ?":    []interface{}{true},
-			},
-			map[string][]interface{}{},
-			[]string{},
-		)
-		if err != nil {
-			return nil, "", errs.NewError(err)
-		}
-		if m != nil {
-			return m, "", nil
+		for _, creator := range meta.Data.Creators {
+			m, err := s.cld.First(
+				tx,
+				map[string][]interface{}{
+					"name = ?":       []interface{}{collectionName},
+					"creator like ?": []interface{}{fmt.Sprintf("%%%s%%", creator.Address)},
+					"enabled = ?":    []interface{}{true},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
+			if err != nil {
+				return nil, "", errs.NewError(err)
+			}
+			if m != nil {
+				return m, "", nil
+			}
 		}
 	}
 	return nil, "", nil
