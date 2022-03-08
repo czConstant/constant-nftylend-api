@@ -14,6 +14,7 @@ require (
 	github.com/gin-gonic/gin v1.7.2
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/google/uuid v1.1.5 // indirect
+	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/jinzhu/gorm v1.9.16
 	github.com/kr/text v0.2.0 // indirect
 	github.com/opentracing/opentracing-go v1.1.0 // indirect

@@ -24,6 +24,7 @@ func (s *NftLend) LendNftLendUpdateBlock(ctx context.Context, block uint64) erro
 }
 
 func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) error {
+	var loadAssetTransactionForId uint
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
@@ -225,6 +226,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					if err != nil {
 						return errs.NewError(err)
 					}
+					loadAssetTransactionForId = asset.ID
 				}
 			case "MakeOffer":
 				{
@@ -849,6 +851,9 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 	)
 	if err != nil {
 		return errs.NewError(err)
+	}
+	if loadAssetTransactionForId > 0 {
+		s.updateAssetTransactions(ctx, loadAssetTransactionForId)
 	}
 	return nil
 }

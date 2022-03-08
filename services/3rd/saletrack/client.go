@@ -5,14 +5,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
+	"os/signal"
 	"time"
 
 	cloudflarebp "github.com/DaRealFreak/cloudflare-bp-go"
+	"github.com/gorilla/websocket"
 )
 
 type Client struct {
+	msgChain chan string
 }
 
 func (c *Client) doWithAuth(req *http.Request) (*http.Response, error) {
@@ -227,4 +232,71 @@ func (c *Client) GetOpenseaSaleHistories(contractAddr string, tokenId string) ([
 		return nil, err
 	}
 	return rs, nil
+}
+
+func (c *Client) StartWssSolsea(msgReceivedFunc func(msg string)) {
+	c.msgChain = make(chan string)
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt)
+	wc, _, err := websocket.DefaultDialer.Dial("wss://api.all.art/socket.io/?EIO=3&transport=websocket", nil)
+	if err != nil {
+		log.Fatal("dial:", err)
+	}
+	defer wc.Close()
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		for {
+			_, message, err := wc.ReadMessage()
+			if err != nil {
+				log.Println("read:", err)
+				return
+			}
+			log.Printf("recv: %s", message)
+			if msgReceivedFunc != nil {
+				msgReceivedFunc(string(message))
+			}
+		}
+	}()
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-done:
+			return
+		case <-ticker.C:
+			{
+				err := wc.WriteMessage(websocket.TextMessage, []byte("2"))
+				if err != nil {
+					log.Println("write:", err)
+					return
+				}
+			}
+		case msg := <-c.msgChain:
+			{
+				log.Println("write:", msg)
+				err := wc.WriteMessage(websocket.TextMessage, []byte(msg))
+				if err != nil {
+					log.Println("write:", err)
+					return
+				}
+			}
+		case <-interrupt:
+			log.Println("interrupt")
+			err := wc.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+			if err != nil {
+				log.Println("write close:", err)
+				return
+			}
+			select {
+			case <-done:
+			case <-time.After(time.Second):
+			}
+			return
+		}
+	}
+}
+
+func (c *Client) PubSolseaMsg(msg string) {
+	c.msgChain <- msg
 }
