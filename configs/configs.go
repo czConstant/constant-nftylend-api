@@ -53,5 +53,8 @@ type Config struct {
 		Service string `json:"service"`
 		Version string `json:"version"`
 	} `json:"datadog"`
+	Contract struct {
+		ProgramID string `json:"program_id"`
+	} `json:"contract"`
 	Blockchain bcclient.Config `json:"blockchain"`
 }

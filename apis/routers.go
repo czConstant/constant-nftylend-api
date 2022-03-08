@@ -47,6 +47,7 @@ func (s *Server) Routers() {
 		nftAPI.GET("/", func(c *gin.Context) {
 			ctxJSON(c, http.StatusOK, &serializers.Resp{Error: nil})
 		})
+		nftAPI.GET("/configs", s.AppConfigs)
 	}
 	nftAPI.POST("/blockchain/update-block/:block", s.NftLendUpdateBlock)
 	currencynftAPI := nftAPI.Group("/currencies")
