@@ -117,17 +117,17 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							if collectionName == "" {
 								return errs.NewError(errs.ErrBadRequest)
 							}
-							// collection, err = s.cld.First(
-							// 	tx,
-							// 	map[string][]interface{}{
-							// 		"name = ?": []interface{}{collectionName},
-							// 	},
-							// 	map[string][]interface{}{},
-							// 	[]string{},
-							// )
-							// if err != nil {
-							// 	return errs.NewError(err)
-							// }
+							collection, err = s.cld.First(
+								tx,
+								map[string][]interface{}{
+									"name = ?": []interface{}{collectionName},
+								},
+								map[string][]interface{}{},
+								[]string{},
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
 							if collection == nil {
 								collection = &models.Collection{
 									Network:     models.ChainSOL,
