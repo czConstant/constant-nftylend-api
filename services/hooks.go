@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"math/big"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/czConstant/constant-nftylend-api/daos"
@@ -104,44 +105,45 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							return errs.NewError(err)
 						}
 						if collection == nil {
-							return errs.NewError(errs.ErrBadRequest)
+							// return errs.NewError(errs.ErrBadRequest)
+
+							collectionName := metaInfo.Collection.Name
+							if collectionName == "" {
+								names := strings.Split(metaInfo.Name, "#")
+								if len(names) >= 2 {
+									collectionName = strings.TrimSpace(names[0])
+								}
+							}
+							if collectionName == "" {
+								return errs.NewError(errs.ErrBadRequest)
+							}
+							collection, err = s.cld.First(
+								tx,
+								map[string][]interface{}{
+									"name = ?": []interface{}{collectionName},
+								},
+								map[string][]interface{}{},
+								[]string{},
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							if collection == nil {
+								collection = &models.Collection{
+									Network:     models.ChainSOL,
+									SeoURL:      helpers.MakeSeoURL(collectionName),
+									Name:        collectionName,
+									Description: metaInfo.Description,
+								}
+								err = s.cld.Create(
+									tx,
+									collection,
+								)
+								if err != nil {
+									return errs.NewError(err)
+								}
+							}
 						}
-						// collectionName := metaInfo.Collection.Family
-						// if collectionName == "" {
-						// 	names := strings.Split(metaInfo.Name, "#")
-						// 	if len(names) >= 2 {
-						// 		collectionName = strings.TrimSpace(names[0])
-						// 	}
-						// }
-						// if collectionName == "" {
-						// 	return errs.NewError(errs.ErrBadRequest)
-						// }
-						// collection, err := s.cld.First(
-						// 	tx,
-						// 	map[string][]interface{}{
-						// 		"name = ?": []interface{}{collectionName},
-						// 	},
-						// 	map[string][]interface{}{},
-						// 	[]string{},
-						// )
-						// if err != nil {
-						// 	return errs.NewError(err)
-						// }
-						// if collection == nil {
-						// 	collection = &models.Collection{
-						// 		Network:     models.ChainSOL,
-						// 		SeoURL:      helpers.MakeSeoURL(collectionName),
-						// 		Name:        collectionName,
-						// 		Description: metaInfo.Description,
-						// 	}
-						// 	err = s.cld.Create(
-						// 		tx,
-						// 		collection,
-						// 	)
-						// 	if err != nil {
-						// 		return errs.NewError(err)
-						// 	}
-						// }
 						var sellerFeeBasisPoints int64
 						switch metaInfo.SellerFeeBasisPoints.(type) {
 						case string:
