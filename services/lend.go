@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"strings"
@@ -44,7 +45,7 @@ func NewNftLend(
 	id *daos.Instruction,
 
 ) *NftLend {
-	return &NftLend{
+	s := &NftLend{
 		bcs: bcs,
 		stc: stc,
 		cd:  cd,
@@ -56,6 +57,8 @@ func NewNftLend(
 		ltd: ltd,
 		id:  id,
 	}
+	go stc.StartWssSolsea(s.solseaMsgReceived)
+	return s
 }
 
 func (s *NftLend) getLendCurrency(tx *gorm.DB, address string) (*models.Currency, error) {
@@ -282,6 +285,32 @@ func (s *NftLend) getCollectionVerified(tx *gorm.DB, mintAddress string, meta *s
 }
 
 func (s *NftLend) GetAseetTransactions(ctx context.Context, assetId uint, page int, limit int) ([]*models.AssetTransaction, uint, error) {
+	err := s.updateAssetTransactions(ctx, assetId)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	filters := map[string][]interface{}{}
+	if assetId > 0 {
+		filters["asset_id = ?"] = []interface{}{assetId}
+	}
+	txns, count, err := s.atd.Find4Page(
+		daos.GetDBMainCtx(ctx),
+		filters,
+		map[string][]interface{}{
+			"Asset":            []interface{}{},
+			"Asset.Collection": []interface{}{},
+		},
+		[]string{"transaction_at desc"},
+		page,
+		limit,
+	)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	return txns, count, nil
+}
+
+func (s *NftLend) updateAssetTransactions(ctx context.Context, assetId uint) error {
 	asset, err := s.ad.FirstByID(
 		daos.GetDBMainCtx(ctx),
 		assetId,
@@ -289,16 +318,16 @@ func (s *NftLend) GetAseetTransactions(ctx context.Context, assetId uint, page i
 		false,
 	)
 	if err != nil {
-		return nil, 0, errs.NewError(err)
+		return errs.NewError(err)
 	}
 	if asset == nil {
-		return nil, 0, errs.NewError(errs.ErrBadRequest)
+		return errs.NewError(errs.ErrBadRequest)
 	}
 	if asset.MagicEdenCrawAt == nil ||
 		asset.MagicEdenCrawAt.Before(time.Now().Add(-24*time.Hour)) {
 		c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "SOL")
 		if err != nil {
-			return nil, 0, errs.NewError(err)
+			return errs.NewError(err)
 		}
 		tokenAddress := asset.ContractAddress
 		if asset.TestContractAddress != "" {
@@ -352,7 +381,7 @@ func (s *NftLend) GetAseetTransactions(ctx context.Context, assetId uint, page i
 			},
 		)
 		if err != nil {
-			return nil, 0, errs.NewError(err)
+			return errs.NewError(err)
 		}
 	}
 	if asset.SolanartCrawAt == nil ||
@@ -365,7 +394,7 @@ func (s *NftLend) GetAseetTransactions(ctx context.Context, assetId uint, page i
 		for _, r := range rs {
 			c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), r.Currency)
 			if err != nil {
-				return nil, 0, errs.NewError(err)
+				return errs.NewError(err)
 			}
 			_ = s.atd.Create(
 				daos.GetDBMainCtx(ctx),
@@ -409,11 +438,18 @@ func (s *NftLend) GetAseetTransactions(ctx context.Context, assetId uint, page i
 			},
 		)
 		if err != nil {
-			return nil, 0, errs.NewError(err)
+			return errs.NewError(err)
 		}
 	}
 	if asset.SolSeaCrawAt == nil ||
 		asset.SolSeaCrawAt.Before(time.Now().Add(-24*time.Hour)) {
+		tokenAddress := asset.ContractAddress
+		if asset.TestContractAddress != "" {
+			tokenAddress = asset.TestContractAddress
+		}
+		s.stc.PubSolseaMsg(
+			fmt.Sprintf(`421["find","listed-archive",{"Mint":"%s","status":"SOLD"}]`, tokenAddress),
+		)
 		err = daos.WithTransaction(
 			daos.GetDBMainCtx(ctx),
 			func(tx *gorm.DB) error {
@@ -441,26 +477,79 @@ func (s *NftLend) GetAseetTransactions(ctx context.Context, assetId uint, page i
 			},
 		)
 		if err != nil {
-			return nil, 0, errs.NewError(err)
+			return errs.NewError(err)
 		}
 	}
-	filters := map[string][]interface{}{}
-	if assetId > 0 {
-		filters["asset_id = ?"] = []interface{}{assetId}
+	return nil
+}
+
+func (s *NftLend) solseaMsgReceived(msg string) {
+	if strings.HasPrefix(msg, "431") {
+		msg = strings.TrimLeft(msg, "431")
+		resps := []*struct {
+			Data []*struct {
+				Mint      string     `json:"mint"`
+				Price     uint64     `json:"price"`
+				SellerKey string     `json:"sellerKey"`
+				BuyerKey  string     `json:"buyerKey"`
+				Status    string     `json:"status"`
+				ListedAt  *time.Time `json:"listedAt"`
+			} `json:"data"`
+		}{}
+		err := json.Unmarshal([]byte(msg), &resps)
+		if err != nil {
+			return
+		}
+		c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(context.Background()), "SOL")
+		if err != nil {
+			return
+		}
+		for _, resp := range resps {
+			if resp != nil {
+				for _, d := range resp.Data {
+					asset, err := s.ad.First(
+						daos.GetDBMainCtx(context.Background()),
+						map[string][]interface{}{
+							"contract_address = ?": []interface{}{d.Mint},
+						},
+						map[string][]interface{}{},
+						[]string{"id desc"},
+					)
+					if err != nil {
+						return
+					}
+					if asset == nil {
+						asset, err = s.ad.First(
+							daos.GetDBMainCtx(context.Background()),
+							map[string][]interface{}{
+								"test_contract_address = ?": []interface{}{d.Mint},
+							},
+							map[string][]interface{}{},
+							[]string{"id desc"},
+						)
+						if err != nil {
+							return
+						}
+						if asset == nil {
+							return
+						}
+					}
+					_ = s.atd.Create(
+						daos.GetDBMainCtx(context.Background()),
+						&models.AssetTransaction{
+							Source:        "solsea.io",
+							Network:       models.ChainSOL,
+							AssetID:       asset.ID,
+							Type:          models.AssetTransactionTypeExchange,
+							Seller:        d.SellerKey,
+							Buyer:         d.BuyerKey,
+							TransactionAt: d.ListedAt,
+							Amount:        numeric.BigFloat{*models.ConvertWeiToBigFloat(big.NewInt(int64(d.Price)), 9)},
+							CurrencyID:    c.ID,
+						},
+					)
+				}
+			}
+		}
 	}
-	txns, count, err := s.atd.Find4Page(
-		daos.GetDBMainCtx(ctx),
-		filters,
-		map[string][]interface{}{
-			"Asset":            []interface{}{},
-			"Asset.Collection": []interface{}{},
-		},
-		[]string{"transaction_at desc"},
-		page,
-		limit,
-	)
-	if err != nil {
-		return nil, 0, errs.NewError(err)
-	}
-	return txns, count, nil
 }
