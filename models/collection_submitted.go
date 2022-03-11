@@ -11,7 +11,6 @@ type CollectionSubmitted struct {
 	Description     string
 	Creator         string
 	ContractAddress string
-	Enabled         bool `gorm:"default:0"`
 	ContactInfo     string
 	Verified        bool `gorm:"default:0"`
 	WhoVerified     string
