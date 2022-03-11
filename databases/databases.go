@@ -34,6 +34,7 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.Asset)(nil),
 		(*models.AssetTransaction)(nil),
 		(*models.Collection)(nil),
+		(*models.CollectionSubmitted)(nil),
 		(*models.Loan)(nil),
 		(*models.LoanOffer)(nil),
 		(*models.LoanTransaction)(nil),
