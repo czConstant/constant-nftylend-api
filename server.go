@@ -93,28 +93,30 @@ func main() {
 		bcs = bcclient.NewBlockchainClient(
 			conf.Blockchain,
 		)
-		nlcd  = &daos.Currency{}
-		nlcld = &daos.Collection{}
-		nlad  = &daos.Asset{}
-		nlatd = &daos.AssetTransaction{}
-		nlld  = &daos.Loan{}
-		nllod = &daos.LoanOffer{}
-		nlltd = &daos.LoanTransaction{}
-		nlid  = &daos.Instruction{}
+		cd   = &daos.Currency{}
+		cld  = &daos.Collection{}
+		clsd = &daos.CollectionSubmitted{}
+		ad   = &daos.Asset{}
+		atd  = &daos.AssetTransaction{}
+		ld   = &daos.Loan{}
+		lod  = &daos.LoanOffer{}
+		ltd  = &daos.LoanTransaction{}
+		id   = &daos.Instruction{}
 
 		stc = &saletrack.Client{}
 
-		nls = services.NewNftLend(
+		s = services.NewNftLend(
 			bcs,
 			stc,
-			nlcd,
-			nlcld,
-			nlad,
-			nlatd,
-			nlld,
-			nllod,
-			nlltd,
-			nlid,
+			cd,
+			cld,
+			clsd,
+			ad,
+			atd,
+			ld,
+			lod,
+			ltd,
+			id,
 		)
 	)
 
@@ -123,7 +125,7 @@ func main() {
 	srv := apis.NewServer(
 		r,
 		conf,
-		nls,
+		s,
 	)
 	srv.Routers()
 	if conf.Port == 0 {

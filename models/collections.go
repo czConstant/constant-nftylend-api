@@ -10,7 +10,7 @@ type Collection struct {
 	Network               Chain
 	SeoURL                string
 	Name                  string
-	Description           string
+	Description           string `gorm:"type:text"`
 	Creator               string
 	OriginNetwork         Chain
 	OriginContractAddress string

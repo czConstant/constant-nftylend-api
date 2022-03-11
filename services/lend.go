@@ -20,16 +20,17 @@ import (
 )
 
 type NftLend struct {
-	bcs *bcclient.Client
-	stc *saletrack.Client
-	cd  *daos.Currency
-	cld *daos.Collection
-	ad  *daos.Asset
-	atd *daos.AssetTransaction
-	ld  *daos.Loan
-	lod *daos.LoanOffer
-	ltd *daos.LoanTransaction
-	id  *daos.Instruction
+	bcs  *bcclient.Client
+	stc  *saletrack.Client
+	cd   *daos.Currency
+	cld  *daos.Collection
+	clsd *daos.CollectionSubmitted
+	ad   *daos.Asset
+	atd  *daos.AssetTransaction
+	ld   *daos.Loan
+	lod  *daos.LoanOffer
+	ltd  *daos.LoanTransaction
+	id   *daos.Instruction
 }
 
 func NewNftLend(
@@ -37,6 +38,7 @@ func NewNftLend(
 	stc *saletrack.Client,
 	cd *daos.Currency,
 	cld *daos.Collection,
+	clsd *daos.CollectionSubmitted,
 	ad *daos.Asset,
 	atd *daos.AssetTransaction,
 	ld *daos.Loan,
@@ -46,16 +48,17 @@ func NewNftLend(
 
 ) *NftLend {
 	s := &NftLend{
-		bcs: bcs,
-		stc: stc,
-		cd:  cd,
-		cld: cld,
-		ad:  ad,
-		atd: atd,
-		ld:  ld,
-		lod: lod,
-		ltd: ltd,
-		id:  id,
+		bcs:  bcs,
+		stc:  stc,
+		cd:   cd,
+		cld:  cld,
+		clsd: clsd,
+		ad:   ad,
+		atd:  atd,
+		ld:   ld,
+		lod:  lod,
+		ltd:  ltd,
+		id:   id,
 	}
 	go stc.StartWssSolsea(s.solseaMsgReceived)
 	return s
