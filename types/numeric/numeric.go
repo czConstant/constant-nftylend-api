@@ -102,7 +102,7 @@ func (n *BigFloat) MarshalJSON() ([]byte, error) {
 	if n == nil {
 		return []byte("null"), nil
 	}
-	return []byte(fmt.Sprintf("%v", n.BigFloat())), nil
+	return []byte(n.BigFloat().Text('f', 10)), nil
 }
 
 func (n *BigFloat) Scan(src interface{}) error {
@@ -130,7 +130,7 @@ func (n *BigFloat) Scan(src interface{}) error {
 }
 
 func (n BigFloat) Value() (driver.Value, error) {
-	return fmt.Sprintf("%v", n.BigFloat()), nil
+	return n.BigFloat().Text('f', 10), nil
 }
 
 // BigFloat
