@@ -11,7 +11,7 @@ type LoanResp struct {
 	ID                   uint              `json:"id"`
 	CreatedAt            time.Time         `json:"created_at"`
 	UpdatedAt            time.Time         `json:"updated_at"`
-	Network              models.Chain      `json:"network"`
+	Network              models.Network    `json:"network"`
 	Owner                string            `json:"owner"`
 	Lender               string            `json:"lender"`
 	AssetID              uint              `json:"asset_id"`
@@ -70,8 +70,8 @@ func NewLoanResp(m *models.Loan) *LoanResp {
 		InterestRate:         m.InterestRate,
 		FeeRate:              m.FeeRate,
 		FeeAmount:            m.FeeAmount,
-		NonceHex:             m.NonceHex,
 		ImageUrl:             m.ImageUrl,
+		NonceHex:             m.NonceHex,
 		Signature:            m.Signature,
 		Status:               m.Status,
 		DataLoanAddress:      m.DataLoanAddress,

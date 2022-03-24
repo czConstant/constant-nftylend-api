@@ -16,7 +16,7 @@ const (
 type AssetTransaction struct {
 	gorm.Model
 	Source        string
-	Network       Chain
+	Network       Network
 	AssetID       uint
 	Asset         *Asset
 	Type          AssetTransactionType

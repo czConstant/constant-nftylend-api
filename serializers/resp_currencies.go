@@ -7,16 +7,16 @@ import (
 )
 
 type CurrencyResp struct {
-	ID              uint         `json:"id"`
-	CreatedAt       time.Time    `json:"created_at"`
-	UpdatedAt       time.Time    `json:"updated_at"`
-	Network         models.Chain `json:"network"`
-	ContractAddress string       `json:"contract_address"`
-	Decimals        uint         `json:"decimals"`
-	Symbol          string       `json:"symbol"`
-	Name            string       `json:"name"`
-	IconURL         string       `json:"icon_url"`
-	AdminFeeAddress string       `json:"admin_fee_address"`
+	ID              uint           `json:"id"`
+	CreatedAt       time.Time      `json:"created_at"`
+	UpdatedAt       time.Time      `json:"updated_at"`
+	Network         models.Network `json:"network"`
+	ContractAddress string         `json:"contract_address"`
+	Decimals        uint           `json:"decimals"`
+	Symbol          string         `json:"symbol"`
+	Name            string         `json:"name"`
+	IconURL         string         `json:"icon_url"`
+	AdminFeeAddress string         `json:"admin_fee_address"`
 }
 
 func NewCurrencyResp(m *models.Currency) *CurrencyResp {

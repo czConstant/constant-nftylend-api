@@ -300,3 +300,35 @@ func (c *Client) StartWssSolsea(msgReceivedFunc func(msg string)) {
 func (c *Client) PubSolseaMsg(msg string) {
 	c.msgChain <- msg
 }
+
+type EvmNftMetaResp struct {
+	Description string `json:"description"`
+	ExternalUrl string `json:"external_url"`
+	Image       string `json:"image"`
+	Name        string `json:"name"`
+	Attributes  []struct {
+		TraitType string      `json:"trait_type"`
+		Value     interface{} `json:"value"`
+	} `json:"attributes"`
+}
+
+func (c *Client) GetEvmNftMetaResp(tokenURL string) (*EvmNftMetaResp, error) {
+	var rs EvmNftMetaResp
+	client := &http.Client{}
+	resp, err := client.Get(tokenURL)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode >= 300 {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("http response bad status %d %s", resp.StatusCode, err.Error())
+		}
+		return nil, fmt.Errorf("http response bad status %d %s", resp.StatusCode, string(bodyBytes))
+	}
+	err = json.NewDecoder(resp.Body).Decode(&rs)
+	if err != nil {
+		return nil, err
+	}
+	return &rs, nil
+}

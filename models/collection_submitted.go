@@ -6,7 +6,7 @@ type CollectionSubmittedStatus string
 
 type CollectionSubmitted struct {
 	gorm.Model
-	Network         Chain
+	Network         Network
 	Name            string
 	Description     string
 	Creator         string

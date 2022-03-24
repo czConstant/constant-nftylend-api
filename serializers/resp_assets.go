@@ -19,7 +19,7 @@ type AssetResp struct {
 	Name                  string          `json:"name"`
 	SellerFeeRate         float64         `json:"seller_fee_rate"`
 	Attributes            interface{}     `json:"attributes"`
-	OriginNetwork         models.Chain    `json:"origin_network"`
+	OriginNetwork         models.Network  `json:"origin_network"`
 	OriginContractAddress string          `json:"origin_contract_address"`
 	OriginTokenID         string          `json:"origin_token_id"`
 	NewLoan               *LoanResp       `json:"new_loan"`

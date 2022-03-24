@@ -4,7 +4,7 @@ import "github.com/jinzhu/gorm"
 
 type Currency struct {
 	gorm.Model
-	Network         Chain
+	Network         Network
 	ContractAddress string
 	Decimals        uint
 	Symbol          string

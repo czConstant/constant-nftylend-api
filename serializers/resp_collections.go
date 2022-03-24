@@ -19,7 +19,7 @@ type CollectionResp struct {
 	TotalVolume           numeric.BigFloat `json:"total_volume"`
 	TotalListed           uint             `json:"total_listed"`
 	Avg24hAmount          numeric.BigFloat `json:"avg24h_amount"`
-	OriginNetwork         models.Chain     `json:"origin_network"`
+	OriginNetwork         models.Network   `json:"origin_network"`
 	OriginContractAddress string           `json:"origin_contract_address"`
 }
 

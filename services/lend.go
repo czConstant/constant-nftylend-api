@@ -82,6 +82,25 @@ func (s *NftLend) getLendCurrency(tx *gorm.DB, address string) (*models.Currency
 	return c, nil
 }
 
+func (s *NftLend) GetCurrencyByID(tx *gorm.DB, id uint, chain models.Network) (*models.Currency, error) {
+	c, err := s.cd.First(
+		tx,
+		map[string][]interface{}{
+			"id = ?":      []interface{}{id},
+			"network = ?": []interface{}{chain},
+		},
+		map[string][]interface{}{},
+		[]string{},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	if c == nil {
+		return nil, errs.NewError(errs.ErrBadRequest)
+	}
+	return c, nil
+}
+
 func (s *NftLend) getLendCurrencyBySymbol(tx *gorm.DB, symbol string) (*models.Currency, error) {
 	c, err := s.cd.First(
 		tx,
@@ -347,7 +366,7 @@ func (s *NftLend) updateAssetTransactions(ctx context.Context, assetId uint) err
 					daos.GetDBMainCtx(ctx),
 					&models.AssetTransaction{
 						Source:        "magiceden.io",
-						Network:       models.ChainSOL,
+						Network:       models.NetworkSOL,
 						AssetID:       asset.ID,
 						Type:          models.AssetTransactionTypeExchange,
 						Seller:        r.SellerAddress,
@@ -406,7 +425,7 @@ func (s *NftLend) updateAssetTransactions(ctx context.Context, assetId uint) err
 				daos.GetDBMainCtx(ctx),
 				&models.AssetTransaction{
 					Source:        "solanart.io",
-					Network:       models.ChainSOL,
+					Network:       models.NetworkSOL,
 					AssetID:       asset.ID,
 					Type:          models.AssetTransactionTypeExchange,
 					Seller:        r.SellerAddress,
@@ -544,7 +563,7 @@ func (s *NftLend) solseaMsgReceived(msg string) {
 						daos.GetDBMainCtx(context.Background()),
 						&models.AssetTransaction{
 							Source:        "solsea.io",
-							Network:       models.ChainSOL,
+							Network:       models.NetworkSOL,
 							AssetID:       asset.ID,
 							Type:          models.AssetTransactionTypeExchange,
 							Seller:        d.SellerKey,

@@ -7,12 +7,13 @@ import (
 
 type Collection struct {
 	gorm.Model
-	Network               Chain
+	Network               Network
 	SeoURL                string
 	Name                  string
 	Description           string `gorm:"type:text"`
 	Creator               string
-	OriginNetwork         Chain
+	ContractAddress       string
+	OriginNetwork         Network
 	OriginContractAddress string
 	Enabled               bool `gorm:"default:0"`
 	ListingAsset          *Asset

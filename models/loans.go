@@ -7,7 +7,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-type Chain string
+type Network string
 type LoanStatus string
 
 const (
@@ -18,14 +18,14 @@ const (
 	LoanStatusLiquidated LoanStatus = "liquidated"
 	LoanStatusExpired    LoanStatus = "expired"
 
-	ChainSOL   Chain = "SOL"
-	ChainMATIC Chain = "MATIC"
-	ChainETH   Chain = "ETH"
+	NetworkSOL   Network = "SOL"
+	NetworkMATIC Network = "MATIC"
+	NetworkETH   Network = "ETH"
 )
 
 type Loan struct {
 	gorm.Model
-	Network              Chain
+	Network              Network
 	Owner                string
 	Lender               string
 	AssetID              uint

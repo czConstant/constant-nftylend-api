@@ -19,7 +19,7 @@ const (
 
 type LoanTransaction struct {
 	gorm.Model
-	Network         Chain
+	Network         Network
 	LoanID          uint
 	Loan            *Loan
 	Type            LoanTransactionType

@@ -11,7 +11,7 @@ type LoanTransactionResp struct {
 	ID              uint                       `json:"id"`
 	CreatedAt       time.Time                  `json:"created_at"`
 	UpdatedAt       time.Time                  `json:"updated_at"`
-	Network         models.Chain               `json:"network"`
+	Network         models.Network             `json:"network"`
 	LoanID          uint                       `json:"loan_id"`
 	Loan            *LoanResp                  `json:"loan"`
 	Type            models.LoanTransactionType `json:"type"`

@@ -8,11 +8,12 @@ import (
 
 type Asset struct {
 	gorm.Model
-	Network                   Chain
+	Network                   Network
 	CollectionID              uint
 	Collection                *Collection
 	SeoURL                    string
 	ContractAddress           string
+	TokenID                   string
 	TestContractAddress       string
 	TokenURL                  string
 	ExternalUrl               string
@@ -23,7 +24,7 @@ type Asset struct {
 	MetaJson                  string  `gorm:"type:text"`
 	MetaJsonUrl               string
 	NewLoan                   *Loan
-	OriginNetwork             Chain
+	OriginNetwork             Network
 	OriginContractAddress     string
 	OriginTokenID             string
 	TestOriginContractAddress string

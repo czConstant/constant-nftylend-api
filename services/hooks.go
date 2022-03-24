@@ -130,7 +130,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							}
 							if collection == nil {
 								collection = &models.Collection{
-									Network:     models.ChainSOL,
+									Network:     models.NetworkSOL,
 									SeoURL:      helpers.MakeSeoURL(collectionName),
 									Name:        collectionName,
 									Description: metaInfo.Description,
@@ -163,7 +163,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							return errs.NewError(err)
 						}
 						asset = &models.Asset{
-							Network:               models.ChainSOL,
+							Network:               models.NetworkSOL,
 							SeoURL:                req.NftCollateralContract,
 							ContractAddress:       req.NftCollateralContract,
 							CollectionID:          collection.ID,
@@ -190,7 +190,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					principalAmount := models.ConvertWeiToBigFloat(big.NewInt(int64(req.LoanPrincipalAmount)), currency.Decimals)
 					interestRate, _ := models.ConvertWeiToBigFloat(big.NewInt(int64(req.InterestRate)), 4).Float64()
 					loan = &models.Loan{
-						Network:          models.ChainSOL,
+						Network:          models.NetworkSOL,
 						DataLoanAddress:  req.LoanInfoAccount,
 						DataAssetAddress: req.TempNftAccount,
 						Owner:            req.BorrowerAccount,
@@ -214,7 +214,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					err = s.ltd.Create(
 						tx,
 						&models.LoanTransaction{
-							Network:         models.ChainSOL,
+							Network:         models.NetworkSOL,
 							Type:            models.LoanTransactionTypeListed,
 							LoanID:          loan.ID,
 							Borrower:        loan.Owner,
@@ -285,7 +285,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					principalAmount := models.ConvertWeiToBigFloat(big.NewInt(int64(req.LoanPrincipalAmount)), currency.Decimals)
 					interestRate, _ := models.ConvertWeiToBigFloat(big.NewInt(int64(req.InterestRate)), 4).Float64()
 					offer = &models.LoanOffer{
-						Network:             models.ChainSOL,
+						Network:             models.NetworkSOL,
 						LoanID:              loan.ID,
 						Lender:              req.LenderAccount,
 						PrincipalAmount:     numeric.BigFloat{*principalAmount},
@@ -400,7 +400,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					err = s.ltd.Create(
 						tx,
 						&models.LoanTransaction{
-							Network:         models.ChainSOL,
+							Network:         models.NetworkSOL,
 							Type:            models.LoanTransactionTypeOffered,
 							LoanID:          loan.ID,
 							Borrower:        loan.Owner,
@@ -470,7 +470,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					err = s.ltd.Create(
 						tx,
 						&models.LoanTransaction{
-							Network:         models.ChainSOL,
+							Network:         models.NetworkSOL,
 							Type:            models.LoanTransactionTypeCancelled,
 							LoanID:          loan.ID,
 							Borrower:        loan.Owner,
@@ -601,7 +601,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					err = s.ltd.Create(
 						tx,
 						&models.LoanTransaction{
-							Network:         models.ChainSOL,
+							Network:         models.NetworkSOL,
 							Type:            models.LoanTransactionTypeRepaid,
 							LoanID:          loan.ID,
 							Borrower:        loan.Owner,
@@ -680,7 +680,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					err = s.ltd.Create(
 						tx,
 						&models.LoanTransaction{
-							Network:         models.ChainSOL,
+							Network:         models.NetworkSOL,
 							Type:            models.LoanTransactionTypeLiquidated,
 							LoanID:          loan.ID,
 							Borrower:        loan.Owner,
@@ -766,7 +766,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 						return errs.NewError(errs.ErrBadRequest)
 					}
 					offer := &models.LoanOffer{
-						Network:             models.ChainSOL,
+						Network:             models.NetworkSOL,
 						LoanID:              loan.ID,
 						Lender:              req.LenderAccount,
 						PrincipalAmount:     loan.PrincipalAmount,
@@ -819,7 +819,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					err = s.ltd.Create(
 						tx,
 						&models.LoanTransaction{
-							Network:         models.ChainSOL,
+							Network:         models.NetworkSOL,
 							Type:            models.LoanTransactionTypeOffered,
 							LoanID:          loan.ID,
 							Borrower:        loan.Owner,

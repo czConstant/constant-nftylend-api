@@ -12,7 +12,7 @@ type AssetTransactionResp struct {
 	CreatedAt     time.Time                   `json:"created_at"`
 	UpdatedAt     time.Time                   `json:"updated_at"`
 	Source        string                      `json:"source"`
-	Network       models.Chain                `json:"network"`
+	Network       models.Network              `json:"network"`
 	AssetID       uint                        `json:"asset_id"`
 	Asset         *AssetResp                  `json:"asset"`
 	Type          models.AssetTransactionType `json:"type"`

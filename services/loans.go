@@ -2,10 +2,16 @@ package services
 
 import (
 	"context"
+	"encoding/json"
+	"math/big"
+	"time"
 
 	"github.com/czConstant/constant-nftylend-api/daos"
 	"github.com/czConstant/constant-nftylend-api/errs"
+	"github.com/czConstant/constant-nftylend-api/helpers"
 	"github.com/czConstant/constant-nftylend-api/models"
+	"github.com/czConstant/constant-nftylend-api/serializers"
+	"github.com/jinzhu/gorm"
 )
 
 func (s *NftLend) GetListingLoans(
@@ -236,4 +242,220 @@ func (s *NftLend) GetLoanTransactions(ctx context.Context, assetId uint, page in
 		return nil, 0, errs.NewError(err)
 	}
 	return txns, count, nil
+}
+
+func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq) (*models.Loan, error) {
+	var loan *models.Loan
+	if req.PrincipalAmount.Float.Cmp(big.NewFloat(0)) <= 0 ||
+		req.CurrencyID <= 0 ||
+		req.Duration <= 0 ||
+		req.Borrower == "" ||
+		req.ContractAddress == "" ||
+		req.TokenID == "" ||
+		req.NonceHex == "" ||
+		req.Signature == "" {
+		return nil, errs.NewError(errs.ErrBadRequest)
+	}
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			asset, err := s.ad.First(
+				tx,
+				map[string][]interface{}{
+					"network = ?":          []interface{}{req.Network},
+					"contract_address = ?": []interface{}{req.ContractAddress},
+					"token_id = ?":         []interface{}{req.TokenID},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if asset == nil {
+				tokenURL, err := s.bcs.Matic.NftTokenURI(req.ContractAddress, req.TokenID)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				meta, err := s.stc.GetEvmNftMetaResp(tokenURL)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				collection, err := s.cld.First(
+					tx,
+					map[string][]interface{}{
+						"network = ?":          []interface{}{req.Network},
+						"contract_address = ?": []interface{}{req.ContractAddress},
+					},
+					map[string][]interface{}{},
+					[]string{},
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if collection == nil {
+					collection = &models.Collection{
+						Network:     req.Network,
+						SeoURL:      helpers.MakeSeoURL(req.ContractAddress),
+						Name:        "",
+						Description: meta.Description,
+						Enabled:     true,
+					}
+					err = s.cld.Create(
+						tx,
+						collection,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
+				attributes, err := json.Marshal(meta.Attributes)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				metaJson, err := json.Marshal(meta)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				asset = &models.Asset{
+					Network:               models.NetworkSOL,
+					CollectionID:          collection.ID,
+					SeoURL:                "",
+					ContractAddress:       collection.ContractAddress,
+					TokenID:               req.TokenID,
+					Symbol:                "",
+					Name:                  meta.Name,
+					TokenURL:              meta.Image,
+					ExternalUrl:           meta.ExternalUrl,
+					SellerFeeRate:         0,
+					Attributes:            string(attributes),
+					MetaJson:              string(metaJson),
+					MetaJsonUrl:           tokenURL,
+					OriginNetwork:         "",
+					OriginContractAddress: "",
+					OriginTokenID:         "",
+				}
+				err = s.ad.Create(
+					tx,
+					asset,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+			}
+			currency, err := s.GetCurrencyByID(tx, req.CurrencyID, req.Network)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			loan = &models.Loan{
+				Network:         models.NetworkSOL,
+				Owner:           req.Borrower,
+				PrincipalAmount: req.PrincipalAmount,
+				InterestRate:    req.InterestRate,
+				Duration:        req.Duration,
+				StartedAt:       helpers.TimeNow(),
+				ExpiredAt:       helpers.TimeAdd(time.Now(), time.Duration(req.Duration)*time.Second),
+				CurrencyID:      currency.ID,
+				AssetID:         asset.ID,
+				Status:          models.LoanStatusNew,
+				Signature:       req.Signature,
+				NonceHex:        req.NonceHex,
+			}
+			err = s.ld.Create(
+				tx,
+				loan,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			err = s.ltd.Create(
+				tx,
+				&models.LoanTransaction{
+					Network:         models.NetworkSOL,
+					Type:            models.LoanTransactionTypeListed,
+					LoanID:          loan.ID,
+					Borrower:        loan.Owner,
+					PrincipalAmount: loan.PrincipalAmount,
+					InterestRate:    loan.InterestRate,
+					StartedAt:       loan.StartedAt,
+					Duration:        loan.Duration,
+					ExpiredAt:       loan.ExpiredAt,
+				},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return loan, nil
+}
+
+func (s *NftLend) CreateLoanOffer(ctx context.Context, loanID uint, req *serializers.CreateLoanOfferReq) (*models.LoanOffer, error) {
+	var loanOffer *models.LoanOffer
+	if req.PrincipalAmount.Float.Cmp(big.NewFloat(0)) <= 0 ||
+		req.Duration <= 0 ||
+		req.NonceHex == "" ||
+		req.Signature == "" {
+		return nil, errs.NewError(errs.ErrBadRequest)
+	}
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			loan, err := s.ld.FirstByID(
+				tx,
+				loanID,
+				map[string][]interface{}{},
+				false,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if loan == nil {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			offer, err := s.lod.First(
+				tx,
+				map[string][]interface{}{
+					"lender = ?":    []interface{}{req.Lender},
+					"nonce_hex = ?": []interface{}{req.NonceHex},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if offer != nil {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			offer = &models.LoanOffer{
+				Network:         req.Network,
+				LoanID:          loan.ID,
+				Lender:          req.Lender,
+				PrincipalAmount: req.PrincipalAmount,
+				InterestRate:    req.InterestRate,
+				Duration:        req.Duration,
+				Status:          models.LoanOfferStatusNew,
+			}
+			if loan.Status != models.LoanStatusNew {
+				offer.Status = models.LoanOfferStatusRejected
+			}
+			err = s.lod.Create(
+				tx,
+				offer,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return loanOffer, nil
 }
