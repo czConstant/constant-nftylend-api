@@ -322,7 +322,7 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 					return errs.NewError(err)
 				}
 				asset = &models.Asset{
-					Network:               models.NetworkSOL,
+					Network:               req.Network,
 					CollectionID:          collection.ID,
 					SeoURL:                "",
 					ContractAddress:       collection.ContractAddress,
@@ -399,7 +399,7 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 }
 
 func (s *NftLend) CreateLoanOffer(ctx context.Context, loanID uint, req *serializers.CreateLoanOfferReq) (*models.LoanOffer, error) {
-	var loanOffer *models.LoanOffer
+	var offer *models.LoanOffer
 	if req.PrincipalAmount.Float.Cmp(big.NewFloat(0)) <= 0 ||
 		req.Duration <= 0 ||
 		req.NonceHex == "" ||
@@ -424,7 +424,7 @@ func (s *NftLend) CreateLoanOffer(ctx context.Context, loanID uint, req *seriali
 			if loan.Status != models.LoanStatusNew {
 				return errs.NewError(errs.ErrBadRequest)
 			}
-			offer, err := s.lod.First(
+			offer, err = s.lod.First(
 				tx,
 				map[string][]interface{}{
 					"lender = ?":    []interface{}{req.Lender},
@@ -463,5 +463,5 @@ func (s *NftLend) CreateLoanOffer(ctx context.Context, loanID uint, req *seriali
 	if err != nil {
 		return nil, errs.NewError(err)
 	}
-	return loanOffer, nil
+	return offer, nil
 }

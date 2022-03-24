@@ -72,6 +72,8 @@ func (s *Server) Routers() {
 		loannftAPI.GET("/list", s.GetLoans)
 		loannftAPI.GET("/offers", s.GetLoanOffers)
 		loannftAPI.GET("/transactions", s.GetLoanTransactions)
+		loannftAPI.POST("/create", s.CreateLoan)
+		loannftAPI.POST("/offers/create/:loan_id", s.CreateLoanOffer)
 	}
 	hookInternalnftAPI := nftAPI.Group("/hook/internal")
 	{
