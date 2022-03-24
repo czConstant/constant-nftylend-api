@@ -198,10 +198,11 @@ func (s *NftLend) GetCollectionDetail(ctx context.Context, seoURL string) (*mode
 	return m, nil
 }
 
-func (s *NftLend) GetCurrencies(ctx context.Context) ([]*models.Currency, error) {
+func (s *NftLend) GetCurrencies(ctx context.Context, network models.Network) ([]*models.Currency, error) {
 	currencies, err := s.cd.Find(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
+			"network = ?": []interface{}{network},
 			"enabled = ?": []interface{}{true},
 		},
 		map[string][]interface{}{},

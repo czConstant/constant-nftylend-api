@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/czConstant/constant-nftylend-api/errs"
+	"github.com/czConstant/constant-nftylend-api/models"
 	"github.com/czConstant/constant-nftylend-api/serializers"
 	"github.com/gin-gonic/gin"
 )
@@ -122,7 +123,7 @@ func (s *Server) GetCollectionDetail(c *gin.Context) {
 
 func (s *Server) GetCurrencies(c *gin.Context) {
 	ctx := s.requestContext(c)
-	currencies, err := s.nls.GetCurrencies(ctx)
+	currencies, err := s.nls.GetCurrencies(ctx, models.Network(s.stringFromContextQuery(c, "network")))
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

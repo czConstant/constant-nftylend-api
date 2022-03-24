@@ -16,6 +16,7 @@ import (
 
 func (s *NftLend) GetListingLoans(
 	ctx context.Context,
+	network models.Network,
 	collectionId uint,
 	minPrice float64,
 	maxPrice float64,
@@ -70,6 +71,9 @@ func (s *NftLend) GetListingLoans(
 	}
 	if len(sort) == 0 {
 		sort = []string{"id desc"}
+	}
+	if network != "" {
+		filters["network = ?"] = []interface{}{network}
 	}
 	loans, count, err := s.ld.Find4Page(
 		daos.GetDBMainCtx(ctx),
@@ -417,6 +421,9 @@ func (s *NftLend) CreateLoanOffer(ctx context.Context, loanID uint, req *seriali
 			if loan == nil {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			if loan.Status != models.LoanStatusNew {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			offer, err := s.lod.First(
 				tx,
 				map[string][]interface{}{
@@ -440,9 +447,8 @@ func (s *NftLend) CreateLoanOffer(ctx context.Context, loanID uint, req *seriali
 				InterestRate:    req.InterestRate,
 				Duration:        req.Duration,
 				Status:          models.LoanOfferStatusNew,
-			}
-			if loan.Status != models.LoanStatusNew {
-				offer.Status = models.LoanOfferStatusRejected
+				NonceHex:        req.NonceHex,
+				Signature:       req.Signature,
 			}
 			err = s.lod.Create(
 				tx,

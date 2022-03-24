@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/czConstant/constant-nftylend-api/errs"
+	"github.com/czConstant/constant-nftylend-api/models"
 	"github.com/czConstant/constant-nftylend-api/serializers"
 	"github.com/gin-gonic/gin"
 )
@@ -11,6 +12,7 @@ import (
 func (s *Server) GetListingLoans(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)
+	network := s.stringFromContextQuery(c, "network")
 	collectionId, _ := s.uintFromContextQuery(c, "collection_id")
 	minPrice, _ := s.float64FromContextQuery(c, "min_price")
 	maxPrice, _ := s.float64FromContextQuery(c, "max_price")
@@ -40,6 +42,7 @@ func (s *Server) GetListingLoans(c *gin.Context) {
 	}
 	loans, count, err := s.nls.GetListingLoans(
 		ctx,
+		models.Network(network),
 		collectionId,
 		minPrice,
 		maxPrice,
@@ -116,4 +119,39 @@ func (s *Server) GetLoanTransactions(c *gin.Context) {
 		return
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewLoanTransactionRespArr(tnxs), Count: &count})
+}
+
+func (s *Server) CreateLoan(c *gin.Context) {
+	ctx := s.requestContext(c)
+	var req serializers.CreateLoanReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	loan, err := s.nls.CreateLoan(ctx, &req)
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewLoanResp(loan)})
+}
+
+func (s *Server) CreateLoanOffer(c *gin.Context) {
+	ctx := s.requestContext(c)
+	loanID, err := s.uintFromContextParam(c, "loan_id")
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	var req serializers.CreateLoanOfferReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	loanOffer, err := s.nls.CreateLoanOffer(ctx, loanID, &req)
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewLoanOfferResp(loanOffer)})
 }
