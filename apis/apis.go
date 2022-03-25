@@ -11,7 +11,8 @@ import (
 
 func (s *Server) AppConfigs(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: gin.H{
-		"program_id": s.conf.Contract.ProgramID,
+		"program_id":             s.conf.Contract.ProgramID,
+		"matic_nftypawn_address": s.conf.Contract.MaticNftypawnAddress,
 	}})
 }
 
@@ -46,7 +47,7 @@ func (s *Server) LenInternalHookSolanaInstruction(c *gin.Context) {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	err := s.nls.InternalHookSolanaInstruction(ctx, req.BlockNumber, req.BlockTime, req.TransactionHash, req.TransactionIndex, req.InstructionIndex, req.Program, req.Instruction, req.Data)
+	err := s.nls.InternalHookSolanaInstruction(ctx, models.NetworkSOL, req.BlockNumber, req.BlockTime, req.TransactionHash, req.TransactionIndex, req.InstructionIndex, req.Program, req.Instruction, req.Data)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

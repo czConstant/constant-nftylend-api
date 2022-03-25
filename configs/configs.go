@@ -54,7 +54,8 @@ type Config struct {
 		Version string `json:"version"`
 	} `json:"datadog"`
 	Contract struct {
-		ProgramID string `json:"program_id"`
+		ProgramID            string `json:"program_id"`
+		MaticNftypawnAddress string `json:"matic_nftypawn_address"`
 	} `json:"contract"`
 	Blockchain bcclient.Config `json:"blockchain"`
 }

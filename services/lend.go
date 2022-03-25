@@ -10,6 +10,7 @@ import (
 
 	"github.com/czConstant/blockchain-api/bcclient"
 	"github.com/czConstant/blockchain-api/bcclient/solana"
+	"github.com/czConstant/constant-nftylend-api/configs"
 	"github.com/czConstant/constant-nftylend-api/daos"
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/helpers"
@@ -20,6 +21,7 @@ import (
 )
 
 type NftLend struct {
+	conf *configs.Config
 	bcs  *bcclient.Client
 	stc  *saletrack.Client
 	cd   *daos.Currency
@@ -34,6 +36,7 @@ type NftLend struct {
 }
 
 func NewNftLend(
+	conf *configs.Config,
 	bcs *bcclient.Client,
 	stc *saletrack.Client,
 	cd *daos.Currency,
@@ -48,6 +51,7 @@ func NewNftLend(
 
 ) *NftLend {
 	s := &NftLend{
+		conf: conf,
 		bcs:  bcs,
 		stc:  stc,
 		cd:   cd,

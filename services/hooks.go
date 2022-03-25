@@ -847,6 +847,14 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 						}
 					}
 				}
+			case models.NetworkMATIC:
+				{
+					return errs.NewError(errs.ErrBadRequest)
+				}
+			default:
+				{
+					return errs.NewError(errs.ErrBadRequest)
+				}
 			}
 			ins.Status = "done"
 			err = s.id.Save(
@@ -868,7 +876,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 	return nil
 }
 
-func (s *NftLend) InternalHookSolanaInstruction(ctx context.Context, blockNumber uint64, blockTime uint64, transactionHash string, transactionIndex uint, instructionIndex uint, program string, instruction string, data interface{}) error {
+func (s *NftLend) InternalHookSolanaInstruction(ctx context.Context, network models.Network, blockNumber uint64, blockTime uint64, transactionHash string, transactionIndex uint, instructionIndex uint, program string, instruction string, data interface{}) error {
 	dataJson, err := json.Marshal(&data)
 	if err != nil {
 		return errs.NewError(err)
@@ -898,7 +906,7 @@ func (s *NftLend) InternalHookSolanaInstruction(ctx context.Context, blockNumber
 			}
 			bt := time.Unix(int64(blockTime), 0)
 			ins = &models.Instruction{
-				Network:          models.NetworkSOL,
+				Network:          network,
 				BlockNumber:      blockNumber,
 				BlockTime:        &bt,
 				TransactionHash:  transactionHash,
@@ -1000,10 +1008,28 @@ func (s *NftLend) UpdateAssetInfo(ctx context.Context, address string) error {
 	return nil
 }
 
-// func (s *NftLend) EvmNftypawnFilterLogs(ctx context.Context) error {
-// 	err := s.bcs.Solana.NftLendUpdateBlock(block)
-// 	if err != nil {
-// 		return errs.NewError(err)
-// 	}
-// 	return nil
-// }
+func (s *NftLend) JobEvmNftypawnFilterLogs(ctx context.Context) error {
+	resps, err := s.bcs.Matic.NftypawnFilterLogs(s.conf.Contract.MaticNftypawnAddress)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	var retErr error
+	for _, resp := range resps {
+		err = s.InternalHookSolanaInstruction(
+			ctx,
+			models.NetworkMATIC,
+			uint64(resp.BlockNumber),
+			uint64(time.Now().Unix()),
+			resp.Hash,
+			resp.Index,
+			resp.Index,
+			"",
+			resp.Event,
+			resp.Data,
+		)
+		if err != nil {
+			retErr = errs.MergeError(retErr, err)
+		}
+	}
+	return retErr
+}

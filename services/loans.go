@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"math/big"
 	"time"
 
@@ -334,7 +335,7 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 				asset = &models.Asset{
 					Network:               req.Network,
 					CollectionID:          collection.ID,
-					SeoURL:                "",
+					SeoURL:                helpers.MakeSeoURL(fmt.Sprintf("%s-%s", req.ContractAddress, req.TokenID)),
 					ContractAddress:       collection.ContractAddress,
 					TokenID:               req.TokenID,
 					Symbol:                "",

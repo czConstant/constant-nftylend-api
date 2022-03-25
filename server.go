@@ -106,6 +106,7 @@ func main() {
 		stc = &saletrack.Client{}
 
 		s = services.NewNftLend(
+			conf,
 			bcs,
 			stc,
 			cd,

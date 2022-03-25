@@ -98,6 +98,8 @@ github.com/czConstant/blockchain-api v0.0.0-20220304072626-38e84f514693 h1:p9jeK
 github.com/czConstant/blockchain-api v0.0.0-20220304072626-38e84f514693/go.mod h1:y0+8e85wcc1sJEQCMiaDtFpfpAonIHPkW/V8D7GQSvA=
 github.com/czConstant/blockchain-api v0.0.0-20220304072816-b9318b98dbb8 h1:VOuwkBHiSv0DIIl+2GGh+KyH9hXCAl7PTxCZLr967nY=
 github.com/czConstant/blockchain-api v0.0.0-20220304072816-b9318b98dbb8/go.mod h1:y0+8e85wcc1sJEQCMiaDtFpfpAonIHPkW/V8D7GQSvA=
+github.com/czConstant/blockchain-api v0.0.0-20220325100215-f7cf7556b8e1 h1:w5a6WoTe3sL2M9juC5FaNZV8CxRsE3lEDa2tGcdcYFM=
+github.com/czConstant/blockchain-api v0.0.0-20220325100215-f7cf7556b8e1/go.mod h1:y0+8e85wcc1sJEQCMiaDtFpfpAonIHPkW/V8D7GQSvA=
 github.com/czConstant/constant-core v0.0.0-20210916103853-a22db9f518c2 h1:dLdPxzM3VRCLQCgYUHXgqr6wTwijP9DRrLyscfBIZnY=
 github.com/czConstant/constant-core v0.0.0-20210916103853-a22db9f518c2/go.mod h1:vjzhRm9wI/ChMV3h1CFzayGhzTJ+rxvSm+AapcSbLdA=
 github.com/czConstant/constant-evn v0.0.0-20210621093849-5a457b90a058 h1:xIAgOl07nOudxGSCEFfwp5k22PpclSBoHtgBrlYnu/E=
