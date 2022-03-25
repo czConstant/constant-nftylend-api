@@ -8,6 +8,7 @@ import (
 
 type Instruction struct {
 	gorm.Model
+	Network          Network `gorm:"default:'SOL'"`
 	BlockNumber      uint64
 	BlockTime        *time.Time
 	TransactionHash  string
