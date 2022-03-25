@@ -260,6 +260,16 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 		req.Signature == "" {
 		return nil, errs.NewError(errs.ErrBadRequest)
 	}
+	switch req.Network {
+	case models.NetworkMATIC,
+		models.NetworkETH:
+		{
+		}
+	default:
+		{
+			return nil, errs.NewError(errs.ErrBadRequest)
+		}
+	}
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
