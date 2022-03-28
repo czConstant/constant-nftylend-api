@@ -353,8 +353,9 @@ func (s *NftLend) updateAssetTransactions(ctx context.Context, assetId uint) err
 	if asset == nil {
 		return errs.NewError(errs.ErrBadRequest)
 	}
-	if asset.MagicEdenCrawAt == nil ||
-		asset.MagicEdenCrawAt.Before(time.Now().Add(-24*time.Hour)) {
+	if asset.Network == models.NetworkSOL &&
+		(asset.MagicEdenCrawAt == nil ||
+			asset.MagicEdenCrawAt.Before(time.Now().Add(-24*time.Hour))) {
 		c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "SOL")
 		if err != nil {
 			return errs.NewError(err)
@@ -414,8 +415,9 @@ func (s *NftLend) updateAssetTransactions(ctx context.Context, assetId uint) err
 			return errs.NewError(err)
 		}
 	}
-	if asset.SolanartCrawAt == nil ||
-		asset.SolanartCrawAt.Before(time.Now().Add(-24*time.Hour)) {
+	if asset.Network == models.NetworkSOL &&
+		(asset.SolanartCrawAt == nil ||
+			asset.SolanartCrawAt.Before(time.Now().Add(-24*time.Hour))) {
 		tokenAddress := asset.ContractAddress
 		if asset.TestContractAddress != "" {
 			tokenAddress = asset.TestContractAddress
@@ -471,8 +473,9 @@ func (s *NftLend) updateAssetTransactions(ctx context.Context, assetId uint) err
 			return errs.NewError(err)
 		}
 	}
-	if asset.SolSeaCrawAt == nil ||
-		asset.SolSeaCrawAt.Before(time.Now().Add(-24*time.Hour)) {
+	if asset.Network == models.NetworkSOL &&
+		(asset.SolSeaCrawAt == nil ||
+			asset.SolSeaCrawAt.Before(time.Now().Add(-24*time.Hour))) {
 		tokenAddress := asset.ContractAddress
 		if asset.TestContractAddress != "" {
 			tokenAddress = asset.TestContractAddress
