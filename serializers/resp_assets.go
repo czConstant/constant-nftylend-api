@@ -16,6 +16,7 @@ type AssetResp struct {
 	SeoURL                string          `json:"seo_url"`
 	ContractAddress       string          `json:"contract_address"`
 	TokenURL              string          `json:"token_url"`
+	TokenID               string          `json:"token_id"`
 	Name                  string          `json:"name"`
 	SellerFeeRate         float64         `json:"seller_fee_rate"`
 	Attributes            interface{}     `json:"attributes"`
@@ -40,6 +41,7 @@ func NewAssetResp(m *models.Asset) *AssetResp {
 		SeoURL:                m.SeoURL,
 		ContractAddress:       m.ContractAddress,
 		TokenURL:              m.TokenURL,
+		TokenID:               m.TokenID,
 		Name:                  m.Name,
 		SellerFeeRate:         m.SellerFeeRate,
 		Attributes:            attr,
