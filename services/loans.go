@@ -453,7 +453,7 @@ func (s *NftLend) CreateLoanOffer(ctx context.Context, loanID uint, req *seriali
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			offer = &models.LoanOffer{
-				Network:         req.Network,
+				Network:         loan.Network,
 				LoanID:          loan.ID,
 				Lender:          req.Lender,
 				PrincipalAmount: req.PrincipalAmount,
