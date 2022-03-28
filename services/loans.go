@@ -414,6 +414,7 @@ func (s *NftLend) CreateLoanOffer(ctx context.Context, loanID uint, req *seriali
 	var offer *models.LoanOffer
 	if req.PrincipalAmount.Float.Cmp(big.NewFloat(0)) <= 0 ||
 		req.Duration <= 0 ||
+		req.Lender == "" ||
 		req.NonceHex == "" ||
 		req.Signature == "" {
 		return nil, errs.NewError(errs.ErrBadRequest)
