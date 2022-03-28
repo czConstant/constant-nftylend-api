@@ -279,9 +279,9 @@ func (s *NftLend) getCollectionVerified(tx *gorm.DB, mintAddress string, meta *s
 				return nil, "", errs.NewError(err)
 			}
 		}
-		collectionName := metaInfo.Collection.Family
+		collectionName := metaInfo.Collection.Name
 		if collectionName == "" {
-			collectionName = metaInfo.Collection.Name
+			collectionName = metaInfo.Collection.Family
 			if collectionName == "" {
 				names := strings.Split(metaInfo.Name, "#")
 				if len(names) >= 2 {
