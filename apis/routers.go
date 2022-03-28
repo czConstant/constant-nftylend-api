@@ -50,6 +50,7 @@ func (s *Server) Routers() {
 		nftAPI.GET("/configs", s.AppConfigs)
 	}
 	nftAPI.POST("/blockchain/update-block/:block", s.NftLendUpdateBlock)
+	nftAPI.POST("/blockchain/:network/scan-block/:block", s.NftLendUpdateBlock)
 	currencynftAPI := nftAPI.Group("/currencies")
 	{
 		currencynftAPI.GET("/list", s.GetCurrencies)

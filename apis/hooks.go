@@ -9,6 +9,40 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func (s *Server) NftLendUpdateBlock(c *gin.Context) {
+	ctx := s.requestContext(c)
+	blockNumber, err := s.uint64FromContextParam(c, "block")
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	switch models.Network(c.Param("network")) {
+	case models.NetworkSOL:
+		{
+			err = s.nls.LendNftLendUpdateBlock(ctx, blockNumber)
+			if err != nil {
+				ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+				return
+			}
+		}
+	case models.NetworkMATIC,
+		models.NetworkETH:
+		{
+			err = s.nls.JobEvmNftypawnFilterLogs(ctx, blockNumber)
+			if err != nil {
+				ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+				return
+			}
+		}
+	default:
+		{
+			ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrBadRequest)})
+			return
+		}
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
+}
+
 func (s *Server) LenInternalHookSolanaInstruction(c *gin.Context) {
 	ctx := s.requestContext(c)
 	var req struct {

@@ -16,21 +16,6 @@ func (s *Server) AppConfigs(c *gin.Context) {
 	}})
 }
 
-func (s *Server) NftLendUpdateBlock(c *gin.Context) {
-	ctx := s.requestContext(c)
-	blockNumber, err := s.uint64FromContextParam(c, "block")
-	if err != nil {
-		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
-		return
-	}
-	err = s.nls.LendNftLendUpdateBlock(ctx, blockNumber)
-	if err != nil {
-		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
-		return
-	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
-}
-
 func (s *Server) GetAssetDetail(c *gin.Context) {
 	ctx := s.requestContext(c)
 	m, err := s.nls.GetAssetDetail(ctx, s.stringFromContextParam(c, "seo_url"))
