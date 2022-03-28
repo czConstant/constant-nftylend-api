@@ -31,7 +31,8 @@ func (s *Server) BlockchainScanBlock(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	switch models.Network(c.Param("network")) {
+	network := models.Network(c.Param("network"))
+	switch network {
 	case models.NetworkSOL:
 		{
 			err = s.nls.LendNftLendUpdateBlock(ctx, blockNumber)
@@ -43,7 +44,7 @@ func (s *Server) BlockchainScanBlock(c *gin.Context) {
 	case models.NetworkMATIC,
 		models.NetworkETH:
 		{
-			err = s.nls.JobEvmNftypawnFilterLogs(ctx, blockNumber)
+			err = s.nls.JobEvmNftypawnFilterLogs(ctx, network, blockNumber)
 			if err != nil {
 				ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 				return
@@ -84,7 +85,7 @@ func (s *Server) LenInternalHookSolanaInstruction(c *gin.Context) {
 
 func (s *Server) JobEvmNftypawnFilterLogs(c *gin.Context) {
 	ctx := s.requestContext(c)
-	err := s.nls.JobEvmNftypawnFilterLogs(ctx, 0)
+	err := s.nls.JobEvmNftypawnFilterLogs(ctx, models.NetworkMATIC, 0)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

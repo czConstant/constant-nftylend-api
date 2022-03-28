@@ -1012,27 +1012,32 @@ func (s *NftLend) UpdateAssetInfo(ctx context.Context, address string) error {
 	return nil
 }
 
-func (s *NftLend) JobEvmNftypawnFilterLogs(ctx context.Context, block uint64) error {
-	resps, err := s.bcs.Matic.NftypawnFilterLogs(s.conf.Contract.MaticNftypawnAddress, block)
-	if err != nil {
-		return errs.NewError(err)
-	}
+func (s *NftLend) JobEvmNftypawnFilterLogs(ctx context.Context, network models.Network, block uint64) error {
 	var retErr error
-	for _, resp := range resps {
-		err = s.InternalHookSolanaInstruction(
-			ctx,
-			models.NetworkMATIC,
-			uint64(resp.BlockNumber),
-			uint64(time.Now().Unix()),
-			resp.Hash,
-			resp.Index,
-			resp.Index,
-			"",
-			resp.Event,
-			resp.Data,
-		)
-		if err != nil {
-			retErr = errs.MergeError(retErr, err)
+	switch network {
+	case models.NetworkMATIC:
+		{
+			resps, err := s.bcs.Matic.NftypawnFilterLogs(s.conf.Contract.MaticNftypawnAddress, block)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			for _, resp := range resps {
+				err = s.InternalHookSolanaInstruction(
+					ctx,
+					models.NetworkMATIC,
+					uint64(resp.BlockNumber),
+					uint64(time.Now().Unix()),
+					resp.Hash,
+					resp.Index,
+					resp.Index,
+					"",
+					resp.Event,
+					resp.Data,
+				)
+				if err != nil {
+					retErr = errs.MergeError(retErr, err)
+				}
+			}
 		}
 	}
 	return retErr
