@@ -1012,8 +1012,8 @@ func (s *NftLend) UpdateAssetInfo(ctx context.Context, address string) error {
 	return nil
 }
 
-func (s *NftLend) JobEvmNftypawnFilterLogs(ctx context.Context) error {
-	resps, err := s.bcs.Matic.NftypawnFilterLogs(s.conf.Contract.MaticNftypawnAddress, 0)
+func (s *NftLend) JobEvmNftypawnFilterLogs(ctx context.Context, block uint64) error {
+	resps, err := s.bcs.Matic.NftypawnFilterLogs(s.conf.Contract.MaticNftypawnAddress, block)
 	if err != nil {
 		return errs.NewError(err)
 	}

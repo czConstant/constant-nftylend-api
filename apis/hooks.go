@@ -35,7 +35,7 @@ func (s *Server) LenInternalHookSolanaInstruction(c *gin.Context) {
 
 func (s *Server) JobEvmNftypawnFilterLogs(c *gin.Context) {
 	ctx := s.requestContext(c)
-	err := s.nls.JobEvmNftypawnFilterLogs(ctx)
+	err := s.nls.JobEvmNftypawnFilterLogs(ctx, 0)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
