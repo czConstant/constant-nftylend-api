@@ -310,11 +310,12 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 				}
 				if collection == nil {
 					collection = &models.Collection{
-						Network:     req.Network,
-						SeoURL:      helpers.MakeSeoURL(req.ContractAddress),
-						Name:        "",
-						Description: meta.Description,
-						Enabled:     true,
+						Network:         req.Network,
+						SeoURL:          helpers.MakeSeoURL(req.ContractAddress),
+						ContractAddress: req.ContractAddress,
+						Name:            "",
+						Description:     meta.Description,
+						Enabled:         true,
 					}
 					err = s.cld.Create(
 						tx,
