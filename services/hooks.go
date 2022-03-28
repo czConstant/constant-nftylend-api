@@ -24,6 +24,10 @@ func (s *NftLend) LendNftLendUpdateBlock(ctx context.Context, block uint64) erro
 	return nil
 }
 
+func (s *NftLend) EvmUpdateBlockchain(ctx context.Context, txHash string) error {
+	return nil
+}
+
 func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) error {
 	var loadAssetTransactionForId uint
 	err := daos.WithTransaction(
@@ -1009,7 +1013,7 @@ func (s *NftLend) UpdateAssetInfo(ctx context.Context, address string) error {
 }
 
 func (s *NftLend) JobEvmNftypawnFilterLogs(ctx context.Context) error {
-	resps, err := s.bcs.Matic.NftypawnFilterLogs(s.conf.Contract.MaticNftypawnAddress)
+	resps, err := s.bcs.Matic.NftypawnFilterLogs(s.conf.Contract.MaticNftypawnAddress, 0)
 	if err != nil {
 		return errs.NewError(err)
 	}

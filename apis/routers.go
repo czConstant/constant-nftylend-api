@@ -79,4 +79,9 @@ func (s *Server) Routers() {
 	{
 		hookInternalnftAPI.POST("/solana-instruction", s.LenInternalHookSolanaInstruction)
 	}
+	jobsNftAPI := nftAPI.Group("/jobs")
+	jobsNftAPI.Use(s.authorizeJobMiddleware())
+	{
+		jobsNftAPI.POST("/evm-filter-logs", s.JobEvmNftypawnFilterLogs)
+	}
 }

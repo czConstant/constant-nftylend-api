@@ -6,7 +6,7 @@ require (
 	github.com/DaRealFreak/cloudflare-bp-go v1.0.4
 	github.com/Microsoft/go-winio v0.5.0 // indirect
 	github.com/certifi/gocertifi v0.0.0-20210507211836-431795d63e8d // indirect
-	github.com/czConstant/blockchain-api v0.0.0-20220325161325-a6557eb005a6
+	github.com/czConstant/blockchain-api v0.0.0-20220328090315-e83e3c71fb7c
 	github.com/czConstant/constant-core v0.0.0-20210916103853-a22db9f518c2
 	github.com/czConstant/constant-evn v0.0.0-20210621093849-5a457b90a058
 	github.com/getsentry/raven-go v0.2.1-0.20190619092523-5c24d5110e0e
@@ -14,7 +14,7 @@ require (
 	github.com/gin-gonic/gin v1.7.2
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/google/uuid v1.1.5 // indirect
-	github.com/gorilla/websocket v1.5.0 // indirect
+	github.com/gorilla/websocket v1.5.0
 	github.com/jinzhu/gorm v1.9.16
 	github.com/kr/text v0.2.0 // indirect
 	github.com/opentracing/opentracing-go v1.1.0 // indirect
