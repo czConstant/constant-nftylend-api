@@ -1425,7 +1425,7 @@ func (s *NftLend) JobEvmNftypawnFilterLogs(ctx context.Context, network models.N
 		}
 	case models.NetworkAVAX:
 		{
-			if s.conf.Contract.AvaxNftypawnAddress != "" {
+			if s.conf.Contract.AvaxNftypawnAddress == "" {
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			resps, err := s.bcs.Avax.NftypawnFilterLogs(s.conf.Contract.AvaxNftypawnAddress, block)
