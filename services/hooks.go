@@ -1043,6 +1043,192 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 								}
 							}
 						}
+					case "LoanRepaid":
+						{
+							var req struct {
+								LoanID string `json:"loan_id"`
+							}
+							err = json.Unmarshal([]byte(ins.Data), &req)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							loan, err := s.ld.First(
+								tx,
+								map[string][]interface{}{
+									"data_loan_address =?": []interface{}{req.LoanID},
+								},
+								map[string][]interface{}{},
+								[]string{},
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							if loan == nil {
+								return errs.NewError(errs.ErrBadRequest)
+							}
+							if loan.Status != models.LoanStatusCreated {
+								return errs.NewError(errs.ErrBadRequest)
+							}
+							currency, err := s.cd.FirstByID(
+								tx,
+								loan.CurrencyID,
+								map[string][]interface{}{},
+								false,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							payAmount := models.ConvertWeiToBigFloat(big.NewInt(0), currency.Decimals)
+							loan.RepaidAmount = numeric.BigFloat{*payAmount}
+							loan.FinishedAt = ins.BlockTime
+							loan.Status = models.LoanStatusDone
+							loan.PayTxHash = ins.TransactionHash
+							loan.FeeRate = 0.01
+							err = s.ld.Save(
+								tx,
+								loan,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							offer, err := s.lod.First(
+								tx,
+								map[string][]interface{}{
+									"loan_id = ?": []interface{}{loan.ID},
+									"status = ?":  []interface{}{models.LoanOfferStatusApproved},
+								},
+								map[string][]interface{}{},
+								[]string{},
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							if offer == nil {
+								return errs.NewError(errs.ErrBadRequest)
+							}
+							offer.RepaidAt = ins.BlockTime
+							offer.RepaidAmount = numeric.BigFloat{*payAmount}
+							offer.Status = models.LoanOfferStatusRepaid
+							err = s.lod.Save(
+								tx,
+								offer,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							err = s.ltd.Create(
+								tx,
+								&models.LoanTransaction{
+									Network:         models.NetworkSOL,
+									Type:            models.LoanTransactionTypeRepaid,
+									LoanID:          loan.ID,
+									Borrower:        loan.Owner,
+									Lender:          offer.Lender,
+									PrincipalAmount: offer.PrincipalAmount,
+									InterestRate:    offer.InterestRate,
+									StartedAt:       offer.StartedAt,
+									Duration:        offer.Duration,
+									ExpiredAt:       offer.ExpiredAt,
+									TxHash:          ins.TransactionHash,
+								},
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+						}
+					case "LoanLiquidated":
+						{
+							var req struct {
+								LoanID string `json:"loan_id"`
+							}
+							err = json.Unmarshal([]byte(ins.Data), &req)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							loan, err := s.ld.First(
+								tx,
+								map[string][]interface{}{
+									"data_loan_address =?": []interface{}{req.LoanID},
+								},
+								map[string][]interface{}{},
+								[]string{},
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							if loan == nil {
+								return errs.NewError(errs.ErrBadRequest)
+							}
+							if loan.Status != models.LoanStatusCreated {
+								return errs.NewError(errs.ErrBadRequest)
+							}
+							currency, err := s.cd.FirstByID(
+								tx,
+								loan.CurrencyID,
+								map[string][]interface{}{},
+								false,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							payAmount := models.ConvertWeiToBigFloat(big.NewInt(0), currency.Decimals)
+							loan.RepaidAmount = numeric.BigFloat{*payAmount}
+							loan.FinishedAt = ins.BlockTime
+							loan.Status = models.LoanStatusLiquidated
+							loan.PayTxHash = ins.TransactionHash
+							loan.FeeRate = 0.01
+							err = s.ld.Save(
+								tx,
+								loan,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							offer, err := s.lod.First(
+								tx,
+								map[string][]interface{}{
+									"loan_id = ?": []interface{}{loan.ID},
+									"status = ?":  []interface{}{models.LoanOfferStatusApproved},
+								},
+								map[string][]interface{}{},
+								[]string{},
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							if offer == nil {
+								return errs.NewError(errs.ErrBadRequest)
+							}
+							offer.RepaidAt = ins.BlockTime
+							offer.RepaidAmount = numeric.BigFloat{*payAmount}
+							offer.Status = models.LoanOfferStatusLiquidated
+							err = s.lod.Save(
+								tx,
+								offer,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							err = s.ltd.Create(
+								tx,
+								&models.LoanTransaction{
+									Network:         models.NetworkSOL,
+									Type:            models.LoanTransactionTypeLiquidated,
+									LoanID:          loan.ID,
+									Borrower:        loan.Owner,
+									Lender:          offer.Lender,
+									PrincipalAmount: offer.PrincipalAmount,
+									InterestRate:    offer.InterestRate,
+									StartedAt:       offer.StartedAt,
+									Duration:        offer.Duration,
+									ExpiredAt:       offer.ExpiredAt,
+									TxHash:          ins.TransactionHash,
+								},
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+						}
 					default:
 						{
 							return errs.NewError(errs.ErrBadRequest)
@@ -1212,6 +1398,9 @@ func (s *NftLend) JobEvmNftypawnFilterLogs(ctx context.Context, network models.N
 	switch network {
 	case models.NetworkMATIC:
 		{
+			if s.conf.Contract.MaticNftypawnAddress == "" {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			resps, err := s.bcs.Matic.NftypawnFilterLogs(s.conf.Contract.MaticNftypawnAddress, block)
 			if err != nil {
 				return errs.NewError(err)
@@ -1236,6 +1425,9 @@ func (s *NftLend) JobEvmNftypawnFilterLogs(ctx context.Context, network models.N
 		}
 	case models.NetworkAVAX:
 		{
+			if s.conf.Contract.AvaxNftypawnAddress != "" {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			resps, err := s.bcs.Avax.NftypawnFilterLogs(s.conf.Contract.AvaxNftypawnAddress, block)
 			if err != nil {
 				return errs.NewError(err)
