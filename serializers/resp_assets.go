@@ -11,6 +11,7 @@ type AssetResp struct {
 	ID                    uint            `json:"id"`
 	CreatedAt             time.Time       `json:"created_at"`
 	UpdatedAt             time.Time       `json:"updated_at"`
+	Network               models.Network  `json:"network"`
 	CollectionID          uint            `json:"collection_id"`
 	Collection            *CollectionResp `json:"collection"`
 	SeoURL                string          `json:"seo_url"`
@@ -36,6 +37,7 @@ func NewAssetResp(m *models.Asset) *AssetResp {
 		ID:                    m.ID,
 		CreatedAt:             m.CreatedAt,
 		UpdatedAt:             m.UpdatedAt,
+		Network:               m.Network,
 		CollectionID:          m.CollectionID,
 		Collection:            NewCollectionResp(m.Collection),
 		SeoURL:                m.SeoURL,

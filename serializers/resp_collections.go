@@ -11,6 +11,7 @@ type CollectionResp struct {
 	ID                    uint             `json:"id"`
 	CreatedAt             time.Time        `json:"created_at"`
 	UpdatedAt             time.Time        `json:"updated_at"`
+	Network               models.Network   `json:"network"`
 	SeoURL                string           `json:"seo_url"`
 	Name                  string           `json:"name"`
 	Description           string           `json:"description"`
@@ -31,6 +32,7 @@ func NewCollectionResp(m *models.Collection) *CollectionResp {
 		ID:                    m.ID,
 		CreatedAt:             m.CreatedAt,
 		UpdatedAt:             m.UpdatedAt,
+		Network:               m.Network,
 		SeoURL:                m.SeoURL,
 		Name:                  m.Name,
 		Description:           m.Description,
