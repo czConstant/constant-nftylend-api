@@ -870,7 +870,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 								tx,
 								map[string][]interface{}{
 									"network = ?":   []interface{}{ins.Network},
-									"borrower = ?":  []interface{}{req.Borrower},
+									"owner = ?":     []interface{}{req.Borrower},
 									"nonce_hex = ?": []interface{}{req.BorrowerNonceHex},
 								},
 								map[string][]interface{}{},
@@ -979,7 +979,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 								tx,
 								map[string][]interface{}{
 									"network = ?":   []interface{}{ins.Network},
-									"borrower = ?":  []interface{}{req.User},
+									"owner = ?":     []interface{}{req.User},
 									"nonce_hex = ?": []interface{}{req.NonceHex},
 								},
 								map[string][]interface{}{},
