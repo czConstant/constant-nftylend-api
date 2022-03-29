@@ -849,11 +849,199 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 						}
 					}
 				}
-			case models.NetworkMATIC:
+			case models.NetworkMATIC,
+				models.NetworkAVAX:
 				{
 					switch ins.Instruction {
-					case "InitLoan":
+					case "LoanStarted":
 						{
+							var req struct {
+								LoanID           string `json:"loan_id"`
+								Borrower         string `json:"borrower"`
+								BorrowerNonceHex string `json:"borrower_nonce_hex"`
+								Lender           string `json:"lender"`
+								LenderNonceHex   string `json:"lender_nonce_hex"`
+							}
+							err = json.Unmarshal([]byte(ins.Data), &req)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							loan, err := s.ld.First(
+								tx,
+								map[string][]interface{}{
+									"network = ?":   []interface{}{ins.Network},
+									"borrower = ?":  []interface{}{req.Borrower},
+									"nonce_hex = ?": []interface{}{req.BorrowerNonceHex},
+								},
+								map[string][]interface{}{},
+								[]string{},
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							if loan == nil {
+								return errs.NewError(errs.ErrBadRequest)
+							}
+							if loan.Status != models.LoanStatusNew {
+								return errs.NewError(errs.ErrBadRequest)
+							}
+							offer, err := s.lod.First(
+								tx,
+								map[string][]interface{}{
+									"network = ?":  []interface{}{ins.Network},
+									"lender = ?":   []interface{}{req.Lender},
+									"nonce_hex =?": []interface{}{req.LenderNonceHex},
+								},
+								map[string][]interface{}{},
+								[]string{},
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							if offer == nil {
+								return errs.NewError(errs.ErrBadRequest)
+							}
+							if offer.Status != models.LoanOfferStatusNew {
+								return errs.NewError(errs.ErrBadRequest)
+							}
+							offer.StartedAt = ins.BlockTime
+							offer.ExpiredAt = helpers.TimeAdd(*offer.StartedAt, time.Second*time.Duration(offer.Duration))
+							offer.Status = models.LoanOfferStatusApproved
+							offer.AcceptTxHash = ins.TransactionHash
+							err = s.lod.Save(
+								tx,
+								offer,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							loan.DataLoanAddress = req.LoanID
+							loan.Lender = offer.Lender
+							loan.OfferStartedAt = offer.StartedAt
+							loan.OfferDuration = offer.Duration
+							loan.OfferExpiredAt = offer.ExpiredAt
+							loan.OfferPrincipalAmount = offer.PrincipalAmount
+							loan.OfferInterestRate = offer.InterestRate
+							loan.InitTxHash = ins.TransactionHash
+							loan.Status = models.LoanStatusCreated
+							err = s.ld.Save(
+								tx,
+								loan,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							for _, otherOffer := range loan.Offers {
+								if otherOffer.ID != offer.ID {
+									if otherOffer.Status == models.LoanOfferStatusNew {
+										otherOffer.Status = models.LoanOfferStatusRejected
+										err = s.lod.Save(
+											tx,
+											otherOffer,
+										)
+										if err != nil {
+											return errs.NewError(err)
+										}
+									}
+								}
+							}
+							err = s.ltd.Create(
+								tx,
+								&models.LoanTransaction{
+									Network:         models.NetworkSOL,
+									Type:            models.LoanTransactionTypeOffered,
+									LoanID:          loan.ID,
+									Borrower:        loan.Owner,
+									Lender:          offer.Lender,
+									PrincipalAmount: offer.PrincipalAmount,
+									InterestRate:    offer.InterestRate,
+									StartedAt:       offer.StartedAt,
+									Duration:        offer.Duration,
+									ExpiredAt:       offer.ExpiredAt,
+									TxHash:          ins.TransactionHash,
+								},
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+						}
+					case "CancelNonce":
+						{
+							var req struct {
+								User     string `json:"user"`
+								NonceHex string `json:"nonce_hex"`
+							}
+							err = json.Unmarshal([]byte(ins.Data), &req)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							loan, err := s.ld.First(
+								tx,
+								map[string][]interface{}{
+									"network = ?":   []interface{}{ins.Network},
+									"borrower = ?":  []interface{}{req.User},
+									"nonce_hex = ?": []interface{}{req.NonceHex},
+								},
+								map[string][]interface{}{},
+								[]string{},
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							if loan != nil {
+								if loan.Status != models.LoanStatusNew {
+									return errs.NewError(errs.ErrBadRequest)
+								}
+								loan.CancelTxHash = ins.TransactionHash
+								loan.Status = models.LoanStatusCancelled
+								err = s.ld.Save(
+									tx,
+									loan,
+								)
+								if err != nil {
+									return errs.NewError(err)
+								}
+								for _, otherOffer := range loan.Offers {
+									if otherOffer.Status == models.LoanOfferStatusNew {
+										otherOffer.Status = models.LoanOfferStatusRejected
+										err = s.lod.Save(
+											tx,
+											otherOffer,
+										)
+										if err != nil {
+											return errs.NewError(err)
+										}
+									}
+								}
+							} else {
+								offer, err := s.lod.First(
+									tx,
+									map[string][]interface{}{
+										"network = ?":  []interface{}{ins.Network},
+										"lender = ?":   []interface{}{req.User},
+										"nonce_hex =?": []interface{}{req.NonceHex},
+									},
+									map[string][]interface{}{},
+									[]string{},
+								)
+								if err != nil {
+									return errs.NewError(err)
+								}
+								if offer != nil {
+									if offer.Status != models.LoanOfferStatusNew {
+										return errs.NewError(errs.ErrBadRequest)
+									}
+									offer.Status = models.LoanOfferStatusCancelled
+									offer.CancelTxHash = ins.TransactionHash
+									err = s.lod.Save(
+										tx,
+										offer,
+									)
+									if err != nil {
+										return errs.NewError(err)
+									}
+								}
+							}
 						}
 					default:
 						{
