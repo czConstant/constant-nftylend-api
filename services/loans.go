@@ -134,7 +134,7 @@ func (s *NftLend) GetLoans(ctx context.Context, owner string, lender string, ass
 	return loans, count, nil
 }
 
-func (s *NftLend) GetLoanOffers(ctx context.Context, borrower string, lender string, statues []string, page int, limit int) ([]*models.LoanOffer, uint, error) {
+func (s *NftLend) GetLoanOffers(ctx context.Context, network models.Network, borrower string, lender string, statues []string, page int, limit int) ([]*models.LoanOffer, uint, error) {
 	filters := map[string][]interface{}{}
 	if borrower != "" {
 		filters[`
@@ -148,6 +148,9 @@ func (s *NftLend) GetLoanOffers(ctx context.Context, borrower string, lender str
 	}
 	if lender != "" {
 		filters["lender = ?"] = []interface{}{lender}
+	}
+	if network != "" {
+		filters["network = ?"] = []interface{}{network}
 	}
 	if len(statues) > 0 {
 		filters["status in (?)"] = []interface{}{statues}

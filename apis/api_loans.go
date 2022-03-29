@@ -87,6 +87,7 @@ func (s *Server) GetLoanOffers(c *gin.Context) {
 	page, limit := s.pagingFromContext(c)
 	offers, count, err := s.nls.GetLoanOffers(
 		ctx,
+		models.Network(s.stringFromContextQuery(c, "network")),
 		s.stringFromContextQuery(c, "borrower"),
 		s.stringFromContextQuery(c, "lender"),
 		s.stringArrayFromContextQuery(c, "status"),
