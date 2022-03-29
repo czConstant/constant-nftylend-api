@@ -85,9 +85,17 @@ func (s *Server) LenInternalHookSolanaInstruction(c *gin.Context) {
 
 func (s *Server) JobEvmNftypawnFilterLogs(c *gin.Context) {
 	ctx := s.requestContext(c)
+	var retErr error
 	err := s.nls.JobEvmNftypawnFilterLogs(ctx, models.NetworkMATIC, 0)
 	if err != nil {
-		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		retErr = errs.MergeError(retErr, err)
+	}
+	err = s.nls.JobEvmNftypawnFilterLogs(ctx, models.NetworkAVAX, 0)
+	if err != nil {
+		retErr = errs.MergeError(retErr, err)
+	}
+	if retErr != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(retErr)})
 		return
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})

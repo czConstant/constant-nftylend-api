@@ -1234,6 +1234,30 @@ func (s *NftLend) JobEvmNftypawnFilterLogs(ctx context.Context, network models.N
 				}
 			}
 		}
+	case models.NetworkAVAX:
+		{
+			resps, err := s.bcs.Avax.NftypawnFilterLogs(s.conf.Contract.AvaxNftypawnAddress, block)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			for _, resp := range resps {
+				err = s.InternalHookSolanaInstruction(
+					ctx,
+					models.NetworkMATIC,
+					uint64(resp.BlockNumber),
+					uint64(time.Now().Unix()),
+					resp.Hash,
+					resp.Index,
+					resp.Index,
+					"",
+					resp.Event,
+					resp.Data,
+				)
+				if err != nil {
+					retErr = errs.MergeError(retErr, err)
+				}
+			}
+		}
 	}
 	return retErr
 }
