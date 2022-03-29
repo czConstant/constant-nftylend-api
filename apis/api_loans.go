@@ -68,6 +68,7 @@ func (s *Server) GetLoans(c *gin.Context) {
 	assetId, _ := s.uintFromContextQuery(c, "asset_id")
 	loans, count, err := s.nls.GetLoans(
 		ctx,
+		models.Network(s.stringFromContextQuery(c, "network")),
 		s.stringFromContextQuery(c, "owner"),
 		s.stringFromContextQuery(c, "lender"),
 		assetId,

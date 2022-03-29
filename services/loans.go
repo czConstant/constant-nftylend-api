@@ -98,8 +98,11 @@ func (s *NftLend) GetListingLoans(
 	return loans, count, nil
 }
 
-func (s *NftLend) GetLoans(ctx context.Context, owner string, lender string, assetId uint, statues []string, page int, limit int) ([]*models.Loan, uint, error) {
+func (s *NftLend) GetLoans(ctx context.Context, network models.Network, owner string, lender string, assetId uint, statues []string, page int, limit int) ([]*models.Loan, uint, error) {
 	filters := map[string][]interface{}{}
+	if network != "" {
+		filters["network = ?"] = []interface{}{network}
+	}
 	if owner != "" {
 		filters["owner = ?"] = []interface{}{owner}
 	}
