@@ -36,6 +36,9 @@ func (s *NftLend) GetListingLoans(
 				models.LoanStatusNew,
 			}},
 	}
+	if network != "" {
+		filters["network = ?"] = []interface{}{network}
+	}
 	if collectionId > 0 {
 		filters[`
 		exists(
@@ -72,9 +75,6 @@ func (s *NftLend) GetListingLoans(
 	}
 	if len(sort) == 0 {
 		sort = []string{"id desc"}
-	}
-	if network != "" {
-		filters["network = ?"] = []interface{}{network}
 	}
 	loans, count, err := s.ld.Find4Page(
 		daos.GetDBMainCtx(ctx),
