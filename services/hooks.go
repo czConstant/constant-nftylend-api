@@ -1238,7 +1238,6 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							return errs.NewError(errs.ErrBadRequest)
 						}
 					}
-					return errs.NewError(errs.ErrBadRequest)
 				}
 			default:
 				{
