@@ -93,7 +93,8 @@ func (s *Server) GetUserToken(c *gin.Context) (string, error) {
 
 func (s *Server) authorizeJobMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if c.GetHeader("Authorization") != configs.GetConfig().JobToken {
+		if configs.GetConfig().JobToken != "" &&
+			c.GetHeader("Authorization") != configs.GetConfig().JobToken {
 			ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrBadRequest)})
 			return
 		}

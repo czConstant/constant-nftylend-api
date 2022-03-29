@@ -873,7 +873,9 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 									"owner = ?":     []interface{}{req.Borrower},
 									"nonce_hex = ?": []interface{}{req.BorrowerNonceHex},
 								},
-								map[string][]interface{}{},
+								map[string][]interface{}{
+									"Offers": []interface{}{},
+								},
 								[]string{},
 							)
 							if err != nil {
@@ -968,7 +970,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					case "CancelNonce":
 						{
 							var req struct {
-								User     string `json:"user"`
+								Sender   string `json:"sender"`
 								NonceHex string `json:"nonce_hex"`
 							}
 							err = json.Unmarshal([]byte(ins.Data), &req)
@@ -979,10 +981,12 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 								tx,
 								map[string][]interface{}{
 									"network = ?":   []interface{}{ins.Network},
-									"owner = ?":     []interface{}{req.User},
+									"owner = ?":     []interface{}{req.Sender},
 									"nonce_hex = ?": []interface{}{req.NonceHex},
 								},
-								map[string][]interface{}{},
+								map[string][]interface{}{
+									"Offers": []interface{}{},
+								},
 								[]string{},
 							)
 							if err != nil {
@@ -1018,7 +1022,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 									tx,
 									map[string][]interface{}{
 										"network = ?":  []interface{}{ins.Network},
-										"lender = ?":   []interface{}{req.User},
+										"lender = ?":   []interface{}{req.Sender},
 										"nonce_hex =?": []interface{}{req.NonceHex},
 									},
 									map[string][]interface{}{},
