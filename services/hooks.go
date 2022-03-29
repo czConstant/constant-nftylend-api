@@ -1179,7 +1179,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							loan.RepaidAmount = numeric.BigFloat{*payAmount}
 							loan.FinishedAt = ins.BlockTime
 							loan.Status = models.LoanStatusLiquidated
-							loan.PayTxHash = ins.TransactionHash
+							loan.LiquidateTxHash = ins.TransactionHash
 							loan.FeeRate = 0.01
 							err = s.ld.Save(
 								tx,

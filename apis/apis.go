@@ -11,8 +11,11 @@ import (
 
 func (s *Server) AppConfigs(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: gin.H{
-		"program_id":             s.conf.Contract.ProgramID,
-		"matic_nftypawn_address": s.conf.Contract.MaticNftypawnAddress,
+		"program_id":               s.conf.Contract.ProgramID,
+		"matic_nftypawn_address":   s.conf.Contract.MaticNftypawnAddress,
+		"matic_nftypawn_admin_fee": 100,
+		"avax_nftypawn_address":    s.conf.Contract.AvaxNftypawnAddress,
+		"avax_nftypawn_admin_fee":  100,
 	}})
 }
 
