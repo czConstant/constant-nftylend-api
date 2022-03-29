@@ -1413,7 +1413,7 @@ func (s *NftLend) JobEvmNftypawnFilterLogs(ctx context.Context, network models.N
 					ctx,
 					models.NetworkMATIC,
 					uint64(resp.BlockNumber),
-					uint64(time.Now().Unix()),
+					uint64(resp.Timestamp),
 					resp.Hash,
 					resp.Index,
 					resp.Index,
