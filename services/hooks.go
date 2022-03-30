@@ -1059,7 +1059,8 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							loan, err := s.ld.First(
 								tx,
 								map[string][]interface{}{
-									"data_loan_address =?": []interface{}{req.LoanID},
+									"network = ?":           []interface{}{ins.Network},
+									"data_loan_address = ?": []interface{}{req.LoanID},
 								},
 								map[string][]interface{}{},
 								[]string{},
@@ -1152,7 +1153,8 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							loan, err := s.ld.First(
 								tx,
 								map[string][]interface{}{
-									"data_loan_address =?": []interface{}{req.LoanID},
+									"network = ?":           []interface{}{ins.Network},
+									"data_loan_address = ?": []interface{}{req.LoanID},
 								},
 								map[string][]interface{}{},
 								[]string{},
