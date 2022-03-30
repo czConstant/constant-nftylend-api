@@ -1543,7 +1543,7 @@ func (s *NftLend) JobEvmNftypawnFilterLogs(ctx context.Context, network models.N
 			for _, resp := range resps {
 				err = s.InternalHookSolanaInstruction(
 					ctx,
-					models.NetworkMATIC,
+					models.NetworkAVAX,
 					uint64(resp.BlockNumber),
 					uint64(resp.Timestamp),
 					resp.Hash,
