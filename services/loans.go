@@ -269,7 +269,7 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 	}
 	switch req.Network {
 	case models.NetworkMATIC,
-		models.NetworkETH:
+		models.NetworkAVAX:
 		{
 		}
 	default:
@@ -294,9 +294,26 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 				return errs.NewError(err)
 			}
 			if asset == nil {
-				tokenURL, err := s.bcs.Matic.NftTokenURI(req.ContractAddress, req.TokenID)
-				if err != nil {
-					return errs.NewError(err)
+				var tokenURL string
+				switch req.Network {
+				case models.NetworkMATIC:
+					{
+						tokenURL, err = s.bcs.Matic.NftTokenURI(req.ContractAddress, req.TokenID)
+						if err != nil {
+							return errs.NewError(err)
+						}
+					}
+				case models.NetworkAVAX:
+					{
+						tokenURL, err = s.bcs.Matic.NftTokenURI(req.ContractAddress, req.TokenID)
+						if err != nil {
+							return errs.NewError(err)
+						}
+					}
+				default:
+					{
+						return errs.NewError(errs.ErrBadRequest)
+					}
 				}
 				meta, err := s.stc.GetEvmNftMetaResp(tokenURL)
 				if err != nil {
