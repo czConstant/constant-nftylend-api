@@ -1233,6 +1233,111 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 								return errs.NewError(err)
 							}
 						}
+					case "OfferNow":
+						{
+							var req struct {
+								LoanID           string `json:"loan_id"`
+								Borrower         string `json:"borrower"`
+								BorrowerNonceHex string `json:"borrower_nonce_hex"`
+								Lender           string `json:"lender"`
+								LenderNonceHex   string `json:"lender_nonce_hex"`
+							}
+							err = json.Unmarshal([]byte(ins.Data), &req)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							loan, err := s.ld.First(
+								tx,
+								map[string][]interface{}{
+									"network = ?":   []interface{}{ins.Network},
+									"owner = ?":     []interface{}{req.Borrower},
+									"nonce_hex = ?": []interface{}{req.BorrowerNonceHex},
+								},
+								map[string][]interface{}{
+									"Offers": []interface{}{},
+								},
+								[]string{},
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							if loan == nil {
+								return errs.NewError(errs.ErrBadRequest)
+							}
+							if loan.Status != models.LoanStatusNew {
+								return errs.NewError(errs.ErrBadRequest)
+							}
+							offer := &models.LoanOffer{
+								Network:         ins.Network,
+								LoanID:          loan.ID,
+								Lender:          req.Lender,
+								PrincipalAmount: loan.PrincipalAmount,
+								InterestRate:    loan.InterestRate,
+								Duration:        loan.Duration,
+								StartedAt:       ins.BlockTime,
+								ExpiredAt:       helpers.TimeAdd(*ins.BlockTime, time.Second*time.Duration(loan.Duration)),
+								Status:          models.LoanOfferStatusApproved,
+								MakeTxHash:      ins.TransactionHash,
+								AcceptTxHash:    ins.TransactionHash,
+								NonceHex:        req.LenderNonceHex,
+							}
+							err = s.lod.Create(
+								tx,
+								offer,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							loan.DataLoanAddress = req.LoanID
+							loan.Lender = offer.Lender
+							loan.OfferStartedAt = offer.StartedAt
+							loan.OfferDuration = offer.Duration
+							loan.OfferExpiredAt = offer.ExpiredAt
+							loan.OfferPrincipalAmount = offer.PrincipalAmount
+							loan.OfferInterestRate = offer.InterestRate
+							loan.Status = models.LoanStatusCreated
+							loan.InitTxHash = ins.TransactionHash
+							err = s.ld.Save(
+								tx,
+								loan,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							for _, otherOffer := range loan.Offers {
+								if otherOffer.ID != offer.ID {
+									if otherOffer.Status == models.LoanOfferStatusNew {
+										otherOffer.Status = models.LoanOfferStatusRejected
+										err = s.lod.Save(
+											tx,
+											otherOffer,
+										)
+										if err != nil {
+											return errs.NewError(err)
+										}
+									}
+								}
+							}
+							err = s.ltd.Create(
+								tx,
+								&models.LoanTransaction{
+									Network:         ins.Network,
+									Type:            models.LoanTransactionTypeOffered,
+									LoanID:          loan.ID,
+									Borrower:        loan.Owner,
+									Lender:          offer.Lender,
+									PrincipalAmount: offer.PrincipalAmount,
+									InterestRate:    offer.InterestRate,
+									StartedAt:       offer.StartedAt,
+									Duration:        offer.Duration,
+									ExpiredAt:       offer.ExpiredAt,
+									TxHash:          ins.TransactionHash,
+								},
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+						}
 					default:
 						{
 							return errs.NewError(errs.ErrBadRequest)
