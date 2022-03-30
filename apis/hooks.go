@@ -42,7 +42,7 @@ func (s *Server) BlockchainScanBlock(c *gin.Context) {
 			}
 		}
 	case models.NetworkMATIC,
-		models.NetworkETH:
+		models.NetworkAVAX:
 		{
 			err = s.nls.JobEvmNftypawnFilterLogs(ctx, network, blockNumber)
 			if err != nil {
