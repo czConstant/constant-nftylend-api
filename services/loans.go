@@ -305,7 +305,7 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 					}
 				case models.NetworkAVAX:
 					{
-						tokenURL, err = s.bcs.Matic.NftTokenURI(req.ContractAddress, req.TokenID)
+						tokenURL, err = s.bcs.Avax.NftTokenURI(req.ContractAddress, req.TokenID)
 						if err != nil {
 							return errs.NewError(err)
 						}
