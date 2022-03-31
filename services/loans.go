@@ -280,6 +280,30 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
+			currency, err := s.GetCurrencyByID(tx, req.CurrencyID, req.Network)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			msgHex := helpers.AppendHexStrings(
+				helpers.ParseBigInt2Hex(models.Number2BigInt(req.PrincipalAmount.String(), int(currency.Decimals))),
+				helpers.ParseBigInt2Hex(models.Number2BigInt(req.TokenID, 0)),
+				helpers.ParseBigInt2Hex(big.NewInt(int64(req.Duration))),
+				helpers.ParseBigInt2Hex(models.Number2BigInt(fmt.Sprintf("%f", req.InterestRate), 4)),
+				helpers.ParseBigInt2Hex(big.NewInt(s.getEvmAdminFee(req.Network))),
+				helpers.ParseHex2Hex(req.NonceHex),
+				helpers.ParseAddress2Hex(req.ContractAddress),
+				helpers.ParseAddress2Hex(currency.ContractAddress),
+				helpers.ParseAddress2Hex(req.Borrower),
+				helpers.ParseBigInt2Hex(big.NewInt(s.getEvmClientByNetwork(req.Network).ChainID)),
+			)
+			err = s.getEvmClientByNetwork(req.Network).ValidateSignature(
+				msgHex,
+				req.Signature,
+				req.Borrower,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
 			asset, err := s.ad.First(
 				tx,
 				map[string][]interface{}{
@@ -294,26 +318,9 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 				return errs.NewError(err)
 			}
 			if asset == nil {
-				var tokenURL string
-				switch req.Network {
-				case models.NetworkMATIC:
-					{
-						tokenURL, err = s.bcs.Matic.NftTokenURI(req.ContractAddress, req.TokenID)
-						if err != nil {
-							return errs.NewError(err)
-						}
-					}
-				case models.NetworkAVAX:
-					{
-						tokenURL, err = s.bcs.Avax.NftTokenURI(req.ContractAddress, req.TokenID)
-						if err != nil {
-							return errs.NewError(err)
-						}
-					}
-				default:
-					{
-						return errs.NewError(errs.ErrBadRequest)
-					}
+				tokenURL, err := s.getEvmClientByNetwork(req.Network).NftTokenURI(req.ContractAddress, req.TokenID)
+				if err != nil {
+					return errs.NewError(err)
 				}
 				meta, err := s.stc.GetEvmNftMetaResp(tokenURL)
 				if err != nil {
@@ -381,10 +388,6 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 				if err != nil {
 					return errs.NewError(err)
 				}
-			}
-			currency, err := s.GetCurrencyByID(tx, req.CurrencyID, req.Network)
-			if err != nil {
-				return errs.NewError(err)
 			}
 			loan = &models.Loan{
 				Network:         req.Network,
@@ -459,6 +462,37 @@ func (s *NftLend) CreateLoanOffer(ctx context.Context, loanID uint, req *seriali
 			}
 			if loan.Status != models.LoanStatusNew {
 				return errs.NewError(errs.ErrBadRequest)
+			}
+			currency, err := s.GetCurrencyByID(tx, loan.CurrencyID, req.Network)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			asset, err := s.ad.FirstByID(tx, loan.AssetID, map[string][]interface{}{}, false)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if asset == nil {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			msgHex := helpers.AppendHexStrings(
+				helpers.ParseBigInt2Hex(models.Number2BigInt(req.PrincipalAmount.String(), int(currency.Decimals))),
+				helpers.ParseBigInt2Hex(models.Number2BigInt(asset.TokenID, 0)),
+				helpers.ParseBigInt2Hex(big.NewInt(int64(req.Duration))),
+				helpers.ParseBigInt2Hex(models.Number2BigInt(fmt.Sprintf("%f", req.InterestRate), 4)),
+				helpers.ParseBigInt2Hex(big.NewInt(s.getEvmAdminFee(req.Network))),
+				helpers.ParseHex2Hex(req.NonceHex),
+				helpers.ParseAddress2Hex(asset.ContractAddress),
+				helpers.ParseAddress2Hex(currency.ContractAddress),
+				helpers.ParseAddress2Hex(req.Lender),
+				helpers.ParseBigInt2Hex(big.NewInt(s.getEvmClientByNetwork(req.Network).ChainID)),
+			)
+			err = s.getEvmClientByNetwork(req.Network).ValidateSignature(
+				msgHex,
+				req.Signature,
+				req.Lender,
+			)
+			if err != nil {
+				return errs.NewError(err)
 			}
 			offer, err = s.lod.First(
 				tx,

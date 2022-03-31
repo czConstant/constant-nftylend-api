@@ -3,18 +3,22 @@ package helpers
 import (
 	"fmt"
 	"math/big"
+	"strings"
 )
 
 func GetSignMsg(msg string) string {
 	return fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(msg), msg)
 }
 
-func AppendHexStrings(values []string) string {
+func AppendHexStrings(values ...string) string {
 	var ret string
 	for _, v := range values {
+		if has0xPrefix(v) {
+			v = v[2:]
+		}
 		ret = fmt.Sprintf("%s%s", ret, v)
 	}
-	return ret
+	return fmt.Sprintf("0x%s", strings.ToLower(ret))
 }
 
 func ParseHex2Hex(v string) string {
@@ -31,9 +35,10 @@ func ParseNumber2Hex(v string) string {
 
 func ParseBigInt2Hex(v *big.Int) string {
 	if v == nil {
-		return "0000000000000000000000000000000000000000000000000000000000000000"
+		return strings.Repeat("00", 32)
 	}
-	return fmt.Sprintf("%64s", fmt.Sprintf("0000000000000000000000000000000000000000000000000000000000000000%s", v.Text(16)))
+	val := fmt.Sprintf("%s%s", strings.Repeat("00", 32), v.Text(16))
+	return val[len(val)-64:]
 }
 
 func has0xPrefix(input string) bool {
@@ -44,5 +49,6 @@ func ParseAddress2Hex(v string) string {
 	if has0xPrefix(v) {
 		v = v[2:]
 	}
-	return fmt.Sprintf("%40s", fmt.Sprintf("0000000000000000000000000000000000000000000000000000000000000000%s", v))
+	val := fmt.Sprintf("%s%s", strings.Repeat("00", 20), v)
+	return val[len(val)-40:]
 }

@@ -235,6 +235,15 @@ func ToBigInt(s string) big.Int {
 	return *n
 }
 
+func Number2BigInt(s string, decimals int) *big.Int {
+	dn, err := decimal.NewFromString(s)
+	if err != nil {
+		panic(err)
+	}
+	dn = dn.Shift(int32(decimals)).Round(0)
+	return dn.BigInt()
+}
+
 func MulBigFloats(val1 *big.Float, vals ...*big.Float) *big.Float {
 	val := val1
 	for _, v := range vals {

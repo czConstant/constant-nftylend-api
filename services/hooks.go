@@ -1505,60 +1505,25 @@ func (s *NftLend) UpdateAssetInfo(ctx context.Context, address string) error {
 
 func (s *NftLend) JobEvmNftypawnFilterLogs(ctx context.Context, network models.Network, block uint64) error {
 	var retErr error
-	switch network {
-	case models.NetworkMATIC:
-		{
-			if s.conf.Contract.MaticNftypawnAddress == "" {
-				return errs.NewError(errs.ErrBadRequest)
-			}
-			resps, err := s.bcs.Matic.NftypawnFilterLogs(s.conf.Contract.MaticNftypawnAddress, block)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			for _, resp := range resps {
-				err = s.InternalHookSolanaInstruction(
-					ctx,
-					models.NetworkMATIC,
-					uint64(resp.BlockNumber),
-					uint64(resp.Timestamp),
-					resp.Hash,
-					resp.Index,
-					resp.Index,
-					"",
-					resp.Event,
-					resp.Data,
-				)
-				if err != nil {
-					retErr = errs.MergeError(retErr, err)
-				}
-			}
-		}
-	case models.NetworkAVAX:
-		{
-			if s.conf.Contract.AvaxNftypawnAddress == "" {
-				return errs.NewError(errs.ErrBadRequest)
-			}
-			resps, err := s.bcs.Avax.NftypawnFilterLogs(s.conf.Contract.AvaxNftypawnAddress, block)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			for _, resp := range resps {
-				err = s.InternalHookSolanaInstruction(
-					ctx,
-					models.NetworkAVAX,
-					uint64(resp.BlockNumber),
-					uint64(resp.Timestamp),
-					resp.Hash,
-					resp.Index,
-					resp.Index,
-					"",
-					resp.Event,
-					resp.Data,
-				)
-				if err != nil {
-					retErr = errs.MergeError(retErr, err)
-				}
-			}
+	resps, err := s.getEvmClientByNetwork(network).NftypawnFilterLogs(s.getEvmContractAddress(network), block)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	for _, resp := range resps {
+		err = s.InternalHookSolanaInstruction(
+			ctx,
+			network,
+			uint64(resp.BlockNumber),
+			uint64(resp.Timestamp),
+			resp.Hash,
+			resp.Index,
+			resp.Index,
+			"",
+			resp.Event,
+			resp.Data,
+		)
+		if err != nil {
+			retErr = errs.MergeError(retErr, err)
 		}
 	}
 	return retErr

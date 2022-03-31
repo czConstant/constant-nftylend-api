@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/czConstant/blockchain-api/bcclient"
+	"github.com/czConstant/blockchain-api/bcclient/ethereum"
 	"github.com/czConstant/blockchain-api/bcclient/solana"
 	"github.com/czConstant/constant-nftylend-api/configs"
 	"github.com/czConstant/constant-nftylend-api/daos"
@@ -66,6 +67,60 @@ func NewNftLend(
 	}
 	go stc.StartWssSolsea(s.solseaMsgReceived)
 	return s
+}
+
+func (s *NftLend) getEvmClientByNetwork(network models.Network) *ethereum.Client {
+	switch network {
+	case models.NetworkETH:
+		{
+			return s.bcs.Ethereum
+		}
+	case models.NetworkMATIC:
+		{
+			return s.bcs.Matic
+		}
+	case models.NetworkAVAX:
+		{
+			return s.bcs.Avax
+		}
+	}
+	return nil
+}
+
+func (s *NftLend) getEvmAdminFee(network models.Network) int64 {
+	switch network {
+	case models.NetworkETH:
+		{
+			return 100
+		}
+	case models.NetworkMATIC:
+		{
+			return 100
+		}
+	case models.NetworkAVAX:
+		{
+			return 100
+		}
+	}
+	return 0
+}
+
+func (s *NftLend) getEvmContractAddress(network models.Network) string {
+	switch network {
+	case models.NetworkETH:
+		{
+			return ""
+		}
+	case models.NetworkMATIC:
+		{
+			return s.conf.Contract.MaticNftypawnAddress
+		}
+	case models.NetworkAVAX:
+		{
+			return s.conf.Contract.AvaxNftypawnAddress
+		}
+	}
+	return ""
 }
 
 func (s *NftLend) getLendCurrency(tx *gorm.DB, address string) (*models.Currency, error) {
