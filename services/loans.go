@@ -463,7 +463,7 @@ func (s *NftLend) CreateLoanOffer(ctx context.Context, loanID uint, req *seriali
 			if loan.Status != models.LoanStatusNew {
 				return errs.NewError(errs.ErrBadRequest)
 			}
-			currency, err := s.GetCurrencyByID(tx, loan.CurrencyID, req.Network)
+			currency, err := s.GetCurrencyByID(tx, loan.CurrencyID, loan.Network)
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -479,14 +479,14 @@ func (s *NftLend) CreateLoanOffer(ctx context.Context, loanID uint, req *seriali
 				helpers.ParseBigInt2Hex(models.Number2BigInt(asset.TokenID, 0)),
 				helpers.ParseBigInt2Hex(big.NewInt(int64(req.Duration))),
 				helpers.ParseBigInt2Hex(models.Number2BigInt(fmt.Sprintf("%f", req.InterestRate), 4)),
-				helpers.ParseBigInt2Hex(big.NewInt(s.getEvmAdminFee(req.Network))),
+				helpers.ParseBigInt2Hex(big.NewInt(s.getEvmAdminFee(loan.Network))),
 				helpers.ParseHex2Hex(req.NonceHex),
 				helpers.ParseAddress2Hex(asset.ContractAddress),
 				helpers.ParseAddress2Hex(currency.ContractAddress),
 				helpers.ParseAddress2Hex(req.Lender),
-				helpers.ParseBigInt2Hex(big.NewInt(s.getEvmClientByNetwork(req.Network).ChainID)),
+				helpers.ParseBigInt2Hex(big.NewInt(s.getEvmClientByNetwork(loan.Network).ChainID)),
 			)
-			err = s.getEvmClientByNetwork(req.Network).ValidateSignature(
+			err = s.getEvmClientByNetwork(loan.Network).ValidateSignature(
 				msgHex,
 				req.Signature,
 				req.Lender,

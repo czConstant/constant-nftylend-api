@@ -19,7 +19,6 @@ type CreateLoanReq struct {
 }
 
 type CreateLoanOfferReq struct {
-	Network         models.Network   `json:"chain"`
 	Lender          string           `json:"lender"`
 	PrincipalAmount numeric.BigFloat `json:"principal_amount"`
 	InterestRate    float64          `json:"interest_rate"`
