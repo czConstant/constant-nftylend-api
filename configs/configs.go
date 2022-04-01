@@ -26,7 +26,7 @@ func init() {
 		URL: config.EvnURL,
 	}
 
-	dbURL, _, err := evnClient.GetSecret("DB-NFTLEND-URL")
+	dbURL, _, err := evnClient.GetSecret("DB-NFTPAWN-URL")
 	if err != nil {
 		panic(err)
 	}
