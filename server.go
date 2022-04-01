@@ -49,6 +49,7 @@ func main() {
 				"panic start server",
 				zap.Error(panicErr),
 			)
+			log.Println(fmt.Errorf("%s\n%s", err, string(debug.Stack())))
 			return
 		}
 	}()
