@@ -2,6 +2,7 @@ package configs
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 
 	"github.com/czConstant/blockchain-api/bcclient"
@@ -31,6 +32,7 @@ func init() {
 		panic(err)
 	}
 	config.DbURL = client.ParseDBURL(dbURL)
+	fmt.Println(config.DbURL)
 }
 
 func GetConfig() *Config {
