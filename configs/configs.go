@@ -2,7 +2,6 @@ package configs
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 
 	"github.com/czConstant/blockchain-api/bcclient"
@@ -26,13 +25,11 @@ func init() {
 	evnClient := &client.Client{
 		URL: config.EvnURL,
 	}
-
 	dbURL, _, err := evnClient.GetSecret("DB-NFTPAWN-URL")
 	if err != nil {
 		panic(err)
 	}
 	config.DbURL = client.ParseDBURL(dbURL)
-	fmt.Println(config.DbURL)
 }
 
 func GetConfig() *Config {
