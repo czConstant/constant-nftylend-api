@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/czConstant/constant-nftylend-api/daos"
@@ -267,6 +268,10 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 		req.Signature == "" {
 		return nil, errs.NewError(errs.ErrBadRequest)
 	}
+	req.Borrower = strings.ToLower(req.Borrower)
+	req.NonceHex = strings.ToLower(req.NonceHex)
+	req.Signature = strings.ToLower(req.Signature)
+	req.ContractAddress = strings.ToLower(req.ContractAddress)
 	switch req.Network {
 	case models.NetworkMATIC,
 		models.NetworkAVAX:
@@ -445,6 +450,9 @@ func (s *NftLend) CreateLoanOffer(ctx context.Context, loanID uint, req *seriali
 		req.Signature == "" {
 		return nil, errs.NewError(errs.ErrBadRequest)
 	}
+	req.Lender = strings.ToLower(req.Lender)
+	req.NonceHex = strings.ToLower(req.NonceHex)
+	req.Signature = strings.ToLower(req.Signature)
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
