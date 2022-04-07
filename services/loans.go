@@ -394,6 +394,22 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 					return errs.NewError(err)
 				}
 			}
+			loan, err = s.ld.First(
+				tx,
+				map[string][]interface{}{
+					"network = ?":  []interface{}{req.Network},
+					"asset_id = ?": []interface{}{asset.ID},
+					"status = ?":   []interface{}{models.LoanStatusNew},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if loan != nil {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			loan = &models.Loan{
 				Network:         req.Network,
 				Owner:           req.Borrower,
