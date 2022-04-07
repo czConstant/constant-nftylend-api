@@ -866,6 +866,10 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							if err != nil {
 								return errs.NewError(err)
 							}
+							req.Lender = strings.ToLower(req.Lender)
+							req.Borrower = strings.ToLower(req.Borrower)
+							req.Lender = strings.ToLower(req.Lender)
+							req.LenderNonceHex = strings.ToLower(req.LenderNonceHex)
 							loan, err := s.ld.First(
 								tx,
 								map[string][]interface{}{
@@ -977,6 +981,8 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							if err != nil {
 								return errs.NewError(err)
 							}
+							req.NonceHex = strings.ToLower(req.NonceHex)
+							req.Sender = strings.ToLower(req.Sender)
 							loan, err := s.ld.First(
 								tx,
 								map[string][]interface{}{
@@ -1248,6 +1254,10 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							if err != nil {
 								return errs.NewError(err)
 							}
+							req.Lender = strings.ToLower(req.Lender)
+							req.Borrower = strings.ToLower(req.Borrower)
+							req.Lender = strings.ToLower(req.Lender)
+							req.LenderNonceHex = strings.ToLower(req.LenderNonceHex)
 							loan, err := s.ld.First(
 								tx,
 								map[string][]interface{}{
