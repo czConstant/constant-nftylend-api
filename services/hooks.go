@@ -850,7 +850,8 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					}
 				}
 			case models.NetworkMATIC,
-				models.NetworkAVAX:
+				models.NetworkAVAX,
+				models.NetworkBSC:
 				{
 					switch ins.Instruction {
 					case "LoanStarted":

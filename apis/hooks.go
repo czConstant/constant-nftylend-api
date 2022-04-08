@@ -42,7 +42,8 @@ func (s *Server) BlockchainScanBlock(c *gin.Context) {
 			}
 		}
 	case models.NetworkMATIC,
-		models.NetworkAVAX:
+		models.NetworkAVAX,
+		models.NetworkBSC:
 		{
 			err = s.nls.JobEvmNftypawnFilterLogs(ctx, network, blockNumber)
 			if err != nil {
@@ -91,6 +92,10 @@ func (s *Server) JobEvmNftypawnFilterLogs(c *gin.Context) {
 		retErr = errs.MergeError(retErr, err)
 	}
 	err = s.nls.JobEvmNftypawnFilterLogs(ctx, models.NetworkAVAX, 0)
+	if err != nil {
+		retErr = errs.MergeError(retErr, err)
+	}
+	err = s.nls.JobEvmNftypawnFilterLogs(ctx, models.NetworkBSC, 0)
 	if err != nil {
 		retErr = errs.MergeError(retErr, err)
 	}

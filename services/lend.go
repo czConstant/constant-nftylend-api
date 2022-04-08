@@ -83,6 +83,10 @@ func (s *NftLend) getEvmClientByNetwork(network models.Network) *ethereum.Client
 		{
 			return s.bcs.Avax
 		}
+	case models.NetworkBSC:
+		{
+			return s.bcs.BSC
+		}
 	}
 	return nil
 }
@@ -98,6 +102,10 @@ func (s *NftLend) getEvmAdminFee(network models.Network) int64 {
 			return 100
 		}
 	case models.NetworkAVAX:
+		{
+			return 100
+		}
+	case models.NetworkBSC:
 		{
 			return 100
 		}
@@ -118,6 +126,10 @@ func (s *NftLend) getEvmContractAddress(network models.Network) string {
 	case models.NetworkAVAX:
 		{
 			return s.conf.Contract.AvaxNftypawnAddress
+		}
+	case models.NetworkBSC:
+		{
+			return s.conf.Contract.BscNftypawnAddress
 		}
 	}
 	return ""
