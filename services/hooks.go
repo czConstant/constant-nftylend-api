@@ -1517,25 +1517,31 @@ func (s *NftLend) UpdateAssetInfo(ctx context.Context, address string) error {
 
 func (s *NftLend) JobEvmNftypawnFilterLogs(ctx context.Context, network models.Network, block uint64) error {
 	var retErr error
-	resps, err := s.getEvmClientByNetwork(network).NftypawnFilterLogs(s.getEvmContractAddress(network), block)
-	if err != nil {
-		return errs.NewError(err)
-	}
-	for _, resp := range resps {
-		err = s.InternalHookSolanaInstruction(
-			ctx,
-			network,
-			uint64(resp.BlockNumber),
-			uint64(resp.Timestamp),
-			resp.Hash,
-			resp.Index,
-			resp.Index,
-			"",
-			resp.Event,
-			resp.Data,
-		)
-		if err != nil {
-			retErr = errs.MergeError(retErr, err)
+	evmClient := s.getEvmClientByNetwork(network)
+	if evmClient != nil {
+		contractAddress := s.getEvmContractAddress(network)
+		if contractAddress != "" {
+			resps, err := s.getEvmClientByNetwork(network).NftypawnFilterLogs(s.getEvmContractAddress(network), block)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			for _, resp := range resps {
+				err = s.InternalHookSolanaInstruction(
+					ctx,
+					network,
+					uint64(resp.BlockNumber),
+					uint64(resp.Timestamp),
+					resp.Hash,
+					resp.Index,
+					resp.Index,
+					"",
+					resp.Event,
+					resp.Data,
+				)
+				if err != nil {
+					retErr = errs.MergeError(retErr, err)
+				}
+			}
 		}
 	}
 	return retErr
