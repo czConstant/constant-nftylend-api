@@ -100,6 +100,10 @@ func (s *Server) JobEvmNftypawnFilterLogs(c *gin.Context) {
 	if err != nil {
 		retErr = errs.MergeError(retErr, err)
 	}
+	err = s.nls.JobEvmNftypawnFilterLogs(ctx, models.NetworkBOBA, 0)
+	if err != nil {
+		retErr = errs.MergeError(retErr, err)
+	}
 	if retErr != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(retErr)})
 		return
