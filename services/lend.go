@@ -109,6 +109,10 @@ func (s *NftLend) getEvmAdminFee(network models.Network) int64 {
 		{
 			return 100
 		}
+	case models.NetworkBOBA:
+		{
+			return 100
+		}
 	}
 	return 0
 }
@@ -130,6 +134,10 @@ func (s *NftLend) getEvmContractAddress(network models.Network) string {
 	case models.NetworkBSC:
 		{
 			return s.conf.Contract.BscNftypawnAddress
+		}
+	case models.NetworkBOBA:
+		{
+			return s.conf.Contract.BobaNftypawnAddress
 		}
 	}
 	return ""

@@ -275,7 +275,8 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 	switch req.Network {
 	case models.NetworkMATIC,
 		models.NetworkAVAX,
-		models.NetworkBSC:
+		models.NetworkBSC,
+		models.NetworkBOBA:
 		{
 		}
 	default:

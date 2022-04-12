@@ -851,7 +851,8 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 				}
 			case models.NetworkMATIC,
 				models.NetworkAVAX,
-				models.NetworkBSC:
+				models.NetworkBSC,
+				models.NetworkBOBA:
 				{
 					switch ins.Instruction {
 					case "LoanStarted":
