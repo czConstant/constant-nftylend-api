@@ -24,8 +24,12 @@ func (s *NftLend) LendNftLendUpdateBlock(ctx context.Context, block uint64) erro
 	return nil
 }
 
-func (s *NftLend) EvmUpdateBlockchain(ctx context.Context, txHash string) error {
-	return nil
+func (s *NftLend) MoralisGetNFTs(ctx context.Context, chain string, address string, cursor string, limit int) (interface{}, error) {
+	rs, err := s.mc.GetNFTs(chain, address, cursor, limit)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return rs, nil
 }
 
 func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) error {

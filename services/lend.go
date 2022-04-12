@@ -16,6 +16,7 @@ import (
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/helpers"
 	"github.com/czConstant/constant-nftylend-api/models"
+	"github.com/czConstant/constant-nftylend-api/services/3rd/moralis"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/saletrack"
 	"github.com/czConstant/constant-nftylend-api/types/numeric"
 	"github.com/jinzhu/gorm"
@@ -25,6 +26,7 @@ type NftLend struct {
 	conf *configs.Config
 	bcs  *bcclient.Client
 	stc  *saletrack.Client
+	mc   *moralis.Client
 	cd   *daos.Currency
 	cld  *daos.Collection
 	clsd *daos.CollectionSubmitted
@@ -40,6 +42,7 @@ func NewNftLend(
 	conf *configs.Config,
 	bcs *bcclient.Client,
 	stc *saletrack.Client,
+	mc *moralis.Client,
 	cd *daos.Currency,
 	cld *daos.Collection,
 	clsd *daos.CollectionSubmitted,
@@ -55,6 +58,7 @@ func NewNftLend(
 		conf: conf,
 		bcs:  bcs,
 		stc:  stc,
+		mc:   mc,
 		cd:   cd,
 		cld:  cld,
 		clsd: clsd,

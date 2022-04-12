@@ -48,6 +48,7 @@ func (s *Server) Routers() {
 			ctxJSON(c, http.StatusOK, &serializers.Resp{Error: nil})
 		})
 		nftAPI.GET("/configs", s.AppConfigs)
+		nftAPI.GET("/moralis/:address/nft", s.MoralisGetNFTs)
 	}
 	nftAPI.POST("/blockchain/update-block/:block", s.NftLendUpdateBlock)
 	nftAPI.POST("/blockchain/:network/scan-block/:block", s.BlockchainScanBlock)

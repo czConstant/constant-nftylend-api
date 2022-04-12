@@ -23,6 +23,16 @@ func (s *Server) AppConfigs(c *gin.Context) {
 	}})
 }
 
+func (s *Server) MoralisGetNFTs(c *gin.Context) {
+	limit, _ := s.uintFromContextQuery(c, "limit")
+	rs, err := s.nls.MoralisGetNFTs(s.requestContext(c), s.stringFromContextQuery(c, "chain"), s.stringFromContextParam(c, "address"), s.stringFromContextQuery(c, "cursor"), int(limit))
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, rs)
+}
+
 func (s *Server) GetAssetDetail(c *gin.Context) {
 	ctx := s.requestContext(c)
 	m, err := s.nls.GetAssetDetail(ctx, s.stringFromContextParam(c, "seo_url"))
