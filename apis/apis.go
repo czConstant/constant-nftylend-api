@@ -16,7 +16,21 @@ func (s *Server) AppConfigs(c *gin.Context) {
 		"matic_nftypawn_admin_fee": 100,
 		"avax_nftypawn_address":    s.conf.Contract.AvaxNftypawnAddress,
 		"avax_nftypawn_admin_fee":  100,
+		"bsc_nftypawn_address":     s.conf.Contract.BscNftypawnAddress,
+		"bsc_nftypawn_admin_fee":   100,
+		"boba_nftypawn_address":    s.conf.Contract.BobaNftypawnAddress,
+		"boba_nftypawn_admin_fee":  100,
 	}})
+}
+
+func (s *Server) MoralisGetNFTs(c *gin.Context) {
+	limit, _ := s.uintFromContextQuery(c, "limit")
+	rs, err := s.nls.MoralisGetNFTs(s.requestContext(c), s.stringFromContextQuery(c, "chain"), s.stringFromContextParam(c, "address"), s.stringFromContextQuery(c, "cursor"), int(limit))
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, rs)
 }
 
 func (s *Server) GetAssetDetail(c *gin.Context) {

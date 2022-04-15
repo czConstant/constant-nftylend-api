@@ -22,6 +22,8 @@ const (
 	NetworkMATIC Network = "MATIC"
 	NetworkETH   Network = "ETH"
 	NetworkAVAX  Network = "AVAX"
+	NetworkBSC   Network = "BSC"
+	NetworkBOBA  Network = "BOBA"
 )
 
 type Loan struct {

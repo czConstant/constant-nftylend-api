@@ -16,6 +16,7 @@ import (
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/helpers"
 	"github.com/czConstant/constant-nftylend-api/models"
+	"github.com/czConstant/constant-nftylend-api/services/3rd/moralis"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/saletrack"
 	"github.com/czConstant/constant-nftylend-api/types/numeric"
 	"github.com/jinzhu/gorm"
@@ -25,6 +26,7 @@ type NftLend struct {
 	conf *configs.Config
 	bcs  *bcclient.Client
 	stc  *saletrack.Client
+	mc   *moralis.Client
 	cd   *daos.Currency
 	cld  *daos.Collection
 	clsd *daos.CollectionSubmitted
@@ -40,6 +42,7 @@ func NewNftLend(
 	conf *configs.Config,
 	bcs *bcclient.Client,
 	stc *saletrack.Client,
+	mc *moralis.Client,
 	cd *daos.Currency,
 	cld *daos.Collection,
 	clsd *daos.CollectionSubmitted,
@@ -55,6 +58,7 @@ func NewNftLend(
 		conf: conf,
 		bcs:  bcs,
 		stc:  stc,
+		mc:   mc,
 		cd:   cd,
 		cld:  cld,
 		clsd: clsd,
@@ -83,6 +87,14 @@ func (s *NftLend) getEvmClientByNetwork(network models.Network) *ethereum.Client
 		{
 			return s.bcs.Avax
 		}
+	case models.NetworkBSC:
+		{
+			return s.bcs.BSC
+		}
+	case models.NetworkBOBA:
+		{
+			return s.bcs.Boba
+		}
 	}
 	return nil
 }
@@ -98,6 +110,14 @@ func (s *NftLend) getEvmAdminFee(network models.Network) int64 {
 			return 100
 		}
 	case models.NetworkAVAX:
+		{
+			return 100
+		}
+	case models.NetworkBSC:
+		{
+			return 100
+		}
+	case models.NetworkBOBA:
 		{
 			return 100
 		}
@@ -118,6 +138,14 @@ func (s *NftLend) getEvmContractAddress(network models.Network) string {
 	case models.NetworkAVAX:
 		{
 			return s.conf.Contract.AvaxNftypawnAddress
+		}
+	case models.NetworkBSC:
+		{
+			return s.conf.Contract.BscNftypawnAddress
+		}
+	case models.NetworkBOBA:
+		{
+			return s.conf.Contract.BobaNftypawnAddress
 		}
 	}
 	return ""

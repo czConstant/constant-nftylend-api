@@ -24,8 +24,12 @@ func (s *NftLend) LendNftLendUpdateBlock(ctx context.Context, block uint64) erro
 	return nil
 }
 
-func (s *NftLend) EvmUpdateBlockchain(ctx context.Context, txHash string) error {
-	return nil
+func (s *NftLend) MoralisGetNFTs(ctx context.Context, chain string, address string, cursor string, limit int) (interface{}, error) {
+	rs, err := s.mc.GetNFTs(chain, address, cursor, limit)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return rs, nil
 }
 
 func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) error {
@@ -850,7 +854,9 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 					}
 				}
 			case models.NetworkMATIC,
-				models.NetworkAVAX:
+				models.NetworkAVAX,
+				models.NetworkBSC,
+				models.NetworkBOBA:
 				{
 					switch ins.Instruction {
 					case "LoanStarted":
@@ -1515,25 +1521,31 @@ func (s *NftLend) UpdateAssetInfo(ctx context.Context, address string) error {
 
 func (s *NftLend) JobEvmNftypawnFilterLogs(ctx context.Context, network models.Network, block uint64) error {
 	var retErr error
-	resps, err := s.getEvmClientByNetwork(network).NftypawnFilterLogs(s.getEvmContractAddress(network), block)
-	if err != nil {
-		return errs.NewError(err)
-	}
-	for _, resp := range resps {
-		err = s.InternalHookSolanaInstruction(
-			ctx,
-			network,
-			uint64(resp.BlockNumber),
-			uint64(resp.Timestamp),
-			resp.Hash,
-			resp.Index,
-			resp.Index,
-			"",
-			resp.Event,
-			resp.Data,
-		)
-		if err != nil {
-			retErr = errs.MergeError(retErr, err)
+	evmClient := s.getEvmClientByNetwork(network)
+	if evmClient != nil {
+		contractAddress := s.getEvmContractAddress(network)
+		if contractAddress != "" {
+			resps, err := s.getEvmClientByNetwork(network).NftypawnFilterLogs(s.getEvmContractAddress(network), block)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			for _, resp := range resps {
+				err = s.InternalHookSolanaInstruction(
+					ctx,
+					network,
+					uint64(resp.BlockNumber),
+					uint64(resp.Timestamp),
+					resp.Hash,
+					resp.Index,
+					resp.Index,
+					"",
+					resp.Event,
+					resp.Data,
+				)
+				if err != nil {
+					retErr = errs.MergeError(retErr, err)
+				}
+			}
 		}
 	}
 	return retErr

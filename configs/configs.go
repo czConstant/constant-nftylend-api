@@ -52,10 +52,15 @@ type Config struct {
 		Service string `json:"service"`
 		Version string `json:"version"`
 	} `json:"datadog"`
+	Moralis struct {
+		APIKey string `json:"api_key"`
+	} `json:"moralis"`
 	Contract struct {
 		ProgramID            string `json:"program_id"`
 		MaticNftypawnAddress string `json:"matic_nftypawn_address"`
 		AvaxNftypawnAddress  string `json:"avax_nftypawn_address"`
+		BscNftypawnAddress   string `json:"bsc_nftypawn_address"`
+		BobaNftypawnAddress  string `json:"boba_nftypawn_address"`
 	} `json:"contract"`
 	Blockchain bcclient.Config `json:"blockchain"`
 }

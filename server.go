@@ -20,6 +20,7 @@ import (
 	"github.com/czConstant/constant-nftylend-api/databases"
 	"github.com/czConstant/constant-nftylend-api/logger"
 	"github.com/czConstant/constant-nftylend-api/services"
+	"github.com/czConstant/constant-nftylend-api/services/3rd/moralis"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/saletrack"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -105,11 +106,15 @@ func main() {
 		id   = &daos.Instruction{}
 
 		stc = &saletrack.Client{}
+		mc  = &moralis.Client{
+			APIKey: conf.Moralis.APIKey,
+		}
 
 		s = services.NewNftLend(
 			conf,
 			bcs,
 			stc,
+			mc,
 			cd,
 			cld,
 			clsd,
