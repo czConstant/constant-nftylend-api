@@ -62,6 +62,7 @@ type Config struct {
 		AvaxNftypawnAddress  string `json:"avax_nftypawn_address"`
 		BscNftypawnAddress   string `json:"bsc_nftypawn_address"`
 		BobaNftypawnAddress  string `json:"boba_nftypawn_address"`
+		NearNftypawnAddress  string `json:"near_nftypawn_address"`
 	} `json:"contract"`
 	Blockchain bcclient.Config `json:"blockchain"`
 }
