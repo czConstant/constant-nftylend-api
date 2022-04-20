@@ -329,7 +329,7 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 				if err != nil {
 					return errs.NewError(err)
 				}
-				meta, err := s.stc.GetEvmNftMetaResp(tokenURL)
+				meta, err := s.stc.GetEvmNftMetaResp(helpers.ConvertImageDataURL(tokenURL))
 				if err != nil {
 					return errs.NewError(err)
 				}

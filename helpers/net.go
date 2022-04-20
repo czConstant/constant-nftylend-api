@@ -98,3 +98,11 @@ func MakeSeoURL(title string) string {
 	prettyurl = strings.ToLower(strings.Trim(prettyurl, "-"))
 	return prettyurl
 }
+
+func ConvertImageDataURL(url string) string {
+	if strings.HasPrefix(url, "ipfs://") {
+		url = strings.TrimPrefix(url, "ipfs://")
+		url = fmt.Sprintf("https://ipfs.io/ipfs/%s", url)
+	}
+	return url
+}

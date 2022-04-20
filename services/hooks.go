@@ -102,7 +102,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 								if err != nil {
 									return errs.NewError(err)
 								}
-								metaInfo, err := s.bcs.Solana.GetMetadataInfo(meta.Data.Uri)
+								metaInfo, err := s.bcs.Solana.GetMetadataInfo(helpers.ConvertImageDataURL(meta.Data.Uri))
 								if err != nil {
 									return errs.NewError(err)
 								}
