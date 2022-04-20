@@ -20,6 +20,8 @@ func (s *Server) AppConfigs(c *gin.Context) {
 		"bsc_nftypawn_admin_fee":   100,
 		"boba_nftypawn_address":    s.conf.Contract.BobaNftypawnAddress,
 		"boba_nftypawn_admin_fee":  100,
+		"near_nftypawn_address":    s.conf.Contract.NearNftypawnAddress,
+		"near_nftypawn_admin_fee":  100,
 	}})
 }
 
