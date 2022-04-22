@@ -215,8 +215,11 @@ func (s *NftLend) GetAssetDetail(ctx context.Context, seoURL string) (*models.As
 		map[string][]interface{}{
 			"Collection": []interface{}{},
 			"NewLoan": []interface{}{
-				"status = ?",
-				models.LoanStatusNew,
+				"status in (?)",
+				[]models.LoanStatus{
+					models.LoanStatusNew,
+					models.LoanStatusCreated,
+				},
 			},
 			"NewLoan.Currency": []interface{}{},
 			"NewLoan.Offers": []interface{}{
