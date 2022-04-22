@@ -227,6 +227,10 @@ func (s *NftLend) GetAssetDetail(ctx context.Context, seoURL string) (*models.As
 					return db.Order("loan_offers.id DESC")
 				},
 			},
+			"NewLoan.ApprovedOffer": []interface{}{
+				"status = ?",
+				models.LoanOfferStatusApproved,
+			},
 		},
 		[]string{"id desc"},
 	)
