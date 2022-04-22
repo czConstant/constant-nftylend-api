@@ -332,3 +332,29 @@ func (c *Client) GetEvmNftMetaResp(tokenURL string) (*EvmNftMetaResp, error) {
 	}
 	return &rs, nil
 }
+
+type NearNftMetaResp struct {
+	Description string `json:"description"`
+	Collection  string `json:"collection"`
+}
+
+func (c *Client) GetNearNftMetaResp(tokenURL string) (*NearNftMetaResp, error) {
+	var rs NearNftMetaResp
+	client := &http.Client{}
+	resp, err := client.Get(tokenURL)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode >= 300 {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("http response bad status %d %s", resp.StatusCode, err.Error())
+		}
+		return nil, fmt.Errorf("http response bad status %d %s", resp.StatusCode, string(bodyBytes))
+	}
+	err = json.NewDecoder(resp.Body).Decode(&rs)
+	if err != nil {
+		return nil, err
+	}
+	return &rs, nil
+}

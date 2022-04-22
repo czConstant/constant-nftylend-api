@@ -48,11 +48,15 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				return errs.NewError(err)
 			}
 			if asset == nil {
+				metaData, err := s.bcs.Near.GetNftMetadata(saleInfo.NftContractID, saleInfo.TokenID)
+				if err != nil {
+					return errs.NewError(err)
+				}
 				// tokenURL, err := s.getEvmClientByNetwork(req.Network).NftTokenURI(req.ContractAddress, req.TokenID)
 				// if err != nil {
 				// 	return errs.NewError(err)
 				// }
-				// meta, err := s.stc.GetEvmNftMetaResp(helpers.ConvertImageDataURL(tokenURL))
+				// metaInfo, err := s.stc.GetEvmNftMetaResp(helpers.ConvertImageDataURL(metaData.Metadata.Reference))
 				// if err != nil {
 				// 	return errs.NewError(err)
 				// }
@@ -101,8 +105,8 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					TokenID:               req.TokenID,
 					Symbol:                "",
 					Name:                  saleInfo.NftContractID,
-					TokenURL:              "",
-					ExternalUrl:           "",
+					TokenURL:              metaData.Metadata.Media,
+					ExternalUrl:           metaData.Metadata.Reference,
 					SellerFeeRate:         0,
 					Attributes:            "",
 					MetaJson:              "",
