@@ -104,5 +104,10 @@ func ConvertImageDataURL(url string) string {
 		url = strings.TrimPrefix(url, "ipfs://")
 		url = fmt.Sprintf("https://ipfs.io/ipfs/%s", url)
 	}
+	if !(strings.HasPrefix(url, "ipfs") ||
+		strings.HasPrefix(url, "http") ||
+		strings.HasPrefix(url, "https")) {
+		url = fmt.Sprintf("https://ipfs.io/ipfs/%s", url)
+	}
 	return url
 }

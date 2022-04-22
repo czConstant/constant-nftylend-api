@@ -336,6 +336,10 @@ func (c *Client) GetEvmNftMetaResp(tokenURL string) (*EvmNftMetaResp, error) {
 type NearNftMetaResp struct {
 	Description string `json:"description"`
 	Collection  string `json:"collection"`
+	Attributes  []struct {
+		TraitType string      `json:"trait_type"`
+		Value     interface{} `json:"value"`
+	} `json:"attributes"`
 }
 
 func (c *Client) GetNearNftMetaResp(tokenURL string) (*NearNftMetaResp, error) {

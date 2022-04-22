@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"strings"
@@ -52,14 +53,13 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				if err != nil {
 					return errs.NewError(err)
 				}
-				// tokenURL, err := s.getEvmClientByNetwork(req.Network).NftTokenURI(req.ContractAddress, req.TokenID)
-				// if err != nil {
-				// 	return errs.NewError(err)
-				// }
-				// metaInfo, err := s.stc.GetEvmNftMetaResp(helpers.ConvertImageDataURL(metaData.Metadata.Reference))
-				// if err != nil {
-				// 	return errs.NewError(err)
-				// }
+				if metaData.Metadata.Reference == "" {
+					return errs.NewError(errs.ErrBadRequest)
+				}
+				metaInfo, err := s.stc.GetNearNftMetaResp(helpers.ConvertImageDataURL(metaData.Metadata.Reference))
+				if err != nil {
+					return errs.NewError(err)
+				}
 				collection, err := s.cld.First(
 					tx,
 					map[string][]interface{}{
@@ -77,8 +77,8 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						Network:         models.NetworkNEAR,
 						SeoURL:          helpers.MakeSeoURL(req.ContractAddress),
 						ContractAddress: req.ContractAddress,
-						Name:            "",
-						Description:     saleInfo.NftContractID,
+						Name:            metaInfo.Collection,
+						Description:     metaInfo.Description,
 						Enabled:         true,
 					}
 					err = s.cld.Create(
@@ -89,14 +89,14 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						return errs.NewError(err)
 					}
 				}
-				// attributes, err := json.Marshal(meta.Attributes)
-				// if err != nil {
-				// 	return errs.NewError(err)
-				// }
-				// metaJson, err := json.Marshal(meta)
-				// if err != nil {
-				// 	return errs.NewError(err)
-				// }
+				attributes, err := json.Marshal(metaInfo.Attributes)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				metaJson, err := json.Marshal(metaInfo)
+				if err != nil {
+					return errs.NewError(err)
+				}
 				asset = &models.Asset{
 					Network:               models.NetworkNEAR,
 					CollectionID:          collection.ID,
@@ -104,12 +104,12 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					ContractAddress:       collection.ContractAddress,
 					TokenID:               req.TokenID,
 					Symbol:                "",
-					Name:                  saleInfo.NftContractID,
+					Name:                  metaData.Metadata.Title,
 					TokenURL:              metaData.Metadata.Media,
 					ExternalUrl:           metaData.Metadata.Reference,
 					SellerFeeRate:         0,
-					Attributes:            "",
-					MetaJson:              "",
+					Attributes:            string(attributes),
+					MetaJson:              string(metaJson),
 					MetaJsonUrl:           "",
 					OriginNetwork:         "",
 					OriginContractAddress: "",
