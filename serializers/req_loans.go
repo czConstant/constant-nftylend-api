@@ -26,3 +26,8 @@ type CreateLoanOfferReq struct {
 	Signature       string           `json:"signature"`
 	NonceHex        string           `json:"nonce_hex"`
 }
+
+type CreateLoanNearReq struct {
+	ContractAddress string `json:"contract_address"`
+	TokenID         string `json:"token_id"`
+}
