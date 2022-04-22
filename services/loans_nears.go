@@ -132,7 +132,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 			if err != nil {
 				return errs.NewError(err)
 			}
-			principalAmount := models.ConvertNumberFloat(float64(saleInfo.LoanPrincipalAmount), currency.Decimals)
+			principalAmount := models.ConvertWeiToCollateralFloatAmount(big.NewInt(int64(saleInfo.LoanPrincipalAmount)), currency.Decimals)
 			interestRate, _ := models.ConvertWeiToBigFloat(big.NewInt(int64(saleInfo.LoanInterestRate)), 4).Float64()
 			if loan == nil {
 				loan = &models.Loan{
@@ -218,7 +218,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					return errs.NewError(err)
 				}
 				if offer == nil {
-					offerPrincipalAmount := models.ConvertNumberFloat(float64(saleOffer.LoanPrincipalAmount), currency.Decimals)
+					offerPrincipalAmount := models.ConvertWeiToCollateralFloatAmount(big.NewInt(int64(saleOffer.LoanPrincipalAmount)), currency.Decimals)
 					offerInterestRate, _ := models.ConvertWeiToBigFloat(big.NewInt(int64(saleOffer.LoanInterestRate)), 4).Float64()
 					offer = &models.LoanOffer{
 						Network:         loan.Network,
@@ -246,7 +246,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					}
 				case 1:
 					{
-						v, err := models.ConvertString2BigInt(saleOffer.CreatedAt)
+						v, err := models.ConvertString2BigInt(saleOffer.StartedAt)
 						if err != nil {
 							return errs.NewError(err)
 						}
@@ -258,7 +258,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					}
 				case 2:
 					{
-						v, err := models.ConvertString2BigInt(saleOffer.CreatedAt)
+						v, err := models.ConvertString2BigInt(saleOffer.StartedAt)
 						if err != nil {
 							return errs.NewError(err)
 						}
@@ -270,7 +270,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					}
 				case 3:
 					{
-						v, err := models.ConvertString2BigInt(saleOffer.CreatedAt)
+						v, err := models.ConvertString2BigInt(saleOffer.StartedAt)
 						if err != nil {
 							return errs.NewError(err)
 						}
