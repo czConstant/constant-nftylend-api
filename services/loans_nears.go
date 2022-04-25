@@ -136,7 +136,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 			if err != nil {
 				return errs.NewError(err)
 			}
-			principalAmount := models.ConvertWeiToCollateralFloatAmount(big.NewInt(int64(saleInfo.LoanPrincipalAmount)), currency.Decimals)
+			principalAmount := models.ConvertWeiToCollateralFloatAmount(&saleInfo.LoanPrincipalAmount.Int, currency.Decimals)
 			interestRate, _ := models.ConvertWeiToBigFloat(big.NewInt(int64(saleInfo.LoanInterestRate)), 4).Float64()
 			if loan == nil {
 				loan = &models.Loan{
@@ -223,7 +223,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					return errs.NewError(err)
 				}
 				if offer == nil {
-					offerPrincipalAmount := models.ConvertWeiToCollateralFloatAmount(big.NewInt(int64(saleOffer.LoanPrincipalAmount)), currency.Decimals)
+					offerPrincipalAmount := models.ConvertWeiToCollateralFloatAmount(&saleOffer.LoanPrincipalAmount.Int, currency.Decimals)
 					offerInterestRate, _ := models.ConvertWeiToBigFloat(big.NewInt(int64(saleOffer.LoanInterestRate)), 4).Float64()
 					offer = &models.LoanOffer{
 						Network:         loan.Network,
