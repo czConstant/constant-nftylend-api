@@ -110,3 +110,27 @@ func (s *Server) JobEvmNftypawnFilterLogs(c *gin.Context) {
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
 }
+
+func (s *Server) NearSync(c *gin.Context) {
+	ctx := s.requestContext(c)
+	var req struct {
+		Hash        string `json:"hash"`
+		NftContract string `json:"nft_contract"`
+		TokenID     string `json:"token_id"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	_, err := s.nls.NearUpdateLoan(
+		ctx,
+		&serializers.CreateLoanNearReq{
+			ContractAddress: req.NftContract,
+			TokenID:         req.TokenID,
+		})
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
+}
