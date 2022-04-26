@@ -127,7 +127,9 @@ func (s *Server) NearSync(c *gin.Context) {
 		&serializers.CreateLoanNearReq{
 			ContractAddress: req.NftContract,
 			TokenID:         req.TokenID,
-		})
+		},
+		"worker",
+	)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

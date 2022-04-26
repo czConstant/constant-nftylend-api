@@ -17,7 +17,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoanNearReq) (*models.Loan, bool, error) {
+func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoanNearReq, lastUpdatedClient string) (*models.Loan, bool, error) {
 	var isUpdated bool
 	var loan *models.Loan
 	if req.ContractAddress == "" ||
@@ -325,6 +325,11 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					loan.OfferInterestRate = offer.InterestRate
 				}
 			}
+			if loan.UpdatedAt.Before(time.Now().Add(15*time.Second)) &&
+				loan.LastUpdatedClient == "worker" {
+				isUpdated = true
+			}
+			loan.LastUpdatedClient = lastUpdatedClient
 			err = s.ld.Save(
 				tx,
 				loan,

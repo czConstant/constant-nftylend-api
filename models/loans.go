@@ -62,4 +62,5 @@ type Loan struct {
 	CancelTxHash         string
 	PayTxHash            string
 	LiquidateTxHash      string
+	LastUpdatedClient    string
 }
