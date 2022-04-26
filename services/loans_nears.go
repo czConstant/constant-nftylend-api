@@ -17,11 +17,12 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoanNearReq) (*models.Loan, error) {
+func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoanNearReq) (*models.Loan, bool, error) {
+	var isUpdated bool
 	var loan *models.Loan
 	if req.ContractAddress == "" ||
 		req.TokenID == "" {
-		return nil, errs.NewError(errs.ErrBadRequest)
+		return nil, false, errs.NewError(errs.ErrBadRequest)
 	}
 	req.ContractAddress = strings.ToLower(req.ContractAddress)
 	err := daos.WithTransaction(
@@ -177,7 +178,9 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				if err != nil {
 					return errs.NewError(err)
 				}
+				isUpdated = true
 			}
+			loanPrevStatus := loan.Status
 			switch saleInfo.Status {
 			case 0:
 				{
@@ -207,6 +210,9 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				{
 					return errs.NewError(errs.ErrBadRequest)
 				}
+			}
+			if loanPrevStatus != loan.Status {
+				isUpdated = true
 			}
 			for _, saleOffer := range saleInfo.Offers {
 				offer, err := s.lod.First(
@@ -242,8 +248,10 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					if err != nil {
 						return errs.NewError(err)
 					}
+					isUpdated = true
 				}
 				var isOffered bool
+				offerPrevStatus := offer.Status
 				switch saleOffer.Status {
 				case 0:
 					{
@@ -298,6 +306,9 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						return errs.NewError(errs.ErrBadRequest)
 					}
 				}
+				if offerPrevStatus != offer.Status {
+					isUpdated = true
+				}
 				err = s.lod.Save(
 					tx,
 					offer,
@@ -325,9 +336,9 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 		},
 	)
 	if err != nil {
-		return nil, errs.NewError(err)
+		return nil, false, errs.NewError(err)
 	}
-	return loan, nil
+	return loan, isUpdated, nil
 }
 
 func (s *NftLend) NearCreateLoanOffer(ctx context.Context, loanID uint, req *serializers.CreateLoanOfferReq) (*models.LoanOffer, error) {

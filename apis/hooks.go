@@ -122,7 +122,7 @@ func (s *Server) NearSync(c *gin.Context) {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	_, err := s.nls.NearUpdateLoan(
+	_, isUpdated, err := s.nls.NearUpdateLoan(
 		ctx,
 		&serializers.CreateLoanNearReq{
 			ContractAddress: req.NftContract,
@@ -132,5 +132,5 @@ func (s *Server) NearSync(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: isUpdated})
 }
