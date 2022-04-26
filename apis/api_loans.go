@@ -165,10 +165,10 @@ func (s *Server) NearUpdateLoan(c *gin.Context) {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	loan, _, err := s.nls.NearUpdateLoan(ctx, &req, "client")
+	_, isUpdated, err := s.nls.NearUpdateLoan(ctx, &req, "client")
 	if err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewLoanResp(loan)})
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: isUpdated})
 }
