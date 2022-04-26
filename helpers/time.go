@@ -9,6 +9,14 @@ const (
 	DEFAULT_TIME_FORMAT = "2006-01-02 15:04:05"
 )
 
+func TimeFromUnix(n int64) *time.Time {
+	t := time.Unix(n, 0)
+	if t.Year() > 9999 {
+		t = time.Unix(n/1000, 0)
+	}
+	return &t
+}
+
 func ParseStringToDateDefault(value string) *time.Time {
 	return ParseStringToTime(DEFAULT_DATE_FORMAT, value)
 }

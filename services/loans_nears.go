@@ -140,13 +140,17 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 			principalAmount := models.ConvertWeiToCollateralFloatAmount(&saleInfo.LoanPrincipalAmount.Int, currency.Decimals)
 			interestRate, _ := models.ConvertWeiToBigFloat(big.NewInt(int64(saleInfo.LoanInterestRate)), 4).Float64()
 			if loan == nil {
+				v, err := models.ConvertString2BigInt(saleInfo.CreatedAt)
+				if err != nil {
+					return errs.NewError(err)
+				}
 				loan = &models.Loan{
 					Network:         models.NetworkNEAR,
 					Owner:           saleInfo.OwnerID,
 					PrincipalAmount: numeric.BigFloat{*big.NewFloat(principalAmount)},
 					InterestRate:    interestRate,
 					Duration:        uint(saleInfo.LoanDuration),
-					StartedAt:       helpers.TimeNow(),
+					StartedAt:       helpers.TimeFromUnix(int64(v.Uint64())),
 					ExpiredAt:       helpers.TimeAdd(time.Now(), time.Duration(saleInfo.LoanDuration)*time.Second),
 					CurrencyID:      currency.ID,
 					AssetID:         asset.ID,
@@ -263,8 +267,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						if err != nil {
 							return errs.NewError(err)
 						}
-						startedAt := time.Unix(int64(v.Uint64()), 0)
-						offer.StartedAt = &startedAt
+						offer.StartedAt = helpers.TimeFromUnix(int64(v.Uint64()))
 						offer.Duration = uint(saleOffer.LoanDuration)
 						offer.ExpiredAt = helpers.TimeAdd(*offer.StartedAt, time.Second*time.Duration(offer.Duration))
 						offer.Status = models.LoanOfferStatusApproved
@@ -276,8 +279,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						if err != nil {
 							return errs.NewError(err)
 						}
-						startedAt := time.Unix(int64(v.Uint64()), 0)
-						offer.StartedAt = &startedAt
+						offer.StartedAt = helpers.TimeFromUnix(int64(v.Uint64()))
 						offer.Duration = uint(saleOffer.LoanDuration)
 						offer.ExpiredAt = helpers.TimeAdd(*offer.StartedAt, time.Second*time.Duration(offer.Duration))
 						offer.Status = models.LoanOfferStatusDone
@@ -289,8 +291,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						if err != nil {
 							return errs.NewError(err)
 						}
-						startedAt := time.Unix(int64(v.Uint64()), 0)
-						offer.StartedAt = &startedAt
+						offer.StartedAt = helpers.TimeFromUnix(int64(v.Uint64()))
 						offer.Duration = uint(saleOffer.LoanDuration)
 						offer.ExpiredAt = helpers.TimeAdd(*offer.StartedAt, time.Second*time.Duration(offer.Duration))
 						offer.Status = models.LoanOfferStatusLiquidated
