@@ -475,7 +475,7 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 					TokenURL:              mediaURL,
 					ExternalUrl:           tokenURL,
 					SellerFeeRate:         0,
-					MetaJsonUrl:           "",
+					MetaJsonUrl:           tokenURL,
 					OriginNetwork:         "",
 					OriginContractAddress: "",
 					OriginTokenID:         "",
