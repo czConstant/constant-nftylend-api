@@ -318,7 +318,13 @@ func (s *NftLend) GetCollectionDetail(ctx context.Context, seoURL string) (*mode
 		map[string][]interface{}{
 			"seo_url = ?": []interface{}{seoURL},
 		},
-		map[string][]interface{}{},
+		map[string][]interface{}{
+			"RandAsset": []interface{}{
+				func(db *gorm.DB) *gorm.DB {
+					return db.Order(`rand()`)
+				},
+			},
+		},
 		[]string{"id desc"},
 	)
 	if err != nil {

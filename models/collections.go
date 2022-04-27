@@ -17,6 +17,7 @@ type Collection struct {
 	OriginContractAddress string
 	Enabled               bool `gorm:"default:0"`
 	ListingAsset          *Asset
+	RandAsset             *Asset
 }
 
 type NftyRPTListingCollection struct {
