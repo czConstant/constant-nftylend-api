@@ -13,6 +13,7 @@ import (
 	"github.com/czConstant/constant-nftylend-api/helpers"
 	"github.com/czConstant/constant-nftylend-api/models"
 	"github.com/czConstant/constant-nftylend-api/serializers"
+	"github.com/czConstant/constant-nftylend-api/services/3rd/saletrack"
 	"github.com/czConstant/constant-nftylend-api/types/numeric"
 	"github.com/jinzhu/gorm"
 )
@@ -50,16 +51,28 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				return errs.NewError(err)
 			}
 			if asset == nil {
-				metaData, err := s.bcs.Near.GetNftMetadata(saleInfo.NftContractID, saleInfo.TokenID)
+				metaData, err := s.bcs.Near.GetNftMetadata(saleInfo.NftContractID)
 				if err != nil {
 					return errs.NewError(err)
 				}
-				if metaData.Metadata.Reference == "" {
+				if metaData.Name == "" {
 					return errs.NewError(errs.ErrBadRequest)
 				}
-				metaInfo, err := s.stc.GetNearNftMetaResp(helpers.ConvertImageDataURL(metaData.Metadata.Reference))
+				tokenData, err := s.bcs.Near.GetNftToken(saleInfo.NftContractID, saleInfo.TokenID)
 				if err != nil {
 					return errs.NewError(err)
+				}
+				var mediaURL, tokenURL string
+				if metaData.BaseUri != "" {
+					mediaURL = fmt.Sprintf("%s/%s", metaData.BaseUri, tokenData.Metadata.Media)
+				}
+				var metaInfo *saletrack.EvmNftMetaResp
+				if tokenData.Metadata.Reference != "" {
+					tokenURL = fmt.Sprintf("%s/%s", metaData.BaseUri, tokenData.Metadata.Reference)
+					metaInfo, err = s.stc.GetEvmNftMetaResp(helpers.ConvertImageDataURL(tokenURL))
+					if err != nil {
+						return errs.NewError(err)
+					}
 				}
 				collection, err := s.cld.First(
 					tx,
@@ -78,8 +91,8 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						Network:         models.NetworkNEAR,
 						SeoURL:          helpers.MakeSeoURL(req.ContractAddress),
 						ContractAddress: req.ContractAddress,
-						Name:            metaInfo.Collection,
-						Description:     metaInfo.Description,
+						Name:            metaData.Name,
+						Description:     "",
 						Enabled:         true,
 					}
 					err = s.cld.Create(
@@ -90,14 +103,6 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						return errs.NewError(err)
 					}
 				}
-				attributes, err := json.Marshal(metaInfo.Attributes)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				metaJson, err := json.Marshal(metaInfo)
-				if err != nil {
-					return errs.NewError(err)
-				}
 				asset = &models.Asset{
 					Network:               models.NetworkNEAR,
 					CollectionID:          collection.ID,
@@ -105,16 +110,26 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					ContractAddress:       collection.ContractAddress,
 					TokenID:               req.TokenID,
 					Symbol:                "",
-					Name:                  metaData.Metadata.Title,
-					TokenURL:              metaData.Metadata.Media,
-					ExternalUrl:           metaData.Metadata.Reference,
+					Name:                  tokenData.Metadata.Title,
+					TokenURL:              mediaURL,
+					ExternalUrl:           tokenURL,
 					SellerFeeRate:         0,
-					Attributes:            string(attributes),
-					MetaJson:              string(metaJson),
 					MetaJsonUrl:           "",
 					OriginNetwork:         "",
 					OriginContractAddress: "",
 					OriginTokenID:         "",
+				}
+				if metaInfo != nil {
+					attributes, err := json.Marshal(metaInfo.Attributes)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					asset.Attributes = string(attributes)
+					metaJson, err := json.Marshal(metaInfo)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					asset.MetaJson = string(metaJson)
 				}
 				err = s.ad.Create(
 					tx,

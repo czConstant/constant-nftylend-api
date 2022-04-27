@@ -6,7 +6,7 @@ require (
 	github.com/DaRealFreak/cloudflare-bp-go v1.0.4
 	github.com/Microsoft/go-winio v0.5.0 // indirect
 	github.com/certifi/gocertifi v0.0.0-20210507211836-431795d63e8d // indirect
-	github.com/czConstant/blockchain-api v0.0.0-20220425105752-95f7981eb4da
+	github.com/czConstant/blockchain-api v0.0.0-20220427032847-983edff38cac
 	github.com/czConstant/constant-core v0.0.0-20210916103853-a22db9f518c2
 	github.com/czConstant/constant-evn v0.0.0-20210621093849-5a457b90a058
 	github.com/getsentry/raven-go v0.2.1-0.20190619092523-5c24d5110e0e
