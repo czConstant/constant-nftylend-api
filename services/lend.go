@@ -652,7 +652,8 @@ func (s *NftLend) updateAssetTransactions(ctx context.Context, assetId uint) err
 			tokenID = asset.TestTokenID
 		}
 		rs, _ := s.stc.GetParasSaleHistories(contractAddress, tokenID)
-		for _, r := range rs {
+		for i := len(rs) - 1; i >= 0; i-- {
+			r := rs[i]
 			txnAt := time.Unix(r.IssuedAt/1000, 0)
 			_ = s.atd.Create(
 				daos.GetDBMainCtx(ctx),
