@@ -638,6 +638,68 @@ func (s *NftLend) updateAssetTransactions(ctx context.Context, assetId uint) err
 			return errs.NewError(err)
 		}
 	}
+	if asset.Network == models.NetworkNEAR &&
+		(asset.ParasIOCrawAt == nil ||
+			asset.ParasIOCrawAt.Before(time.Now().Add(-24*time.Hour))) {
+		c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "NEAR")
+		if err != nil {
+			return errs.NewError(err)
+		}
+		contractAddress := asset.ContractAddress
+		tokenID := asset.TokenID
+		if asset.TestContractAddress != "" {
+			contractAddress = asset.TestContractAddress
+			tokenID = asset.TestTokenID
+		}
+		rs, _ := s.stc.GetParasSaleHistories(contractAddress, tokenID)
+		for _, r := range rs {
+			txnAt := time.Unix(r.IssuedAt/1000, 0)
+			_ = s.atd.Create(
+				daos.GetDBMainCtx(ctx),
+				&models.AssetTransaction{
+					Source:        "paras.id",
+					Network:       models.NetworkNEAR,
+					AssetID:       asset.ID,
+					Type:          models.AssetTransactionTypeExchange,
+					Seller:        r.From,
+					Buyer:         r.To,
+					TransactionID: r.TransactionHash,
+					TransactionAt: &txnAt,
+					Amount:        numeric.BigFloat{*models.ConvertWeiToBigFloat(&r.Msg.Params.Price.Int, c.Decimals)},
+					CurrencyID:    c.ID,
+				},
+			)
+		}
+		err = daos.WithTransaction(
+			daos.GetDBMainCtx(ctx),
+			func(tx *gorm.DB) error {
+				asset, err := s.ad.FirstByID(
+					tx,
+					asset.ID,
+					map[string][]interface{}{},
+					true,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if asset == nil {
+					return errs.NewError(errs.ErrBadRequest)
+				}
+				asset.ParasIOCrawAt = helpers.TimeNow()
+				err = s.ad.Save(
+					tx,
+					asset,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				return nil
+			},
+		)
+		if err != nil {
+			return errs.NewError(err)
+		}
+	}
 	return nil
 }
 

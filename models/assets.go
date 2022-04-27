@@ -15,6 +15,7 @@ type Asset struct {
 	ContractAddress           string
 	TokenID                   string
 	TestContractAddress       string
+	TestTokenID               string
 	TokenURL                  string
 	ExternalUrl               string
 	Name                      string
@@ -33,4 +34,5 @@ type Asset struct {
 	SolanartCrawAt            *time.Time
 	SolSeaCrawAt              *time.Time
 	OpenseaCrawAt             *time.Time
+	ParasIOCrawAt             *time.Time
 }

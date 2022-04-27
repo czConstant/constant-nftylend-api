@@ -13,6 +13,7 @@ import (
 	"time"
 
 	cloudflarebp "github.com/DaRealFreak/cloudflare-bp-go"
+	"github.com/czConstant/constant-nftylend-api/types/numeric"
 	"github.com/gorilla/websocket"
 )
 
@@ -361,4 +362,45 @@ func (c *Client) GetNearNftMetaResp(tokenURL string) (*NearNftMetaResp, error) {
 		return nil, err
 	}
 	return &rs, nil
+}
+
+type ParasSaleResp struct {
+	IssuedAt        int64  `json:"issued_at"`
+	ID              string `json:"_id"`
+	From            string `json:"from"`
+	To              string `json:"to"`
+	FtTokenID       string `json:"ft_token_id"`
+	TransactionHash string `json:"transaction_hash"`
+	ContractID      string `json:"contract_id"`
+	TokenID         string `json:"token_id"`
+	Msg             struct {
+		Params struct {
+			Price numeric.BigInt `json:"price"`
+		} `json:"params"`
+	} `json:"msg"`
+}
+
+func (c *Client) GetParasSaleHistories(contractID string, tokenID string) ([]*ParasSaleResp, error) {
+	var result struct {
+		Data struct {
+			Results []*ParasSaleResp `json:"results"`
+		} `json:"data"`
+	}
+	client := &http.Client{}
+	resp, err := client.Get(fmt.Sprintf("https://api-v2-mainnet.paras.id/activities?__limit=30&contract_id=%s&token_id=%s&type=resolve_purchase", contractID, tokenID))
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode >= 300 {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("http response bad status %d %s", resp.StatusCode, err.Error())
+		}
+		return nil, fmt.Errorf("http response bad status %d %s", resp.StatusCode, string(bodyBytes))
+	}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Data.Results, nil
 }
