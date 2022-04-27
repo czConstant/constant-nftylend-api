@@ -51,6 +51,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				return errs.NewError(err)
 			}
 			if asset == nil {
+				var description string
 				metaData, err := s.bcs.Near.GetNftMetadata(saleInfo.NftContractID)
 				if err != nil {
 					return errs.NewError(err)
@@ -61,6 +62,9 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				tokenData, err := s.bcs.Near.GetNftToken(saleInfo.NftContractID, saleInfo.TokenID)
 				if err != nil {
 					return errs.NewError(err)
+				}
+				if tokenData.Metadata.Description != "" {
+					description = tokenData.Metadata.Description
 				}
 				var mediaURL, tokenURL string
 				if metaData.BaseUri != "" {
@@ -92,7 +96,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						SeoURL:          helpers.MakeSeoURL(req.ContractAddress),
 						ContractAddress: req.ContractAddress,
 						Name:            metaData.Name,
-						Description:     "",
+						Description:     description,
 						Enabled:         true,
 					}
 					err = s.cld.Create(
