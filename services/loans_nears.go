@@ -375,10 +375,11 @@ func (s *NftLend) NearCreateLoanOffer(ctx context.Context, loanID uint, req *ser
 
 func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, tokenID string) (*models.Asset, error) {
 	var asset *models.Asset
-	err := daos.WithTransaction(
+	var err error
+	err = daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			asset, err := s.ad.First(
+			asset, err = s.ad.First(
 				tx,
 				map[string][]interface{}{
 					"network = ?":          []interface{}{models.NetworkNEAR},
