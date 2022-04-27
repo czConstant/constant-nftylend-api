@@ -26,122 +26,23 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 		return nil, false, errs.NewError(errs.ErrBadRequest)
 	}
 	req.ContractAddress = strings.ToLower(req.ContractAddress)
-	err := daos.WithTransaction(
+	asset, err := s.NearSynAsset(ctx, req.ContractAddress, req.TokenID)
+	if err != nil {
+		return nil, false, errs.NewError(err)
+	}
+	if asset == nil {
+		return nil, false, errs.NewError(errs.ErrBadRequest)
+	}
+	err = daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			saleInfo, err := s.bcs.Near.GetNftpawnSale(s.conf.Contract.NearNftypawnAddress, fmt.Sprintf("%s||%s", req.ContractAddress, req.TokenID))
+			saleInfo, err := s.bcs.Near.GetNftpawnSale(s.conf.Contract.NearNftypawnAddress, fmt.Sprintf("%s||%s", asset.ContractAddress, asset.TokenID))
 			if err != nil {
 				return errs.NewError(err)
 			}
 			currency, err := s.getLendCurrency(tx, saleInfo.LoanCurrency)
 			if err != nil {
 				return errs.NewError(err)
-			}
-			asset, err := s.ad.First(
-				tx,
-				map[string][]interface{}{
-					"network = ?":          []interface{}{models.NetworkNEAR},
-					"contract_address = ?": []interface{}{req.ContractAddress},
-					"token_id = ?":         []interface{}{req.TokenID},
-				},
-				map[string][]interface{}{},
-				[]string{},
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			if asset == nil {
-				var description string
-				metaData, err := s.bcs.Near.GetNftMetadata(saleInfo.NftContractID)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				if metaData.Name == "" {
-					return errs.NewError(errs.ErrBadRequest)
-				}
-				tokenData, err := s.bcs.Near.GetNftToken(saleInfo.NftContractID, saleInfo.TokenID)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				if tokenData.Metadata.Description != "" {
-					description = tokenData.Metadata.Description
-				}
-				var mediaURL, tokenURL string
-				if metaData.BaseUri != "" {
-					mediaURL = fmt.Sprintf("%s/%s", metaData.BaseUri, tokenData.Metadata.Media)
-				}
-				var metaInfo *saletrack.EvmNftMetaResp
-				if tokenData.Metadata.Reference != "" {
-					tokenURL = fmt.Sprintf("%s/%s", metaData.BaseUri, tokenData.Metadata.Reference)
-					metaInfo, err = s.stc.GetEvmNftMetaResp(helpers.ConvertImageDataURL(tokenURL))
-					if err != nil {
-						return errs.NewError(err)
-					}
-				}
-				collection, err := s.cld.First(
-					tx,
-					map[string][]interface{}{
-						"network = ?":          []interface{}{models.NetworkNEAR},
-						"contract_address = ?": []interface{}{req.ContractAddress},
-					},
-					map[string][]interface{}{},
-					[]string{},
-				)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				if collection == nil {
-					collection = &models.Collection{
-						Network:         models.NetworkNEAR,
-						SeoURL:          helpers.MakeSeoURL(req.ContractAddress),
-						ContractAddress: req.ContractAddress,
-						Name:            metaData.Name,
-						Description:     description,
-						Enabled:         true,
-					}
-					err = s.cld.Create(
-						tx,
-						collection,
-					)
-					if err != nil {
-						return errs.NewError(err)
-					}
-				}
-				asset = &models.Asset{
-					Network:               models.NetworkNEAR,
-					CollectionID:          collection.ID,
-					SeoURL:                helpers.MakeSeoURL(fmt.Sprintf("%s-%s", req.ContractAddress, req.TokenID)),
-					ContractAddress:       collection.ContractAddress,
-					TokenID:               req.TokenID,
-					Symbol:                "",
-					Name:                  tokenData.Metadata.Title,
-					TokenURL:              mediaURL,
-					ExternalUrl:           tokenURL,
-					SellerFeeRate:         0,
-					MetaJsonUrl:           "",
-					OriginNetwork:         "",
-					OriginContractAddress: "",
-					OriginTokenID:         "",
-				}
-				if metaInfo != nil {
-					attributes, err := json.Marshal(metaInfo.Attributes)
-					if err != nil {
-						return errs.NewError(err)
-					}
-					asset.Attributes = string(attributes)
-					metaJson, err := json.Marshal(metaInfo)
-					if err != nil {
-						return errs.NewError(err)
-					}
-					asset.MetaJson = string(metaJson)
-				}
-				err = s.ad.Create(
-					tx,
-					asset,
-				)
-				if err != nil {
-					return errs.NewError(err)
-				}
 			}
 			loan, err = s.ld.First(
 				tx,
@@ -470,4 +371,140 @@ func (s *NftLend) NearCreateLoanOffer(ctx context.Context, loanID uint, req *ser
 		return nil, errs.NewError(err)
 	}
 	return offer, nil
+}
+
+func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, tokenID string) (*models.Asset, error) {
+	var asset *models.Asset
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			asset, err := s.ad.First(
+				tx,
+				map[string][]interface{}{
+					"network = ?":          []interface{}{models.NetworkNEAR},
+					"contract_address = ?": []interface{}{contractAddress},
+					"token_id = ?":         []interface{}{tokenID},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if asset == nil {
+				var collectionName, description, assetName string
+				metaData, err := s.bcs.Near.GetNftMetadata(contractAddress)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if metaData == nil {
+					return errs.NewError(errs.ErrBadRequest)
+				}
+				collectionName = metaData.Name
+				tokenData, err := s.bcs.Near.GetNftToken(contractAddress, tokenID)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if tokenData == nil {
+					return errs.NewError(errs.ErrBadRequest)
+				}
+				if tokenData.Metadata.Description != "" {
+					description = tokenData.Metadata.Description
+				}
+				if assetName == "" {
+					assetName = tokenData.Metadata.Title
+				}
+				var mediaURL, tokenURL string
+				if metaData.BaseUri != "" {
+					mediaURL = fmt.Sprintf("%s/%s", metaData.BaseUri, tokenData.Metadata.Media)
+				}
+				var metaInfo *saletrack.EvmNftMetaResp
+				if tokenData.Metadata.Reference != "" {
+					tokenURL = fmt.Sprintf("%s/%s", metaData.BaseUri, tokenData.Metadata.Reference)
+					metaInfo, err = s.stc.GetEvmNftMetaResp(helpers.ConvertImageDataURL(tokenURL))
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if description == "" {
+						description = metaInfo.Description
+					}
+					if assetName == "" {
+						assetName = metaInfo.Name
+					}
+				}
+				if collectionName == "" {
+					return errs.NewError(errs.ErrBadRequest)
+				}
+				collection, err := s.cld.First(
+					tx,
+					map[string][]interface{}{
+						"network = ?":          []interface{}{models.NetworkNEAR},
+						"contract_address = ?": []interface{}{contractAddress},
+					},
+					map[string][]interface{}{},
+					[]string{},
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if collection == nil {
+					collection = &models.Collection{
+						Network:         models.NetworkNEAR,
+						SeoURL:          helpers.MakeSeoURL(contractAddress),
+						ContractAddress: contractAddress,
+						Name:            collectionName,
+						Description:     description,
+						Enabled:         true,
+					}
+					err = s.cld.Create(
+						tx,
+						collection,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
+				asset = &models.Asset{
+					Network:               models.NetworkNEAR,
+					CollectionID:          collection.ID,
+					SeoURL:                helpers.MakeSeoURL(fmt.Sprintf("%s-%s", contractAddress, tokenID)),
+					ContractAddress:       collection.ContractAddress,
+					TokenID:               tokenID,
+					Symbol:                "",
+					Name:                  assetName,
+					TokenURL:              mediaURL,
+					ExternalUrl:           tokenURL,
+					SellerFeeRate:         0,
+					MetaJsonUrl:           "",
+					OriginNetwork:         "",
+					OriginContractAddress: "",
+					OriginTokenID:         "",
+				}
+				if metaInfo != nil {
+					attributes, err := json.Marshal(metaInfo.Attributes)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					asset.Attributes = string(attributes)
+					metaJson, err := json.Marshal(metaInfo)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					asset.MetaJson = string(metaJson)
+				}
+				err = s.ad.Create(
+					tx,
+					asset,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return asset, nil
 }
