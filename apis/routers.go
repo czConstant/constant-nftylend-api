@@ -59,6 +59,7 @@ func (s *Server) Routers() {
 	assetnftAPI := nftAPI.Group("/assets")
 	{
 		assetnftAPI.GET("/detail/:seo_url", s.GetAssetDetail)
+		assetnftAPI.GET("/info", s.GetAssetDetailInfo)
 		assetnftAPI.GET("/transactions", s.GetAseetTransactions)
 	}
 	collectionnftAPI := nftAPI.Group("/collections")

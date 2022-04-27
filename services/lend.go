@@ -206,6 +206,41 @@ func (s *NftLend) getLendCurrencyBySymbol(tx *gorm.DB, symbol string) (*models.C
 	return c, nil
 }
 
+func (s *NftLend) GetAssetDetailInfo(ctx context.Context, contractAddress string, tokenID string) (*models.Asset, error) {
+	m, err := s.ad.First(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"contract_address = ?": []interface{}{contractAddress},
+			"token_id = ?":         []interface{}{tokenID},
+		},
+		map[string][]interface{}{
+			"Collection": []interface{}{},
+			"NewLoan": []interface{}{
+				"status in (?)",
+				[]models.LoanStatus{
+					models.LoanStatusNew,
+					models.LoanStatusCreated,
+				},
+			},
+			"NewLoan.Currency": []interface{}{},
+			"NewLoan.Offers": []interface{}{
+				func(db *gorm.DB) *gorm.DB {
+					return db.Order("loan_offers.id DESC")
+				},
+			},
+			"NewLoan.ApprovedOffer": []interface{}{
+				"status = ?",
+				models.LoanOfferStatusApproved,
+			},
+		},
+		[]string{"id desc"},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return m, nil
+}
+
 func (s *NftLend) GetAssetDetail(ctx context.Context, seoURL string) (*models.Asset, error) {
 	m, err := s.ad.First(
 		daos.GetDBMainCtx(ctx),
