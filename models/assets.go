@@ -36,3 +36,17 @@ type Asset struct {
 	OpenseaCrawAt             *time.Time
 	ParasIOCrawAt             *time.Time
 }
+
+func (m *Asset) GetContractAddress() string {
+	if m.TestContractAddress != "" {
+		return m.TestContractAddress
+	}
+	return m.ContractAddress
+}
+
+func (m *Asset) GetTokenID() string {
+	if m.TestTokenID != "" {
+		return m.TestTokenID
+	}
+	return m.TokenID
+}
