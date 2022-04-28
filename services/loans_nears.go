@@ -415,13 +415,11 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 				if assetName == "" {
 					assetName = tokenData.Metadata.Title
 				}
-				var mediaURL, tokenURL string
-				if metaData.BaseUri != "" {
-					mediaURL = fmt.Sprintf("%s/%s", metaData.BaseUri, tokenData.Metadata.Media)
-				}
+				var tokenURL string
+				mediaURL := helpers.MergeMetaInfoURL(metaData.BaseUri, tokenData.Metadata.Media)
 				var metaInfo *saletrack.EvmNftMetaResp
 				if tokenData.Metadata.Reference != "" {
-					tokenURL = fmt.Sprintf("%s/%s", metaData.BaseUri, tokenData.Metadata.Reference)
+					tokenURL = helpers.MergeMetaInfoURL(metaData.BaseUri, tokenData.Metadata.Reference)
 					metaInfo, err = s.stc.GetEvmNftMetaResp(helpers.ConvertImageDataURL(tokenURL))
 					if err != nil {
 						return errs.NewError(err)
