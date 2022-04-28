@@ -125,6 +125,29 @@ func (s *NftLend) getEvmAdminFee(network models.Network) int64 {
 	return 0
 }
 
+func (s *NftLend) getSupportedNetworks() []models.Network {
+	ns := []models.Network{}
+	if s.conf.Contract.ProgramID != "" {
+		ns = append(ns, models.NetworkSOL)
+	}
+	if s.conf.Contract.BscNftypawnAddress != "" {
+		ns = append(ns, models.NetworkBSC)
+	}
+	if s.conf.Contract.AvaxNftypawnAddress != "" {
+		ns = append(ns, models.NetworkAVAX)
+	}
+	if s.conf.Contract.MaticNftypawnAddress != "" {
+		ns = append(ns, models.NetworkMATIC)
+	}
+	if s.conf.Contract.BobaNftypawnAddress != "" {
+		ns = append(ns, models.NetworkBOBA)
+	}
+	if s.conf.Contract.NearNftypawnAddress != "" {
+		ns = append(ns, models.NetworkNEAR)
+	}
+	return ns
+}
+
 func (s *NftLend) getEvmContractAddress(network models.Network) string {
 	switch network {
 	case models.NetworkETH:
@@ -210,6 +233,7 @@ func (s *NftLend) GetAssetDetailInfo(ctx context.Context, contractAddress string
 	m, err := s.ad.First(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
+			"network in (?)":       []interface{}{s.getSupportedNetworks()},
 			"contract_address = ?": []interface{}{contractAddress},
 			"token_id = ?":         []interface{}{tokenID},
 		},
@@ -245,7 +269,8 @@ func (s *NftLend) GetAssetDetail(ctx context.Context, seoURL string) (*models.As
 	m, err := s.ad.First(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
-			"seo_url = ?": []interface{}{seoURL},
+			"network in (?)": []interface{}{s.getSupportedNetworks()},
+			"seo_url = ?":    []interface{}{seoURL},
 		},
 		map[string][]interface{}{
 			"Collection": []interface{}{},
@@ -278,7 +303,9 @@ func (s *NftLend) GetAssetDetail(ctx context.Context, seoURL string) (*models.As
 func (s *NftLend) GetCollections(ctx context.Context, page int, limit int) ([]*models.Collection, uint, error) {
 	categories, count, err := s.cld.Find4Page(
 		daos.GetDBMainCtx(ctx),
-		map[string][]interface{}{},
+		map[string][]interface{}{
+			"network in (?)": []interface{}{s.getSupportedNetworks()},
+		},
 		map[string][]interface{}{
 			"ListingAsset": []interface{}{
 				`id in (
@@ -316,7 +343,8 @@ func (s *NftLend) GetCollectionDetail(ctx context.Context, seoURL string) (*mode
 	m, err := s.cld.First(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
-			"seo_url = ?": []interface{}{seoURL},
+			"seo_url = ?":    []interface{}{seoURL},
+			"network in (?)": []interface{}{s.getSupportedNetworks()},
 		},
 		map[string][]interface{}{
 			"RandAsset": []interface{}{
