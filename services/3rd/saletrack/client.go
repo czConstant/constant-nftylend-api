@@ -404,3 +404,34 @@ func (c *Client) GetParasSaleHistories(contractID string, tokenID string) ([]*Pa
 	}
 	return result.Data.Results, nil
 }
+
+type ParasProfileResp struct {
+	ID        string `json:"_id"`
+	AccountID string `json:"accountId"`
+	IsCreator bool   `json:"isCreator"`
+}
+
+func (c *Client) GetParasProfile(contractID string) ([]*ParasProfileResp, error) {
+	var result struct {
+		Data struct {
+			Results []*ParasProfileResp `json:"results"`
+		} `json:"data"`
+	}
+	client := &http.Client{}
+	resp, err := client.Get(fmt.Sprintf("https://api-v2-mainnet.paras.id/profiles?accountId=%s", contractID))
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode >= 300 {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("http response bad status %d %s", resp.StatusCode, err.Error())
+		}
+		return nil, fmt.Errorf("http response bad status %d %s", resp.StatusCode, string(bodyBytes))
+	}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Data.Results, nil
+}

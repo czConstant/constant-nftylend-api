@@ -447,6 +447,8 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 					return errs.NewError(err)
 				}
 				if collection == nil {
+					// var isVerified bool
+					// parasProfiles, err := s.stc.GetParasProfile(as)
 					collection = &models.Collection{
 						Network:         models.NetworkNEAR,
 						SeoURL:          helpers.MakeSeoURL(contractAddress),
