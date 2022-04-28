@@ -18,7 +18,8 @@ import (
 )
 
 type Client struct {
-	msgChain chan string
+	msgChain   chan string
+	NftbankKey string
 }
 
 func (c *Client) doWithAuth(req *http.Request) (*http.Response, error) {

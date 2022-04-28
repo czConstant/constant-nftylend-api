@@ -488,6 +488,7 @@ func (s *NftLend) GetAseetTransactions(ctx context.Context, assetId uint, page i
 		map[string][]interface{}{
 			"Asset":            []interface{}{},
 			"Asset.Collection": []interface{}{},
+			"Currency":         []interface{}{},
 		},
 		[]string{"transaction_at desc"},
 		page,

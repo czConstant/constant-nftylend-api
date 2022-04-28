@@ -56,6 +56,9 @@ type Config struct {
 	Moralis struct {
 		APIKey string `json:"api_key"`
 	} `json:"moralis"`
+	SaleTrack struct {
+		NftbankKey string `json:"nftbank_key"`
+	} `json:"sale_track"`
 	Contract struct {
 		ProgramID            string `json:"program_id"`
 		MaticNftypawnAddress string `json:"matic_nftypawn_address"`
