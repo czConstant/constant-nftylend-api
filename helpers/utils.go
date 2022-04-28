@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync/atomic"
 	"time"
 )
@@ -42,4 +43,11 @@ func nextDebugId() string {
 }
 func BuildFileName() string {
 	return time.Now().Format("20060102150405") + "_" + nextDebugId()
+}
+
+func MergeMetaInfoURL(baseURL string, mediaURL string) string {
+	if strings.HasPrefix(mediaURL, "http") || strings.HasPrefix(mediaURL, "ipfs") {
+		return mediaURL
+	}
+	return fmt.Sprintf("%s/%s", baseURL, mediaURL)
 }
