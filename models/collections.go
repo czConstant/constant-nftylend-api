@@ -16,6 +16,7 @@ type Collection struct {
 	OriginNetwork         Network
 	OriginContractAddress string
 	Enabled               bool `gorm:"default:0"`
+	Verified              bool `gorm:"default:0"`
 	ListingAsset          *Asset
 	RandAsset             *Asset
 }

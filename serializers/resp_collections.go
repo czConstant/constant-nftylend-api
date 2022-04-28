@@ -15,6 +15,7 @@ type CollectionResp struct {
 	SeoURL                string           `json:"seo_url"`
 	Name                  string           `json:"name"`
 	Description           string           `json:"description"`
+	Verified              bool             `json:"verified"`
 	ListingAsset          *AssetResp       `json:"listing_asset"`
 	ListingTotal          uint             `json:"listing_total"`
 	TotalVolume           numeric.BigFloat `json:"total_volume"`
@@ -36,6 +37,7 @@ func NewCollectionResp(m *models.Collection) *CollectionResp {
 		Network:               m.Network,
 		SeoURL:                m.SeoURL,
 		Name:                  m.Name,
+		Verified:              m.Verified,
 		Description:           m.Description,
 		OriginNetwork:         m.OriginNetwork,
 		OriginContractAddress: m.OriginContractAddress,
