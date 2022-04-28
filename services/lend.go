@@ -758,7 +758,7 @@ func (s *NftLend) updateAssetTransactions(ctx context.Context, assetId uint) err
 				daos.GetDBMainCtx(ctx),
 				&models.AssetTransaction{
 					Source:        "nftbank.ai",
-					Network:       models.NetworkNEAR,
+					Network:       models.NetworkMATIC,
 					AssetID:       asset.ID,
 					Type:          models.AssetTransactionTypeExchange,
 					Seller:        r.SellerAddress,
