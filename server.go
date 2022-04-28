@@ -105,8 +105,10 @@ func main() {
 		ltd  = &daos.LoanTransaction{}
 		id   = &daos.Instruction{}
 
-		stc = &saletrack.Client{}
-		mc  = &moralis.Client{
+		stc = &saletrack.Client{
+			NftbankKey: conf.SaleTrack.NftbankKey,
+		}
+		mc = &moralis.Client{
 			APIKey: conf.Moralis.APIKey,
 		}
 

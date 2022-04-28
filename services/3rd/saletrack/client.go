@@ -18,7 +18,8 @@ import (
 )
 
 type Client struct {
-	msgChain chan string
+	msgChain   chan string
+	NftbankKey string
 }
 
 func (c *Client) doWithAuth(req *http.Request) (*http.Response, error) {
@@ -434,4 +435,41 @@ func (c *Client) GetParasProfile(contractID string) ([]*ParasProfileResp, error)
 		return nil, err
 	}
 	return result.Data.Results, nil
+}
+
+type NftbankSaleResp struct {
+	BlockTimestamp  string           `json:"block_timestamp"`
+	BuyerAddress    string           `json:"buyer_address"`
+	SellerAddress   string           `json:"seller_address"`
+	TransactionHash string           `json:"transaction_hash"`
+	SoldPriceEth    numeric.BigFloat `json:"sold_price_eth"`
+}
+
+func (c *Client) GetNftbankSaleHistories(contractID string, tokenID string, chainID string) ([]*NftbankSaleResp, error) {
+	var result struct {
+		Data []*NftbankSaleResp `json:"data"`
+	}
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://api.nftbank.ai/estimates-v2/asset-events/%s/%s?chain_id=%s", contractID, tokenID, chainID), nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("x-api-key", c.NftbankKey)
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode >= 300 {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("http response bad status %d %s", resp.StatusCode, err.Error())
+		}
+		return nil, fmt.Errorf("http response bad status %d %s", resp.StatusCode, string(bodyBytes))
+	}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Data, nil
 }

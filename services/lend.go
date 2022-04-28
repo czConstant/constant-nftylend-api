@@ -211,11 +211,12 @@ func (s *NftLend) GetCurrencyByID(tx *gorm.DB, id uint, chain models.Network) (*
 	return c, nil
 }
 
-func (s *NftLend) getLendCurrencyBySymbol(tx *gorm.DB, symbol string) (*models.Currency, error) {
+func (s *NftLend) getLendCurrencyBySymbol(tx *gorm.DB, symbol string, network models.Network) (*models.Currency, error) {
 	c, err := s.cd.First(
 		tx,
 		map[string][]interface{}{
-			"symbol = ?": []interface{}{symbol},
+			"symbol = ?":  []interface{}{symbol},
+			"network = ?": []interface{}{network},
 		},
 		map[string][]interface{}{},
 		[]string{},
@@ -488,6 +489,7 @@ func (s *NftLend) GetAseetTransactions(ctx context.Context, assetId uint, page i
 		map[string][]interface{}{
 			"Asset":            []interface{}{},
 			"Asset.Collection": []interface{}{},
+			"Currency":         []interface{}{},
 		},
 		[]string{"transaction_at desc"},
 		page,
@@ -515,7 +517,7 @@ func (s *NftLend) updateAssetTransactions(ctx context.Context, assetId uint) err
 	if asset.Network == models.NetworkSOL &&
 		(asset.MagicEdenCrawAt == nil ||
 			asset.MagicEdenCrawAt.Before(time.Now().Add(-24*time.Hour))) {
-		c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "SOL")
+		c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "SOL", models.NetworkSOL)
 		if err != nil {
 			return errs.NewError(err)
 		}
@@ -583,7 +585,7 @@ func (s *NftLend) updateAssetTransactions(ctx context.Context, assetId uint) err
 		}
 		rs, _ := s.stc.GetSolnartSaleHistories(tokenAddress)
 		for _, r := range rs {
-			c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), r.Currency)
+			c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), r.Currency, models.NetworkSOL)
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -673,9 +675,9 @@ func (s *NftLend) updateAssetTransactions(ctx context.Context, assetId uint) err
 		}
 	}
 	if asset.Network == models.NetworkNEAR &&
-		(asset.ParasIOCrawAt == nil ||
-			asset.ParasIOCrawAt.Before(time.Now().Add(-24*time.Hour))) {
-		c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "NEAR")
+		(asset.ParasCrawAt == nil ||
+			asset.ParasCrawAt.Before(time.Now().Add(-24*time.Hour))) {
+		c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "NEAR", models.NetworkNEAR)
 		if err != nil {
 			return errs.NewError(err)
 		}
@@ -720,7 +722,70 @@ func (s *NftLend) updateAssetTransactions(ctx context.Context, assetId uint) err
 				if asset == nil {
 					return errs.NewError(errs.ErrBadRequest)
 				}
-				asset.ParasIOCrawAt = helpers.TimeNow()
+				asset.ParasCrawAt = helpers.TimeNow()
+				err = s.ad.Save(
+					tx,
+					asset,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				return nil
+			},
+		)
+		if err != nil {
+			return errs.NewError(err)
+		}
+	}
+	if asset.Network == models.NetworkMATIC &&
+		(asset.NftbankCrawAt == nil ||
+			asset.NftbankCrawAt.Before(time.Now().Add(-24*time.Hour))) {
+		c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "ETH", models.NetworkMATIC)
+		if err != nil {
+			return errs.NewError(err)
+		}
+		rs, err := s.stc.GetNftbankSaleHistories(asset.GetContractAddress(), asset.GetTokenID(), "MATIC")
+		if err != nil {
+			return errs.NewError(err)
+		}
+		for i := len(rs) - 1; i >= 0; i-- {
+			r := rs[i]
+			txnAt, err := time.Parse("Mon, 02 Jan 2006 15:04:05 GMT", r.BlockTimestamp)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			_ = s.atd.Create(
+				daos.GetDBMainCtx(ctx),
+				&models.AssetTransaction{
+					Source:        "nftbank.ai",
+					Network:       models.NetworkMATIC,
+					AssetID:       asset.ID,
+					Type:          models.AssetTransactionTypeExchange,
+					Seller:        r.SellerAddress,
+					Buyer:         r.BuyerAddress,
+					TransactionID: r.TransactionHash,
+					TransactionAt: &txnAt,
+					Amount:        r.SoldPriceEth,
+					CurrencyID:    c.ID,
+				},
+			)
+		}
+		err = daos.WithTransaction(
+			daos.GetDBMainCtx(ctx),
+			func(tx *gorm.DB) error {
+				asset, err := s.ad.FirstByID(
+					tx,
+					asset.ID,
+					map[string][]interface{}{},
+					true,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if asset == nil {
+					return errs.NewError(errs.ErrBadRequest)
+				}
+				asset.NftbankCrawAt = helpers.TimeNow()
 				err = s.ad.Save(
 					tx,
 					asset,
@@ -755,7 +820,7 @@ func (s *NftLend) solseaMsgReceived(msg string) {
 		if err != nil {
 			return
 		}
-		c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(context.Background()), "SOL")
+		c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(context.Background()), "SOL", models.NetworkSOL)
 		if err != nil {
 			return
 		}
