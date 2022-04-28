@@ -34,7 +34,8 @@ type Asset struct {
 	SolanartCrawAt            *time.Time
 	SolSeaCrawAt              *time.Time
 	OpenseaCrawAt             *time.Time
-	ParasIOCrawAt             *time.Time
+	ParasCrawAt               *time.Time
+	NftbankCrawAt             *time.Time
 }
 
 func (m *Asset) GetContractAddress() string {
