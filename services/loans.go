@@ -40,6 +40,7 @@ func (s *NftLend) GetListingLoans(
 	if network != "" {
 		filters["network = ?"] = []interface{}{network}
 	}
+	filters["network in (?)"] = []interface{}{s.getSupportedNetworks()}
 	if collectionId > 0 {
 		filters[`
 		exists(
@@ -101,6 +102,7 @@ func (s *NftLend) GetListingLoans(
 
 func (s *NftLend) GetLoans(ctx context.Context, network models.Network, owner string, lender string, assetId uint, statues []string, page int, limit int) ([]*models.Loan, uint, error) {
 	filters := map[string][]interface{}{}
+	filters["network in (?)"] = []interface{}{s.getSupportedNetworks()}
 	if network != "" {
 		filters["network = ?"] = []interface{}{network}
 	}
@@ -153,6 +155,7 @@ func (s *NftLend) GetLoanOffers(ctx context.Context, network models.Network, bor
 	if lender != "" {
 		filters["lender = ?"] = []interface{}{lender}
 	}
+	filters["network in (?)"] = []interface{}{s.getSupportedNetworks()}
 	if network != "" {
 		filters["network = ?"] = []interface{}{network}
 	}
