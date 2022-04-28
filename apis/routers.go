@@ -59,6 +59,7 @@ func (s *Server) Routers() {
 	assetnftAPI := nftAPI.Group("/assets")
 	{
 		assetnftAPI.GET("/detail/:seo_url", s.GetAssetDetail)
+		assetnftAPI.GET("/info", s.GetAssetDetailInfo)
 		assetnftAPI.GET("/transactions", s.GetAseetTransactions)
 	}
 	collectionnftAPI := nftAPI.Group("/collections")
@@ -76,10 +77,12 @@ func (s *Server) Routers() {
 		loannftAPI.GET("/transactions", s.GetLoanTransactions)
 		loannftAPI.POST("/create", s.CreateLoan)
 		loannftAPI.POST("/offers/create/:loan_id", s.CreateLoanOffer)
+		loannftAPI.POST("/near/sync", s.NearUpdateLoan)
 	}
 	hookInternalnftAPI := nftAPI.Group("/hook/internal")
 	{
 		hookInternalnftAPI.POST("/solana-instruction", s.LenInternalHookSolanaInstruction)
+		hookInternalnftAPI.POST("/near-sync", s.NearSync)
 	}
 	jobsNftAPI := nftAPI.Group("/jobs")
 	jobsNftAPI.Use(s.authorizeJobMiddleware())

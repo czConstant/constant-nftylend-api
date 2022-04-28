@@ -206,6 +206,41 @@ func (s *NftLend) getLendCurrencyBySymbol(tx *gorm.DB, symbol string) (*models.C
 	return c, nil
 }
 
+func (s *NftLend) GetAssetDetailInfo(ctx context.Context, contractAddress string, tokenID string) (*models.Asset, error) {
+	m, err := s.ad.First(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"contract_address = ?": []interface{}{contractAddress},
+			"token_id = ?":         []interface{}{tokenID},
+		},
+		map[string][]interface{}{
+			"Collection": []interface{}{},
+			"NewLoan": []interface{}{
+				"status in (?)",
+				[]models.LoanStatus{
+					models.LoanStatusNew,
+					models.LoanStatusCreated,
+				},
+			},
+			"NewLoan.Currency": []interface{}{},
+			"NewLoan.Offers": []interface{}{
+				func(db *gorm.DB) *gorm.DB {
+					return db.Order("loan_offers.id DESC")
+				},
+			},
+			"NewLoan.ApprovedOffer": []interface{}{
+				"status = ?",
+				models.LoanOfferStatusApproved,
+			},
+		},
+		[]string{"id desc"},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return m, nil
+}
+
 func (s *NftLend) GetAssetDetail(ctx context.Context, seoURL string) (*models.Asset, error) {
 	m, err := s.ad.First(
 		daos.GetDBMainCtx(ctx),
@@ -215,14 +250,21 @@ func (s *NftLend) GetAssetDetail(ctx context.Context, seoURL string) (*models.As
 		map[string][]interface{}{
 			"Collection": []interface{}{},
 			"NewLoan": []interface{}{
-				"status = ?",
-				models.LoanStatusNew,
+				"status in (?)",
+				[]models.LoanStatus{
+					models.LoanStatusNew,
+					models.LoanStatusCreated,
+				},
 			},
 			"NewLoan.Currency": []interface{}{},
 			"NewLoan.Offers": []interface{}{
 				func(db *gorm.DB) *gorm.DB {
 					return db.Order("loan_offers.id DESC")
 				},
+			},
+			"NewLoan.ApprovedOffer": []interface{}{
+				"status = ?",
+				models.LoanOfferStatusApproved,
 			},
 		},
 		[]string{"id desc"},
@@ -276,7 +318,13 @@ func (s *NftLend) GetCollectionDetail(ctx context.Context, seoURL string) (*mode
 		map[string][]interface{}{
 			"seo_url = ?": []interface{}{seoURL},
 		},
-		map[string][]interface{}{},
+		map[string][]interface{}{
+			"RandAsset": []interface{}{
+				func(db *gorm.DB) *gorm.DB {
+					return db.Order(`rand()`)
+				},
+			},
+		},
 		[]string{"id desc"},
 	)
 	if err != nil {
@@ -582,6 +630,69 @@ func (s *NftLend) updateAssetTransactions(ctx context.Context, assetId uint) err
 					return errs.NewError(errs.ErrBadRequest)
 				}
 				asset.SolSeaCrawAt = helpers.TimeNow()
+				err = s.ad.Save(
+					tx,
+					asset,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				return nil
+			},
+		)
+		if err != nil {
+			return errs.NewError(err)
+		}
+	}
+	if asset.Network == models.NetworkNEAR &&
+		(asset.ParasIOCrawAt == nil ||
+			asset.ParasIOCrawAt.Before(time.Now().Add(-24*time.Hour))) {
+		c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "NEAR")
+		if err != nil {
+			return errs.NewError(err)
+		}
+		contractAddress := asset.ContractAddress
+		tokenID := asset.TokenID
+		if asset.TestContractAddress != "" {
+			contractAddress = asset.TestContractAddress
+			tokenID = asset.TestTokenID
+		}
+		rs, _ := s.stc.GetParasSaleHistories(contractAddress, tokenID)
+		for i := len(rs) - 1; i >= 0; i-- {
+			r := rs[i]
+			txnAt := time.Unix(r.IssuedAt/1000, 0)
+			_ = s.atd.Create(
+				daos.GetDBMainCtx(ctx),
+				&models.AssetTransaction{
+					Source:        "paras.id",
+					Network:       models.NetworkNEAR,
+					AssetID:       asset.ID,
+					Type:          models.AssetTransactionTypeExchange,
+					Seller:        r.From,
+					Buyer:         r.To,
+					TransactionID: r.TransactionHash,
+					TransactionAt: &txnAt,
+					Amount:        numeric.BigFloat{*models.ConvertWeiToBigFloat(&r.Msg.Params.Price.Int, c.Decimals)},
+					CurrencyID:    c.ID,
+				},
+			)
+		}
+		err = daos.WithTransaction(
+			daos.GetDBMainCtx(ctx),
+			func(tx *gorm.DB) error {
+				asset, err := s.ad.FirstByID(
+					tx,
+					asset.ID,
+					map[string][]interface{}{},
+					true,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if asset == nil {
+					return errs.NewError(errs.ErrBadRequest)
+				}
+				asset.ParasIOCrawAt = helpers.TimeNow()
 				err = s.ad.Save(
 					tx,
 					asset,

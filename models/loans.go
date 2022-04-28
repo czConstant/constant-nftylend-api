@@ -24,6 +24,7 @@ const (
 	NetworkAVAX  Network = "AVAX"
 	NetworkBSC   Network = "BSC"
 	NetworkBOBA  Network = "BOBA"
+	NetworkNEAR  Network = "NEAR"
 )
 
 type Loan struct {
@@ -61,4 +62,5 @@ type Loan struct {
 	CancelTxHash         string
 	PayTxHash            string
 	LiquidateTxHash      string
+	LastUpdatedClient    string
 }

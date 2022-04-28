@@ -157,3 +157,18 @@ func (s *Server) CreateLoanOffer(c *gin.Context) {
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewLoanOfferResp(loanOffer)})
 }
+
+func (s *Server) NearUpdateLoan(c *gin.Context) {
+	ctx := s.requestContext(c)
+	var req serializers.CreateLoanNearReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	_, isUpdated, err := s.nls.NearUpdateLoan(ctx, &req, "client")
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: isUpdated})
+}

@@ -15,6 +15,7 @@ type CollectionResp struct {
 	SeoURL                string           `json:"seo_url"`
 	Name                  string           `json:"name"`
 	Description           string           `json:"description"`
+	Verified              bool             `json:"verified"`
 	ListingAsset          *AssetResp       `json:"listing_asset"`
 	ListingTotal          uint             `json:"listing_total"`
 	TotalVolume           numeric.BigFloat `json:"total_volume"`
@@ -22,6 +23,7 @@ type CollectionResp struct {
 	Avg24hAmount          numeric.BigFloat `json:"avg24h_amount"`
 	OriginNetwork         models.Network   `json:"origin_network"`
 	OriginContractAddress string           `json:"origin_contract_address"`
+	RandAsset             *AssetResp       `json:"rand_asset"`
 }
 
 func NewCollectionResp(m *models.Collection) *CollectionResp {
@@ -35,10 +37,12 @@ func NewCollectionResp(m *models.Collection) *CollectionResp {
 		Network:               m.Network,
 		SeoURL:                m.SeoURL,
 		Name:                  m.Name,
+		Verified:              m.Verified,
 		Description:           m.Description,
 		OriginNetwork:         m.OriginNetwork,
 		OriginContractAddress: m.OriginContractAddress,
 		ListingAsset:          NewAssetResp(m.ListingAsset),
+		RandAsset:             NewAssetResp(m.RandAsset),
 	}
 	return resp
 }
