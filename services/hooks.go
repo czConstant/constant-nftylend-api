@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"math/big"
 	"strconv"
 	"strings"
@@ -142,7 +143,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 									if collection == nil {
 										collection = &models.Collection{
 											Network:     models.NetworkSOL,
-											SeoURL:      helpers.MakeSeoURL(collectionName),
+											SeoURL:      helpers.MakeSeoURL(fmt.Sprintf("%s-%s", models.NetworkSOL, collectionName)),
 											Name:        collectionName,
 											Description: metaInfo.Description,
 											Enabled:     true,
@@ -175,7 +176,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 								}
 								asset = &models.Asset{
 									Network:               models.NetworkSOL,
-									SeoURL:                req.NftCollateralContract,
+									SeoURL:                helpers.MakeSeoURL(fmt.Sprintf("%s-%s", models.NetworkSOL, req.NftCollateralContract)),
 									ContractAddress:       req.NftCollateralContract,
 									CollectionID:          collection.ID,
 									Symbol:                metaInfo.Symbol,

@@ -351,7 +351,7 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 				if collection == nil {
 					collection = &models.Collection{
 						Network:         req.Network,
-						SeoURL:          helpers.MakeSeoURL(req.ContractAddress),
+						SeoURL:          helpers.MakeSeoURL(fmt.Sprintf("%s-%s", req.Network, req.ContractAddress)),
 						ContractAddress: req.ContractAddress,
 						Name:            "",
 						Description:     meta.Description,
@@ -376,7 +376,7 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 				asset = &models.Asset{
 					Network:               req.Network,
 					CollectionID:          collection.ID,
-					SeoURL:                helpers.MakeSeoURL(fmt.Sprintf("%s-%s", req.ContractAddress, req.TokenID)),
+					SeoURL:                helpers.MakeSeoURL(fmt.Sprintf("%s-%s", req.Network, fmt.Sprintf("%s-%s", req.ContractAddress, req.TokenID))),
 					ContractAddress:       collection.ContractAddress,
 					TokenID:               req.TokenID,
 					Symbol:                "",

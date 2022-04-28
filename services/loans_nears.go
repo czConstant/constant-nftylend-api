@@ -457,7 +457,7 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 					}
 					collection = &models.Collection{
 						Network:         models.NetworkNEAR,
-						SeoURL:          helpers.MakeSeoURL(contractAddress),
+						SeoURL:          helpers.MakeSeoURL(fmt.Sprintf("%s-%s", models.NetworkNEAR, contractAddress)),
 						ContractAddress: contractAddress,
 						Name:            collectionName,
 						Description:     description,
@@ -475,7 +475,7 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 				asset = &models.Asset{
 					Network:               models.NetworkNEAR,
 					CollectionID:          collection.ID,
-					SeoURL:                helpers.MakeSeoURL(fmt.Sprintf("%s-%s", contractAddress, tokenID)),
+					SeoURL:                helpers.MakeSeoURL(fmt.Sprintf("%s-%s", models.NetworkNEAR, fmt.Sprintf("%s-%s", contractAddress, tokenID))),
 					ContractAddress:       collection.ContractAddress,
 					TokenID:               tokenID,
 					Symbol:                "",
