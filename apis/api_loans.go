@@ -9,6 +9,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func (s *Server) GetBorrowerStats(c *gin.Context) {
+	ctx := s.requestContext(c)
+	stats, err := s.nls.GetBorrowerStats(
+		ctx,
+		s.stringFromContextParam(c, "borrower"),
+	)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewBorrowerStatsResp(stats)})
+}
+
 func (s *Server) GetListingLoans(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)

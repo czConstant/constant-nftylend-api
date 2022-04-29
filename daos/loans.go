@@ -89,3 +89,47 @@ func (d *Loan) GetRPTCollectionLoan(tx *gorm.DB, collectionId uint) (*models.Nft
 	}
 	return &rs, nil
 }
+
+func (d *Loan) GetBorrowerStats(tx *gorm.DB, borrower string) (*models.BorrowerStats, error) {
+	var rs models.BorrowerStats
+	err := tx.Raw(`
+	select ifnull(
+				sum(
+						case
+							when status in (
+											'created',
+											'done',
+											'liquidated',
+											'expired'
+								) then 1
+							else 0 end
+					), 0
+			) total_loans,
+		ifnull(
+				sum(
+						case
+							when status in (
+								'done'
+								) then 1
+							else 0 end
+					), 0
+			) total_done_loans,
+		ifnull(
+				sum(
+						case
+							when status in (
+								'done'
+								) then 1
+							else 0 end
+					), 0
+			) total_volume
+		from loans
+		where owner = ?;
+	`,
+		borrower,
+	).Find(&rs).Error
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return &rs, nil
+}
