@@ -16,6 +16,7 @@ import (
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/helpers"
 	"github.com/czConstant/constant-nftylend-api/models"
+	"github.com/czConstant/constant-nftylend-api/serializers"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/moralis"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/saletrack"
 	"github.com/czConstant/constant-nftylend-api/types/numeric"
@@ -882,8 +883,8 @@ func (s *NftLend) solseaMsgReceived(msg string) {
 	}
 }
 
-func (s *NftLend) GetRPTForAssetTradeAmount(ctx context.Context, assetID uint) (numeric.BigFloat, error) {
-	v, err := s.atd.GetRPTForAssetTradeAmount(
+func (s *NftLend) GetRPTAssetLoanToValue(ctx context.Context, assetID uint) (numeric.BigFloat, error) {
+	v, err := s.atd.GetRPTAssetLoanToValue(
 		daos.GetDBMainCtx(ctx),
 		assetID,
 	)
@@ -891,4 +892,120 @@ func (s *NftLend) GetRPTForAssetTradeAmount(ctx context.Context, assetID uint) (
 		return v, errs.NewError(err)
 	}
 	return v, nil
+}
+
+func (s *NftLend) GetAssetStatsInfo(ctx context.Context, assetID uint) (*serializers.AssetStatsResp, error) {
+	m, err := s.ad.FirstByID(
+		daos.GetDBMainCtx(ctx),
+		assetID,
+		map[string][]interface{}{},
+		false,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	if m == nil {
+		return nil, errs.NewError(errs.ErrBadRequest)
+	}
+	resp := &serializers.AssetStatsResp{}
+	floorPice, saleCurrency, err := s.GetAssetFloorPrice(ctx, m.ID)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	resp.FloorPrice = floorPice
+	avgPrice, err := s.atd.GetAssetAvgPrice(daos.GetDBMainCtx(ctx), m.ID)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	resp.AvgPrice = avgPrice
+	resp.Currency = serializers.NewCurrencyResp(saleCurrency)
+	return resp, nil
+}
+
+func (s *NftLend) GetAssetFloorPrice(ctx context.Context, assetID uint) (numeric.BigFloat, *models.Currency, error) {
+	m, err := s.ad.FirstByID(
+		daos.GetDBMainCtx(ctx),
+		assetID,
+		map[string][]interface{}{},
+		false,
+	)
+	if err != nil {
+		return numeric.BigFloat{}, nil, errs.NewError(err)
+	}
+	if m == nil {
+		return numeric.BigFloat{}, nil, errs.NewError(errs.ErrBadRequest)
+	}
+	var saleCurrency *models.Currency
+	switch m.Network {
+	case models.NetworkMATIC:
+		{
+			saleCurrency, err = s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "NEAR", models.NetworkNEAR)
+			if err != nil {
+				return numeric.BigFloat{}, nil, errs.NewError(err)
+			}
+		}
+	case models.NetworkNEAR:
+		{
+			saleCurrency, err = s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "NEAR", models.NetworkNEAR)
+			if err != nil {
+				return numeric.BigFloat{}, nil, errs.NewError(err)
+			}
+		}
+	}
+	if m.FloorPriceAt == nil ||
+		m.FloorPriceAt.Before(time.Now().Add(-24*time.Hour)) {
+		assetFloorPrice := numeric.BigFloat{*big.NewFloat(0)}
+		switch m.Network {
+		case models.NetworkMATIC:
+			{
+				nftbankStats, _ := s.stc.GetNftbankFloorPrice(m.GetContractAddress(), "MATIC")
+				if nftbankStats != nil && len(nftbankStats) > 0 {
+					for _, v := range nftbankStats[0].FloorPrice {
+						if v.CurrencySymbol == "ETH" {
+							assetFloorPrice = v.FloorPrice
+						}
+					}
+				}
+			}
+		case models.NetworkNEAR:
+			{
+				parasStats, _ := s.stc.GetParasCollectionStats(m.GetContractAddress())
+				if parasStats != nil {
+					floorPrice := models.ConvertWeiToBigFloat(&parasStats.FloorPrice.Int, saleCurrency.Decimals)
+					assetFloorPrice = numeric.BigFloat{*floorPrice}
+				}
+			}
+		}
+		err = daos.WithTransaction(
+			daos.GetDBMainCtx(ctx),
+			func(tx *gorm.DB) error {
+				m, err = s.ad.FirstByID(
+					tx,
+					assetID,
+					map[string][]interface{}{},
+					true,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if m == nil {
+					return errs.NewError(errs.ErrBadRequest)
+				}
+				m.FloorPrice = assetFloorPrice
+				m.FloorPriceAt = helpers.TimeNow()
+				err = s.ad.Save(
+					tx,
+					m,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				return nil
+			},
+		)
+		if err != nil {
+			return m.FloorPrice, nil, errs.NewError(err)
+		}
+	}
+	return m.FloorPrice, saleCurrency, nil
 }

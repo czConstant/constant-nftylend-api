@@ -81,20 +81,38 @@ func (d *AssetTransaction) GetRPTListingCollection(tx *gorm.DB) ([]*models.NftyR
 	return rs, nil
 }
 
-func (d *AssetTransaction) GetRPTForAssetTradeAmount(tx *gorm.DB, assetID uint) (numeric.BigFloat, error) {
+func (d *AssetTransaction) GetRPTAssetLoanToValue(tx *gorm.DB, assetID uint) (numeric.BigFloat, error) {
 	var rs struct {
-		Amount numeric.BigFloat
+		UsdAmount numeric.BigFloat
 	}
 	err := tx.Raw(`
-	select ifnull(sum(amount), 0) amount
-	from asset_transactions
-	where asset_id = ?
-		and transaction_at >= adddate(now(), interval -12 month)
+	select ifnull(sum(asset_transactions.amount * currencies.price *0.2), 0) usd_amount
+	from asset_transactions join currencies on asset_transactions.currency_id = currencies.id
+	where asset_transactions.asset_id = ?
+		and asset_transactions.transaction_at >= adddate(now(), interval -12 month)
 	`,
 		assetID,
 	).Find(&rs).Error
 	if err != nil {
 		return numeric.BigFloat{*big.NewFloat(0)}, errs.NewError(err)
 	}
-	return rs.Amount, nil
+	return rs.UsdAmount, nil
+}
+
+func (d *AssetTransaction) GetAssetAvgPrice(tx *gorm.DB, assetID uint) (numeric.BigFloat, error) {
+	var rs struct {
+		AvgPrice numeric.BigFloat
+	}
+	err := tx.Raw(`
+	select ifnull(sum(asset_transactions.amount), 0) avg_price
+	from asset_transactions
+	where asset_transactions.asset_id = ?
+		and asset_transactions.transaction_at >= adddate(now(), interval -12 month)
+	`,
+		assetID,
+	).Find(&rs).Error
+	if err != nil {
+		return numeric.BigFloat{*big.NewFloat(0)}, errs.NewError(err)
+	}
+	return rs.AvgPrice, nil
 }

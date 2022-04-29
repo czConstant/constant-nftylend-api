@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	cloudflarebp "github.com/DaRealFreak/cloudflare-bp-go"
@@ -437,6 +438,41 @@ func (c *Client) GetParasProfile(contractID string) ([]*ParasProfileResp, error)
 	return result.Data.Results, nil
 }
 
+type ParasCollectionStatsResp struct {
+	ID          string           `json:"_id"`
+	AccountID   string           `json:"accountId"`
+	Volume      numeric.BigInt   `json:"volume"`
+	VolumeUsd   numeric.BigFloat `json:"volume_usd"`
+	AvgPrice    numeric.BigInt   `json:"avg_price"`
+	AvgPriceUsd numeric.BigFloat `json:"avg_price_usd"`
+	FloorPrice  numeric.BigInt   `json:"floor_price"`
+}
+
+func (c *Client) GetParasCollectionStats(contractID string) (*ParasCollectionStatsResp, error) {
+	var result struct {
+		Data struct {
+			Results *ParasCollectionStatsResp `json:"results"`
+		} `json:"data"`
+	}
+	client := &http.Client{}
+	resp, err := client.Get(fmt.Sprintf("https://api-v2-mainnet.paras.id/collection-stats?collection_id=%s", contractID))
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode >= 300 {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("http response bad status %d %s", resp.StatusCode, err.Error())
+		}
+		return nil, fmt.Errorf("http response bad status %d %s", resp.StatusCode, string(bodyBytes))
+	}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Data.Results, nil
+}
+
 type NftbankSaleResp struct {
 	BlockTimestamp  string           `json:"block_timestamp"`
 	BuyerAddress    string           `json:"buyer_address"`
@@ -472,4 +508,67 @@ func (c *Client) GetNftbankSaleHistories(contractID string, tokenID string, chai
 		return nil, err
 	}
 	return result.Data, nil
+}
+
+type NftbankFloorPriceResp struct {
+	EstimatedAt string `json:"estimated_at"`
+	FloorPrice  []*struct {
+		CurrencySymbol string           `json:"currency_symbol"`
+		FloorPrice     numeric.BigFloat `json:"floor_price"`
+	} `json:"floor_price"`
+}
+
+func (c *Client) GetNftbankFloorPrice(contractID string, chainID string) ([]*NftbankFloorPriceResp, error) {
+	var result struct {
+		Data []*NftbankFloorPriceResp `json:"data"`
+	}
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://api.nftbank.ai/estimates-v2/floor_price/%s?chain_id=%s", contractID, chainID), nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("x-api-key", c.NftbankKey)
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode >= 300 {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("http response bad status %d %s", resp.StatusCode, err.Error())
+		}
+		return nil, fmt.Errorf("http response bad status %d %s", resp.StatusCode, string(bodyBytes))
+	}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Data, nil
+}
+
+func (c *Client) GetCoingeckoPrice(symbol string) (float64, error) {
+	result := map[string]interface{}{}
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://api.coingecko.com/api/v3/simple/price?ids=%s&vs_currencies=USD", symbol), nil)
+	if err != nil {
+		return 0, err
+	}
+	req.Header.Add("Content-Type", "application/json")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return 0, err
+	}
+	if resp.StatusCode >= 300 {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return 0, fmt.Errorf("http response bad status %d %s", resp.StatusCode, err.Error())
+		}
+		return 0, fmt.Errorf("http response bad status %d %s", resp.StatusCode, string(bodyBytes))
+	}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return 0, err
+	}
+	return result[strings.ToLower(symbol)].(map[string]float64)["usd"], nil
 }

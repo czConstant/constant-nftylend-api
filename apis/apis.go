@@ -42,7 +42,14 @@ func (s *Server) GetAssetDetail(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssetResp(m)})
+	stats, err := s.nls.GetAssetStatsInfo(ctx, m.ID)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	resp := serializers.NewAssetResp(m)
+	resp.Stats = stats
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: resp})
 }
 
 func (s *Server) GetAssetDetailInfo(c *gin.Context) {
@@ -52,7 +59,14 @@ func (s *Server) GetAssetDetailInfo(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssetResp(m)})
+	stats, err := s.nls.GetAssetStatsInfo(ctx, m.ID)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	resp := serializers.NewAssetResp(m)
+	resp.Stats = stats
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: resp})
 }
 
 func (s *Server) GetCollectionAssetVerified(c *gin.Context) {

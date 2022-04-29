@@ -98,3 +98,21 @@ func NewLoanRespArr(arr []*models.Loan) []*LoanResp {
 	}
 	return resps
 }
+
+type BorrowerStatsResp struct {
+	TotalLoans     uint             `json:"total_loans"`
+	TotalDoneLoans uint             `json:"total_done_loans"`
+	TotalVolume    numeric.BigFloat `json:"total_volume"`
+}
+
+func NewBorrowerStatsResp(m *models.BorrowerStats) *BorrowerStatsResp {
+	if m == nil {
+		return nil
+	}
+	resp := &BorrowerStatsResp{
+		TotalLoans:     m.TotalLoans,
+		TotalDoneLoans: m.TotalDoneLoans,
+		TotalVolume:    m.TotalVolume,
+	}
+	return resp
+}

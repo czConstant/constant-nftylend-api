@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/czConstant/constant-nftylend-api/models"
+	"github.com/czConstant/constant-nftylend-api/types/numeric"
 )
 
 type AssetResp struct {
@@ -25,6 +26,7 @@ type AssetResp struct {
 	OriginContractAddress string          `json:"origin_contract_address"`
 	OriginTokenID         string          `json:"origin_token_id"`
 	NewLoan               *LoanResp       `json:"new_loan"`
+	Stats                 *AssetStatsResp `json:"stats"`
 }
 
 func NewAssetResp(m *models.Asset) *AssetResp {
@@ -61,4 +63,11 @@ func NewAssetRespArr(arr []*models.Asset) []*AssetResp {
 		resps = append(resps, NewAssetResp(m))
 	}
 	return resps
+}
+
+type AssetStatsResp struct {
+	ID         uint             `json:"id"`
+	FloorPrice numeric.BigFloat `json:"floor_price"`
+	AvgPrice   numeric.BigFloat `json:"avg_price"`
+	Currency   *CurrencyResp    `json:"currency"`
 }
