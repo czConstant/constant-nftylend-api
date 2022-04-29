@@ -909,29 +909,11 @@ func (s *NftLend) GetAssetStatsInfo(ctx context.Context, assetID uint) (*seriali
 	}
 	resp := &serializers.AssetStatsResp{}
 	resp.FloorPrice = numeric.BigFloat{*big.NewFloat(0)}
-	var saleCurrency *models.Currency
-	switch m.Network {
-	case models.NetworkMATIC:
-		{
-			saleCurrency, err = s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "ETH", models.NetworkMATIC)
-			if err != nil {
-				return nil, errs.NewError(err)
-			}
-		}
-	case models.NetworkNEAR:
-		{
-			saleCurrency, err = s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "NEAR", models.NetworkNEAR)
-			if err != nil {
-				return nil, errs.NewError(err)
-			}
-			parasStats, err := s.stc.GetParasCollectionStats(m.GetContractAddress())
-			if err != nil {
-				return nil, errs.NewError(err)
-			}
-			floorPrice := models.ConvertWeiToBigFloat(&parasStats.FloorPrice.Int, saleCurrency.Decimals)
-			resp.FloorPrice = numeric.BigFloat{*floorPrice}
-		}
+	floorPice, saleCurrency, err := s.GetAssetFloorPrice(ctx, m.ID)
+	if err != nil {
+		return nil, errs.NewError(err)
 	}
+	resp.FloorPrice = floorPice
 	avgPrice, err := s.atd.GetAssetAvgPrice(daos.GetDBMainCtx(ctx), m.ID)
 	if err != nil {
 		return nil, errs.NewError(err)
@@ -941,7 +923,7 @@ func (s *NftLend) GetAssetStatsInfo(ctx context.Context, assetID uint) (*seriali
 	return resp, nil
 }
 
-func (s *NftLend) GetAssetFloorPrice(ctx context.Context, assetID uint) (numeric.BigFloat, error) {
+func (s *NftLend) GetAssetFloorPrice(ctx context.Context, assetID uint) (numeric.BigFloat, *models.Currency, error) {
 	m, err := s.ad.FirstByID(
 		daos.GetDBMainCtx(ctx),
 		assetID,
@@ -949,27 +931,36 @@ func (s *NftLend) GetAssetFloorPrice(ctx context.Context, assetID uint) (numeric
 		false,
 	)
 	if err != nil {
-		return numeric.BigFloat{}, errs.NewError(err)
+		return numeric.BigFloat{}, nil, errs.NewError(err)
 	}
 	if m == nil {
-		return numeric.BigFloat{}, errs.NewError(errs.ErrBadRequest)
+		return numeric.BigFloat{}, nil, errs.NewError(errs.ErrBadRequest)
+	}
+	var saleCurrency *models.Currency
+	switch m.Network {
+	case models.NetworkMATIC:
+		{
+			saleCurrency, err = s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "NEAR", models.NetworkNEAR)
+			if err != nil {
+				return numeric.BigFloat{}, nil, errs.NewError(err)
+			}
+		}
+	case models.NetworkNEAR:
+		{
+			saleCurrency, err = s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "NEAR", models.NetworkNEAR)
+			if err != nil {
+				return numeric.BigFloat{}, nil, errs.NewError(err)
+			}
+		}
 	}
 	if m.FloorPriceAt == nil ||
 		m.FloorPriceAt.Before(time.Now().Add(-24*time.Hour)) {
 		assetFloorPrice := numeric.BigFloat{*big.NewFloat(0)}
-		var saleCurrency *models.Currency
 		switch m.Network {
 		case models.NetworkMATIC:
 			{
-				saleCurrency, err = s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "ETH", models.NetworkMATIC)
-				if err != nil {
-					return assetFloorPrice, errs.NewError(err)
-				}
-				nftbankStats, err := s.stc.GetNftbankFloorPrice(m.GetContractAddress(), "MATIC")
-				if err != nil {
-					return assetFloorPrice, errs.NewError(err)
-				}
-				if len(nftbankStats) > 0 {
+				nftbankStats, _ := s.stc.GetNftbankFloorPrice(m.GetContractAddress(), "MATIC")
+				if nftbankStats != nil && len(nftbankStats) > 0 {
 					for _, v := range nftbankStats[0].FloorPrice {
 						if v.CurrencySymbol == "ETH" {
 							assetFloorPrice = v.FloorPrice
@@ -979,16 +970,11 @@ func (s *NftLend) GetAssetFloorPrice(ctx context.Context, assetID uint) (numeric
 			}
 		case models.NetworkNEAR:
 			{
-				saleCurrency, err = s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "NEAR", models.NetworkNEAR)
-				if err != nil {
-					return assetFloorPrice, errs.NewError(err)
+				parasStats, _ := s.stc.GetParasCollectionStats(m.GetContractAddress())
+				if parasStats != nil {
+					floorPrice := models.ConvertWeiToBigFloat(&parasStats.FloorPrice.Int, saleCurrency.Decimals)
+					assetFloorPrice = numeric.BigFloat{*floorPrice}
 				}
-				parasStats, err := s.stc.GetParasCollectionStats(m.GetContractAddress())
-				if err != nil {
-					return assetFloorPrice, errs.NewError(err)
-				}
-				floorPrice := models.ConvertWeiToBigFloat(&parasStats.FloorPrice.Int, saleCurrency.Decimals)
-				assetFloorPrice = numeric.BigFloat{*floorPrice}
 			}
 		}
 		err = daos.WithTransaction(
@@ -1006,6 +992,7 @@ func (s *NftLend) GetAssetFloorPrice(ctx context.Context, assetID uint) (numeric
 				if m == nil {
 					return errs.NewError(errs.ErrBadRequest)
 				}
+				m.FloorPrice = assetFloorPrice
 				m.FloorPriceAt = helpers.TimeNow()
 				err = s.ad.Save(
 					tx,
@@ -1018,8 +1005,8 @@ func (s *NftLend) GetAssetFloorPrice(ctx context.Context, assetID uint) (numeric
 			},
 		)
 		if err != nil {
-			return m.FloorPrice, errs.NewError(err)
+			return m.FloorPrice, nil, errs.NewError(err)
 		}
 	}
-	return m.FloorPrice, nil
+	return m.FloorPrice, nil, nil
 }
