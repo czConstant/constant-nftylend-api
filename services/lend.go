@@ -882,8 +882,8 @@ func (s *NftLend) solseaMsgReceived(msg string) {
 	}
 }
 
-func (s *NftLend) GetRPTForAssetTradeAmount(ctx context.Context, assetID uint) (numeric.BigFloat, error) {
-	v, err := s.atd.GetRPTForAssetTradeAmount(
+func (s *NftLend) GetRPTAssetLoanToValue(ctx context.Context, assetID uint) (numeric.BigFloat, error) {
+	v, err := s.atd.GetRPTAssetLoanToValue(
 		daos.GetDBMainCtx(ctx),
 		assetID,
 	)

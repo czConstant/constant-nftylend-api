@@ -5,26 +5,28 @@ import (
 	"time"
 
 	"github.com/czConstant/constant-nftylend-api/models"
+	"github.com/czConstant/constant-nftylend-api/types/numeric"
 )
 
 type AssetResp struct {
-	ID                    uint            `json:"id"`
-	CreatedAt             time.Time       `json:"created_at"`
-	UpdatedAt             time.Time       `json:"updated_at"`
-	Network               models.Network  `json:"network"`
-	CollectionID          uint            `json:"collection_id"`
-	Collection            *CollectionResp `json:"collection"`
-	SeoURL                string          `json:"seo_url"`
-	ContractAddress       string          `json:"contract_address"`
-	TokenURL              string          `json:"token_url"`
-	TokenID               string          `json:"token_id"`
-	Name                  string          `json:"name"`
-	SellerFeeRate         float64         `json:"seller_fee_rate"`
-	Attributes            interface{}     `json:"attributes"`
-	OriginNetwork         models.Network  `json:"origin_network"`
-	OriginContractAddress string          `json:"origin_contract_address"`
-	OriginTokenID         string          `json:"origin_token_id"`
-	NewLoan               *LoanResp       `json:"new_loan"`
+	ID                    uint             `json:"id"`
+	CreatedAt             time.Time        `json:"created_at"`
+	UpdatedAt             time.Time        `json:"updated_at"`
+	Network               models.Network   `json:"network"`
+	CollectionID          uint             `json:"collection_id"`
+	Collection            *CollectionResp  `json:"collection"`
+	SeoURL                string           `json:"seo_url"`
+	ContractAddress       string           `json:"contract_address"`
+	TokenURL              string           `json:"token_url"`
+	TokenID               string           `json:"token_id"`
+	Name                  string           `json:"name"`
+	SellerFeeRate         float64          `json:"seller_fee_rate"`
+	Attributes            interface{}      `json:"attributes"`
+	OriginNetwork         models.Network   `json:"origin_network"`
+	OriginContractAddress string           `json:"origin_contract_address"`
+	OriginTokenID         string           `json:"origin_token_id"`
+	NewLoan               *LoanResp        `json:"new_loan"`
+	LoanToValue           numeric.BigFloat `json:"loan_to_value"`
 }
 
 func NewAssetResp(m *models.Asset) *AssetResp {

@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	cloudflarebp "github.com/DaRealFreak/cloudflare-bp-go"
@@ -472,4 +473,30 @@ func (c *Client) GetNftbankSaleHistories(contractID string, tokenID string, chai
 		return nil, err
 	}
 	return result.Data, nil
+}
+
+func (c *Client) GetCoingeckoPrice(symbol string) (float64, error) {
+	result := map[string]interface{}{}
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://api.coingecko.com/api/v3/simple/price?ids=%s&vs_currencies=USD", symbol), nil)
+	if err != nil {
+		return 0, err
+	}
+	req.Header.Add("Content-Type", "application/json")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return 0, err
+	}
+	if resp.StatusCode >= 300 {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return 0, fmt.Errorf("http response bad status %d %s", resp.StatusCode, err.Error())
+		}
+		return 0, fmt.Errorf("http response bad status %d %s", resp.StatusCode, string(bodyBytes))
+	}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return 0, err
+	}
+	return result[strings.ToLower(symbol)].(map[string]float64)["usd"], nil
 }
