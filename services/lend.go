@@ -908,7 +908,6 @@ func (s *NftLend) GetAssetStatsInfo(ctx context.Context, assetID uint) (*seriali
 		return nil, errs.NewError(errs.ErrBadRequest)
 	}
 	resp := &serializers.AssetStatsResp{}
-	resp.FloorPrice = numeric.BigFloat{*big.NewFloat(0)}
 	floorPice, saleCurrency, err := s.GetAssetFloorPrice(ctx, m.ID)
 	if err != nil {
 		return nil, errs.NewError(err)
@@ -919,7 +918,7 @@ func (s *NftLend) GetAssetStatsInfo(ctx context.Context, assetID uint) (*seriali
 		return nil, errs.NewError(err)
 	}
 	resp.AvgPrice = avgPrice
-	resp.Currency = *serializers.NewCurrencyResp(saleCurrency)
+	resp.Currency = serializers.NewCurrencyResp(saleCurrency)
 	return resp, nil
 }
 
@@ -1008,5 +1007,5 @@ func (s *NftLend) GetAssetFloorPrice(ctx context.Context, assetID uint) (numeric
 			return m.FloorPrice, nil, errs.NewError(err)
 		}
 	}
-	return m.FloorPrice, nil, nil
+	return m.FloorPrice, saleCurrency, nil
 }

@@ -69,5 +69,5 @@ type AssetStatsResp struct {
 	ID         uint             `json:"id"`
 	FloorPrice numeric.BigFloat `json:"floor_price"`
 	AvgPrice   numeric.BigFloat `json:"avg_price"`
-	Currency   CurrencyResp     `json:"currency"`
+	Currency   *CurrencyResp    `json:"currency"`
 }
