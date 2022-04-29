@@ -438,6 +438,41 @@ func (c *Client) GetParasProfile(contractID string) ([]*ParasProfileResp, error)
 	return result.Data.Results, nil
 }
 
+type ParasCollectionStatsResp struct {
+	ID          string           `json:"_id"`
+	AccountID   string           `json:"accountId"`
+	Volume      numeric.BigInt   `json:"volume"`
+	VolumeUsd   numeric.BigFloat `json:"volume_usd"`
+	AvgPrice    numeric.BigInt   `json:"avg_price"`
+	AvgPriceUsd numeric.BigFloat `json:"avg_price_usd"`
+	FloorPrice  numeric.BigInt   `json:"floor_price"`
+}
+
+func (c *Client) GetParasCollectionStats(contractID string) (*ParasCollectionStatsResp, error) {
+	var result struct {
+		Data struct {
+			Results *ParasCollectionStatsResp `json:"results"`
+		} `json:"data"`
+	}
+	client := &http.Client{}
+	resp, err := client.Get(fmt.Sprintf("https://api-v2-mainnet.paras.id/collection-stats?collection_id=%s", contractID))
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode >= 300 {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("http response bad status %d %s", resp.StatusCode, err.Error())
+		}
+		return nil, fmt.Errorf("http response bad status %d %s", resp.StatusCode, string(bodyBytes))
+	}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+	return result.Data.Results, nil
+}
+
 type NftbankSaleResp struct {
 	BlockTimestamp  string           `json:"block_timestamp"`
 	BuyerAddress    string           `json:"buyer_address"`

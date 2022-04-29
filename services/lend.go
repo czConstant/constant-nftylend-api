@@ -16,6 +16,7 @@ import (
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/helpers"
 	"github.com/czConstant/constant-nftylend-api/models"
+	"github.com/czConstant/constant-nftylend-api/serializers"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/moralis"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/saletrack"
 	"github.com/czConstant/constant-nftylend-api/types/numeric"
@@ -891,4 +892,48 @@ func (s *NftLend) GetRPTAssetLoanToValue(ctx context.Context, assetID uint) (num
 		return v, errs.NewError(err)
 	}
 	return v, nil
+}
+
+func (s *NftLend) GetAssetStatsInfo(ctx context.Context, assetID uint) (*serializers.AssetStatsResp, error) {
+	m, err := s.ad.FirstByID(
+		daos.GetDBMainCtx(ctx),
+		assetID,
+		map[string][]interface{}{},
+		false,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	resp := &serializers.AssetStatsResp{}
+	resp.FloorPrice = numeric.BigFloat{*big.NewFloat(0)}
+	var saleCurrency *models.Currency
+	switch m.Network {
+	case models.NetworkMATIC:
+		{
+			saleCurrency, err = s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "ETH", models.NetworkMATIC)
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+		}
+	case models.NetworkNEAR:
+		{
+			saleCurrency, err = s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "NEAR", models.NetworkNEAR)
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+			parasStats, err := s.stc.GetParasCollectionStats(m.GetContractAddress())
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+			floorPrice := models.ConvertWeiToBigFloat(&parasStats.FloorPrice.Int, saleCurrency.Decimals)
+			resp.FloorPrice = numeric.BigFloat{*floorPrice}
+		}
+	}
+	avgPrice, err := s.atd.GetAssetAvgPrice(daos.GetDBMainCtx(ctx), m.ID)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	resp.AvgPrice = avgPrice
+	resp.Currency = *serializers.NewCurrencyResp(saleCurrency)
+	return resp, nil
 }

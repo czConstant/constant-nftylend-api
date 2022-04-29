@@ -98,3 +98,21 @@ func (d *AssetTransaction) GetRPTAssetLoanToValue(tx *gorm.DB, assetID uint) (nu
 	}
 	return rs.UsdAmount, nil
 }
+
+func (d *AssetTransaction) GetAssetAvgPrice(tx *gorm.DB, assetID uint) (numeric.BigFloat, error) {
+	var rs struct {
+		AvgPrice numeric.BigFloat
+	}
+	err := tx.Raw(`
+	select ifnull(sum(asset_transactions.amount), 0) avg_price
+	from asset_transactions
+	where asset_transactions.asset_id = ?
+		and asset_transactions.transaction_at >= adddate(now(), interval -12 month)
+	`,
+		assetID,
+	).Find(&rs).Error
+	if err != nil {
+		return numeric.BigFloat{*big.NewFloat(0)}, errs.NewError(err)
+	}
+	return rs.AvgPrice, nil
+}
