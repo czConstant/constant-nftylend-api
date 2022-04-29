@@ -1,8 +1,11 @@
 package daos
 
 import (
+	"math/big"
+
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/models"
+	"github.com/czConstant/constant-nftylend-api/types/numeric"
 	"github.com/jinzhu/gorm"
 )
 
@@ -76,4 +79,22 @@ func (d *AssetTransaction) GetRPTListingCollection(tx *gorm.DB) ([]*models.NftyR
 		return nil, errs.NewError(err)
 	}
 	return rs, nil
+}
+
+func (d *AssetTransaction) GetRPTForAssetTradeAmount(tx *gorm.DB, assetID uint) (numeric.BigFloat, error) {
+	var rs struct {
+		Amount numeric.BigFloat
+	}
+	err := tx.Raw(`
+	select ifnull(sum(amount), 0) amount
+	from asset_transactions
+	where asset_id = ?
+		and transaction_at >= adddate(now(), interval -12 month)
+	`,
+		assetID,
+	).Find(&rs).Error
+	if err != nil {
+		return numeric.BigFloat{*big.NewFloat(0)}, errs.NewError(err)
+	}
+	return rs.Amount, nil
 }

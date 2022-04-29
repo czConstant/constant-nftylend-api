@@ -69,7 +69,9 @@ func NewNftLend(
 		ltd:  ltd,
 		id:   id,
 	}
-	go stc.StartWssSolsea(s.solseaMsgReceived)
+	if s.conf.Contract.ProgramID != "" {
+		go stc.StartWssSolsea(s.solseaMsgReceived)
+	}
 	return s
 }
 
@@ -514,290 +516,296 @@ func (s *NftLend) updateAssetTransactions(ctx context.Context, assetId uint) err
 	if asset == nil {
 		return errs.NewError(errs.ErrBadRequest)
 	}
-	if asset.Network == models.NetworkSOL &&
-		(asset.MagicEdenCrawAt == nil ||
-			asset.MagicEdenCrawAt.Before(time.Now().Add(-24*time.Hour))) {
-		c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "SOL", models.NetworkSOL)
-		if err != nil {
-			return errs.NewError(err)
+	if s.conf.Contract.ProgramID != "" {
+		if asset.Network == models.NetworkSOL &&
+			(asset.MagicEdenCrawAt == nil ||
+				asset.MagicEdenCrawAt.Before(time.Now().Add(-24*time.Hour))) {
+			c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "SOL", models.NetworkSOL)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			tokenAddress := asset.ContractAddress
+			if asset.TestContractAddress != "" {
+				tokenAddress = asset.TestContractAddress
+			}
+			rs, _ := s.stc.GetMagicEdenSaleHistories(tokenAddress)
+			for _, r := range rs {
+				if r.TxType == "exchange" {
+					txnAt := time.Unix(r.BlockTime, 0)
+					_ = s.atd.Create(
+						daos.GetDBMainCtx(ctx),
+						&models.AssetTransaction{
+							Source:        "magiceden.io",
+							Network:       models.NetworkSOL,
+							AssetID:       asset.ID,
+							Type:          models.AssetTransactionTypeExchange,
+							Seller:        r.SellerAddress,
+							Buyer:         r.BuyerAddress,
+							TransactionID: r.TransactionID,
+							TransactionAt: &txnAt,
+							Amount:        numeric.BigFloat{*models.ConvertWeiToBigFloat(big.NewInt(int64(r.ParsedTransaction.TotalAmount)), 9)},
+							CurrencyID:    c.ID,
+						},
+					)
+				}
+			}
+			err = daos.WithTransaction(
+				daos.GetDBMainCtx(ctx),
+				func(tx *gorm.DB) error {
+					asset, err := s.ad.FirstByID(
+						tx,
+						asset.ID,
+						map[string][]interface{}{},
+						true,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if asset == nil {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					asset.MagicEdenCrawAt = helpers.TimeNow()
+					err = s.ad.Save(
+						tx,
+						asset,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					return nil
+				},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
 		}
-		tokenAddress := asset.ContractAddress
-		if asset.TestContractAddress != "" {
-			tokenAddress = asset.TestContractAddress
-		}
-		rs, _ := s.stc.GetMagicEdenSaleHistories(tokenAddress)
-		for _, r := range rs {
-			if r.TxType == "exchange" {
-				txnAt := time.Unix(r.BlockTime, 0)
+		if asset.Network == models.NetworkSOL &&
+			(asset.SolanartCrawAt == nil ||
+				asset.SolanartCrawAt.Before(time.Now().Add(-24*time.Hour))) {
+			tokenAddress := asset.ContractAddress
+			if asset.TestContractAddress != "" {
+				tokenAddress = asset.TestContractAddress
+			}
+			rs, _ := s.stc.GetSolnartSaleHistories(tokenAddress)
+			for _, r := range rs {
+				c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), r.Currency, models.NetworkSOL)
+				if err != nil {
+					return errs.NewError(err)
+				}
 				_ = s.atd.Create(
 					daos.GetDBMainCtx(ctx),
 					&models.AssetTransaction{
-						Source:        "magiceden.io",
+						Source:        "solanart.io",
 						Network:       models.NetworkSOL,
 						AssetID:       asset.ID,
 						Type:          models.AssetTransactionTypeExchange,
 						Seller:        r.SellerAddress,
-						Buyer:         r.BuyerAddress,
-						TransactionID: r.TransactionID,
-						TransactionAt: &txnAt,
-						Amount:        numeric.BigFloat{*models.ConvertWeiToBigFloat(big.NewInt(int64(r.ParsedTransaction.TotalAmount)), 9)},
+						Buyer:         r.BuyerAdd,
+						TransactionAt: r.Date,
+						Amount:        numeric.BigFloat{*big.NewFloat(r.Price)},
 						CurrencyID:    c.ID,
 					},
 				)
 			}
-		}
-		err = daos.WithTransaction(
-			daos.GetDBMainCtx(ctx),
-			func(tx *gorm.DB) error {
-				asset, err := s.ad.FirstByID(
-					tx,
-					asset.ID,
-					map[string][]interface{}{},
-					true,
-				)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				if asset == nil {
-					return errs.NewError(errs.ErrBadRequest)
-				}
-				asset.MagicEdenCrawAt = helpers.TimeNow()
-				err = s.ad.Save(
-					tx,
-					asset,
-				)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				return nil
-			},
-		)
-		if err != nil {
-			return errs.NewError(err)
-		}
-	}
-	if asset.Network == models.NetworkSOL &&
-		(asset.SolanartCrawAt == nil ||
-			asset.SolanartCrawAt.Before(time.Now().Add(-24*time.Hour))) {
-		tokenAddress := asset.ContractAddress
-		if asset.TestContractAddress != "" {
-			tokenAddress = asset.TestContractAddress
-		}
-		rs, _ := s.stc.GetSolnartSaleHistories(tokenAddress)
-		for _, r := range rs {
-			c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), r.Currency, models.NetworkSOL)
+			err = daos.WithTransaction(
+				daos.GetDBMainCtx(ctx),
+				func(tx *gorm.DB) error {
+					asset, err := s.ad.FirstByID(
+						tx,
+						asset.ID,
+						map[string][]interface{}{},
+						true,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if asset == nil {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					asset.SolanartCrawAt = helpers.TimeNow()
+					err = s.ad.Save(
+						tx,
+						asset,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					return nil
+				},
+			)
 			if err != nil {
 				return errs.NewError(err)
 			}
-			_ = s.atd.Create(
+		}
+		if asset.Network == models.NetworkSOL &&
+			(asset.SolSeaCrawAt == nil ||
+				asset.SolSeaCrawAt.Before(time.Now().Add(-24*time.Hour))) {
+			tokenAddress := asset.ContractAddress
+			if asset.TestContractAddress != "" {
+				tokenAddress = asset.TestContractAddress
+			}
+			s.stc.PubSolseaMsg(
+				fmt.Sprintf(`421["find","listed-archive",{"Mint":"%s","status":"SOLD"}]`, tokenAddress),
+			)
+			err = daos.WithTransaction(
 				daos.GetDBMainCtx(ctx),
-				&models.AssetTransaction{
-					Source:        "solanart.io",
-					Network:       models.NetworkSOL,
-					AssetID:       asset.ID,
-					Type:          models.AssetTransactionTypeExchange,
-					Seller:        r.SellerAddress,
-					Buyer:         r.BuyerAdd,
-					TransactionAt: r.Date,
-					Amount:        numeric.BigFloat{*big.NewFloat(r.Price)},
-					CurrencyID:    c.ID,
+				func(tx *gorm.DB) error {
+					asset, err := s.ad.FirstByID(
+						tx,
+						asset.ID,
+						map[string][]interface{}{},
+						true,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if asset == nil {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					asset.SolSeaCrawAt = helpers.TimeNow()
+					err = s.ad.Save(
+						tx,
+						asset,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					return nil
 				},
 			)
-		}
-		err = daos.WithTransaction(
-			daos.GetDBMainCtx(ctx),
-			func(tx *gorm.DB) error {
-				asset, err := s.ad.FirstByID(
-					tx,
-					asset.ID,
-					map[string][]interface{}{},
-					true,
-				)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				if asset == nil {
-					return errs.NewError(errs.ErrBadRequest)
-				}
-				asset.SolanartCrawAt = helpers.TimeNow()
-				err = s.ad.Save(
-					tx,
-					asset,
-				)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				return nil
-			},
-		)
-		if err != nil {
-			return errs.NewError(err)
-		}
-	}
-	if asset.Network == models.NetworkSOL &&
-		(asset.SolSeaCrawAt == nil ||
-			asset.SolSeaCrawAt.Before(time.Now().Add(-24*time.Hour))) {
-		tokenAddress := asset.ContractAddress
-		if asset.TestContractAddress != "" {
-			tokenAddress = asset.TestContractAddress
-		}
-		s.stc.PubSolseaMsg(
-			fmt.Sprintf(`421["find","listed-archive",{"Mint":"%s","status":"SOLD"}]`, tokenAddress),
-		)
-		err = daos.WithTransaction(
-			daos.GetDBMainCtx(ctx),
-			func(tx *gorm.DB) error {
-				asset, err := s.ad.FirstByID(
-					tx,
-					asset.ID,
-					map[string][]interface{}{},
-					true,
-				)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				if asset == nil {
-					return errs.NewError(errs.ErrBadRequest)
-				}
-				asset.SolSeaCrawAt = helpers.TimeNow()
-				err = s.ad.Save(
-					tx,
-					asset,
-				)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				return nil
-			},
-		)
-		if err != nil {
-			return errs.NewError(err)
-		}
-	}
-	if asset.Network == models.NetworkNEAR &&
-		(asset.ParasCrawAt == nil ||
-			asset.ParasCrawAt.Before(time.Now().Add(-24*time.Hour))) {
-		c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "NEAR", models.NetworkNEAR)
-		if err != nil {
-			return errs.NewError(err)
-		}
-		contractAddress := asset.ContractAddress
-		tokenID := asset.TokenID
-		if asset.TestContractAddress != "" {
-			contractAddress = asset.TestContractAddress
-			tokenID = asset.TestTokenID
-		}
-		rs, _ := s.stc.GetParasSaleHistories(contractAddress, tokenID)
-		for i := len(rs) - 1; i >= 0; i-- {
-			r := rs[i]
-			txnAt := time.Unix(r.IssuedAt/1000, 0)
-			_ = s.atd.Create(
-				daos.GetDBMainCtx(ctx),
-				&models.AssetTransaction{
-					Source:        "paras.id",
-					Network:       models.NetworkNEAR,
-					AssetID:       asset.ID,
-					Type:          models.AssetTransactionTypeExchange,
-					Seller:        r.From,
-					Buyer:         r.To,
-					TransactionID: r.TransactionHash,
-					TransactionAt: &txnAt,
-					Amount:        numeric.BigFloat{*models.ConvertWeiToBigFloat(&r.Msg.Params.Price.Int, c.Decimals)},
-					CurrencyID:    c.ID,
-				},
-			)
-		}
-		err = daos.WithTransaction(
-			daos.GetDBMainCtx(ctx),
-			func(tx *gorm.DB) error {
-				asset, err := s.ad.FirstByID(
-					tx,
-					asset.ID,
-					map[string][]interface{}{},
-					true,
-				)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				if asset == nil {
-					return errs.NewError(errs.ErrBadRequest)
-				}
-				asset.ParasCrawAt = helpers.TimeNow()
-				err = s.ad.Save(
-					tx,
-					asset,
-				)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				return nil
-			},
-		)
-		if err != nil {
-			return errs.NewError(err)
-		}
-	}
-	if asset.Network == models.NetworkMATIC &&
-		(asset.NftbankCrawAt == nil ||
-			asset.NftbankCrawAt.Before(time.Now().Add(-24*time.Hour))) {
-		c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "ETH", models.NetworkMATIC)
-		if err != nil {
-			return errs.NewError(err)
-		}
-		rs, err := s.stc.GetNftbankSaleHistories(asset.GetContractAddress(), asset.GetTokenID(), "MATIC")
-		if err != nil {
-			return errs.NewError(err)
-		}
-		for i := len(rs) - 1; i >= 0; i-- {
-			r := rs[i]
-			txnAt, err := time.Parse("Mon, 02 Jan 2006 15:04:05 GMT", r.BlockTimestamp)
 			if err != nil {
 				return errs.NewError(err)
 			}
-			_ = s.atd.Create(
+		}
+	}
+	if s.conf.Contract.NearNftypawnAddress != "" {
+		if asset.Network == models.NetworkNEAR &&
+			(asset.ParasCrawAt == nil ||
+				asset.ParasCrawAt.Before(time.Now().Add(-24*time.Hour))) {
+			c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "NEAR", models.NetworkNEAR)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			contractAddress := asset.ContractAddress
+			tokenID := asset.TokenID
+			if asset.TestContractAddress != "" {
+				contractAddress = asset.TestContractAddress
+				tokenID = asset.TestTokenID
+			}
+			rs, _ := s.stc.GetParasSaleHistories(contractAddress, tokenID)
+			for i := len(rs) - 1; i >= 0; i-- {
+				r := rs[i]
+				txnAt := time.Unix(r.IssuedAt/1000, 0)
+				_ = s.atd.Create(
+					daos.GetDBMainCtx(ctx),
+					&models.AssetTransaction{
+						Source:        "paras.id",
+						Network:       models.NetworkNEAR,
+						AssetID:       asset.ID,
+						Type:          models.AssetTransactionTypeExchange,
+						Seller:        r.From,
+						Buyer:         r.To,
+						TransactionID: r.TransactionHash,
+						TransactionAt: &txnAt,
+						Amount:        numeric.BigFloat{*models.ConvertWeiToBigFloat(&r.Msg.Params.Price.Int, c.Decimals)},
+						CurrencyID:    c.ID,
+					},
+				)
+			}
+			err = daos.WithTransaction(
 				daos.GetDBMainCtx(ctx),
-				&models.AssetTransaction{
-					Source:        "nftbank.ai",
-					Network:       models.NetworkMATIC,
-					AssetID:       asset.ID,
-					Type:          models.AssetTransactionTypeExchange,
-					Seller:        r.SellerAddress,
-					Buyer:         r.BuyerAddress,
-					TransactionID: r.TransactionHash,
-					TransactionAt: &txnAt,
-					Amount:        r.SoldPriceEth,
-					CurrencyID:    c.ID,
+				func(tx *gorm.DB) error {
+					asset, err := s.ad.FirstByID(
+						tx,
+						asset.ID,
+						map[string][]interface{}{},
+						true,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if asset == nil {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					asset.ParasCrawAt = helpers.TimeNow()
+					err = s.ad.Save(
+						tx,
+						asset,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					return nil
 				},
 			)
+			if err != nil {
+				return errs.NewError(err)
+			}
 		}
-		err = daos.WithTransaction(
-			daos.GetDBMainCtx(ctx),
-			func(tx *gorm.DB) error {
-				asset, err := s.ad.FirstByID(
-					tx,
-					asset.ID,
-					map[string][]interface{}{},
-					true,
-				)
+	}
+	if s.conf.Contract.MaticNftypawnAddress != "" {
+		if asset.Network == models.NetworkMATIC &&
+			(asset.NftbankCrawAt == nil ||
+				asset.NftbankCrawAt.Before(time.Now().Add(-24*time.Hour))) {
+			c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), "ETH", models.NetworkMATIC)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			rs, err := s.stc.GetNftbankSaleHistories(asset.GetContractAddress(), asset.GetTokenID(), "MATIC")
+			if err != nil {
+				return errs.NewError(err)
+			}
+			for i := len(rs) - 1; i >= 0; i-- {
+				r := rs[i]
+				txnAt, err := time.Parse("Mon, 02 Jan 2006 15:04:05 GMT", r.BlockTimestamp)
 				if err != nil {
 					return errs.NewError(err)
 				}
-				if asset == nil {
-					return errs.NewError(errs.ErrBadRequest)
-				}
-				asset.NftbankCrawAt = helpers.TimeNow()
-				err = s.ad.Save(
-					tx,
-					asset,
+				_ = s.atd.Create(
+					daos.GetDBMainCtx(ctx),
+					&models.AssetTransaction{
+						Source:        "nftbank.ai",
+						Network:       models.NetworkMATIC,
+						AssetID:       asset.ID,
+						Type:          models.AssetTransactionTypeExchange,
+						Seller:        r.SellerAddress,
+						Buyer:         r.BuyerAddress,
+						TransactionID: r.TransactionHash,
+						TransactionAt: &txnAt,
+						Amount:        r.SoldPriceEth,
+						CurrencyID:    c.ID,
+					},
 				)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				return nil
-			},
-		)
-		if err != nil {
-			return errs.NewError(err)
+			}
+			err = daos.WithTransaction(
+				daos.GetDBMainCtx(ctx),
+				func(tx *gorm.DB) error {
+					asset, err := s.ad.FirstByID(
+						tx,
+						asset.ID,
+						map[string][]interface{}{},
+						true,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if asset == nil {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					asset.NftbankCrawAt = helpers.TimeNow()
+					err = s.ad.Save(
+						tx,
+						asset,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					return nil
+				},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
 		}
 	}
 	return nil
@@ -872,4 +880,15 @@ func (s *NftLend) solseaMsgReceived(msg string) {
 			}
 		}
 	}
+}
+
+func (s *NftLend) GetRPTForAssetTradeAmount(ctx context.Context, assetID uint) (numeric.BigFloat, error) {
+	v, err := s.atd.GetRPTForAssetTradeAmount(
+		daos.GetDBMainCtx(ctx),
+		assetID,
+	)
+	if err != nil {
+		return v, errs.NewError(err)
+	}
+	return v, nil
 }

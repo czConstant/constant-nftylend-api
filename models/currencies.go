@@ -1,6 +1,8 @@
 package models
 
-import "github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
+)
 
 type Currency struct {
 	gorm.Model
@@ -12,4 +14,5 @@ type Currency struct {
 	IconURL         string
 	AdminFeeAddress string
 	Enabled         float64 `gorm:"default:0"`
+	Price           float64 `gorm:"type:decimal(16,8);default:0"`
 }
