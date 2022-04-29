@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/czConstant/constant-nftylend-api/types/numeric"
 	"github.com/jinzhu/gorm"
 )
 
@@ -36,6 +37,8 @@ type Asset struct {
 	OpenseaCrawAt             *time.Time
 	ParasCrawAt               *time.Time
 	NftbankCrawAt             *time.Time
+	FloorPriceAt              *time.Time
+	FloorPrice                numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 }
 
 func (m *Asset) GetContractAddress() string {
