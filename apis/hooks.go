@@ -9,6 +9,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func (s *Server) JobUpdateCurrencyPrice(c *gin.Context) {
+	ctx := s.requestContext(c)
+	err := s.nls.JobUpdateCurrencyPrice(ctx)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
+}
+
 func (s *Server) NftLendUpdateBlock(c *gin.Context) {
 	ctx := s.requestContext(c)
 	blockNumber, err := s.uint64FromContextParam(c, "block")

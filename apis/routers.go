@@ -89,5 +89,6 @@ func (s *Server) Routers() {
 	jobsNftAPI.Use(s.authorizeJobMiddleware())
 	{
 		jobsNftAPI.POST("/evm-filter-logs", s.JobEvmNftypawnFilterLogs)
+		jobsNftAPI.POST("/update-price", s.JobUpdateCurrencyPrice)
 	}
 }

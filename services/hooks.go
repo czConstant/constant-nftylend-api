@@ -17,7 +17,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func (s *NftLend) HookUpdateCurrencyPrice(ctx context.Context) error {
+func (s *NftLend) JobUpdateCurrencyPrice(ctx context.Context) error {
 	var retErr error
 	symbols := []string{"ETH", "NEAR"}
 	for _, symbol := range symbols {
