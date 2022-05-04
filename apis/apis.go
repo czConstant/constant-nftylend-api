@@ -42,13 +42,15 @@ func (s *Server) GetAssetDetail(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	stats, err := s.nls.GetAssetStatsInfo(ctx, m.ID)
-	if err != nil {
-		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
-		return
-	}
 	resp := serializers.NewAssetResp(m)
-	resp.Stats = stats
+	if m != nil {
+		stats, err := s.nls.GetAssetStatsInfo(ctx, m.ID)
+		if err != nil {
+			ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+			return
+		}
+		resp.Stats = stats
+	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: resp})
 }
 
@@ -59,13 +61,15 @@ func (s *Server) GetAssetDetailInfo(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	stats, err := s.nls.GetAssetStatsInfo(ctx, m.ID)
-	if err != nil {
-		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
-		return
-	}
 	resp := serializers.NewAssetResp(m)
-	resp.Stats = stats
+	if m != nil {
+		stats, err := s.nls.GetAssetStatsInfo(ctx, m.ID)
+		if err != nil {
+			ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+			return
+		}
+		resp.Stats = stats
+	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: resp})
 }
 
