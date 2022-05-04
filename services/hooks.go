@@ -17,6 +17,47 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+func (s *NftLend) HookUpdateCurrencyPrice(ctx context.Context) error {
+	var retErr error
+	symbols := []string{"ETH", "NEAR"}
+	for _, symbol := range symbols {
+		err := (func() error {
+			price, err := s.stc.GetCoingeckoPrice(symbol)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			currencies, err := s.cd.Find(
+				daos.GetDBMainCtx(ctx),
+				map[string][]interface{}{
+					"symbol = ?": []interface{}{symbol},
+				},
+				map[string][]interface{}{},
+				[]string{},
+				0,
+				999999,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			for _, currency := range currencies {
+				currency.Price = price
+				err = s.cd.Save(
+					daos.GetDBMainCtx(ctx),
+					currency,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+			}
+			return nil
+		})()
+		if err != nil {
+			retErr = errs.MergeError(retErr, err)
+		}
+	}
+	return retErr
+}
+
 func (s *NftLend) LendNftLendUpdateBlock(ctx context.Context, block uint64) error {
 	err := s.bcs.Solana.NftLendUpdateBlock(block)
 	if err != nil {

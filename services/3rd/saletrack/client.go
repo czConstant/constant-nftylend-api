@@ -548,6 +548,12 @@ func (c *Client) GetNftbankFloorPrice(contractID string, chainID string) ([]*Nft
 }
 
 func (c *Client) GetCoingeckoPrice(symbol string) (float64, error) {
+	switch symbol {
+	case "ETH":
+		{
+			symbol = "ETHEREUM"
+		}
+	}
 	result := map[string]interface{}{}
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://api.coingecko.com/api/v3/simple/price?ids=%s&vs_currencies=USD", symbol), nil)
 	if err != nil {
@@ -570,5 +576,5 @@ func (c *Client) GetCoingeckoPrice(symbol string) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return result[strings.ToLower(symbol)].(map[string]float64)["usd"], nil
+	return result[strings.ToLower(symbol)].(map[string]interface{})["usd"].(float64), nil
 }
