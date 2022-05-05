@@ -98,6 +98,10 @@ func (s *NftLend) getEvmClientByNetwork(network models.Network) *ethereum.Client
 		{
 			return s.bcs.Boba
 		}
+	case models.NetworkONE:
+		{
+			return s.bcs.One
+		}
 	}
 	return nil
 }
@@ -121,6 +125,10 @@ func (s *NftLend) getEvmAdminFee(network models.Network) int64 {
 			return 100
 		}
 	case models.NetworkBOBA:
+		{
+			return 100
+		}
+	case models.NetworkONE:
 		{
 			return 100
 		}
@@ -148,6 +156,9 @@ func (s *NftLend) getSupportedNetworks() []models.Network {
 	if s.conf.Contract.NearNftypawnAddress != "" {
 		ns = append(ns, models.NetworkNEAR)
 	}
+	if s.conf.Contract.OneNftypawnAddress != "" {
+		ns = append(ns, models.NetworkONE)
+	}
 	return ns
 }
 
@@ -172,6 +183,10 @@ func (s *NftLend) getEvmContractAddress(network models.Network) string {
 	case models.NetworkBOBA:
 		{
 			return s.conf.Contract.BobaNftypawnAddress
+		}
+	case models.NetworkONE:
+		{
+			return s.conf.Contract.OneNftypawnAddress
 		}
 	}
 	return ""
