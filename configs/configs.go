@@ -68,4 +68,7 @@ type Config struct {
 		NearNftypawnAddress  string `json:"near_nftypawn_address"`
 	} `json:"contract"`
 	Blockchain bcclient.Config `json:"blockchain"`
+	Mailer     struct {
+		URL string `json:"url"`
+	} `json:"mailer"`
 }
