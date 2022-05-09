@@ -88,6 +88,7 @@ func NewLoanResp(m *models.Loan) *LoanResp {
 		CancelTxHash:         m.CancelTxHash,
 		PayTxHash:            m.PayTxHash,
 		LiquidateTxHash:      m.LiquidateTxHash,
+		ValidAt:              m.ValidAt,
 	}
 	return resp
 }
