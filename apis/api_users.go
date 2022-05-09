@@ -12,9 +12,9 @@ import (
 func (s *Server) UserSettingEmail(c *gin.Context) {
 	ctx := s.requestContext(c)
 	var req struct {
-		Address string
-		Network models.Network
-		Email   string
+		Address string         `json:"address"`
+		Network models.Network `json:"network"`
+		Email   string         `json:"email"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
