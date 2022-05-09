@@ -28,6 +28,7 @@ type NftLend struct {
 	bcs  *bcclient.Client
 	stc  *saletrack.Client
 	mc   *moralis.Client
+	ud   *daos.User
 	cd   *daos.Currency
 	cld  *daos.Collection
 	clsd *daos.CollectionSubmitted
@@ -44,6 +45,7 @@ func NewNftLend(
 	bcs *bcclient.Client,
 	stc *saletrack.Client,
 	mc *moralis.Client,
+	ud *daos.User,
 	cd *daos.Currency,
 	cld *daos.Collection,
 	clsd *daos.CollectionSubmitted,
@@ -60,6 +62,7 @@ func NewNftLend(
 		bcs:  bcs,
 		stc:  stc,
 		mc:   mc,
+		ud:   ud,
 		cd:   cd,
 		cld:  cld,
 		clsd: clsd,

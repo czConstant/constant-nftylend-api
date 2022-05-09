@@ -30,6 +30,7 @@ func Init(dbURL string, migrateFunc func(db *gorm.DB) error, idleNum int, openNu
 
 func MigrateDBMain(db *gorm.DB) error {
 	allTables := []interface{}{
+		(*models.User)(nil),
 		(*models.Currency)(nil),
 		(*models.Asset)(nil),
 		(*models.AssetTransaction)(nil),

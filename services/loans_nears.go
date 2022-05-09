@@ -64,14 +64,17 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				if err != nil {
 					return errs.NewError(err)
 				}
+				createdAt := helpers.TimeFromUnix(int64(v.Uint64()))
 				loan = &models.Loan{
 					Network:         models.NetworkNEAR,
 					Owner:           saleInfo.OwnerID,
 					PrincipalAmount: numeric.BigFloat{*big.NewFloat(principalAmount)},
 					InterestRate:    interestRate,
 					Duration:        uint(saleInfo.LoanDuration),
-					StartedAt:       helpers.TimeFromUnix(int64(v.Uint64())),
-					ExpiredAt:       helpers.TimeAdd(time.Now(), time.Duration(saleInfo.LoanDuration)*time.Second),
+					StartedAt:       createdAt,
+					ExpiredAt:       helpers.TimeAdd(*createdAt, time.Duration(saleInfo.LoanDuration)*time.Second),
+					ValidAt:         helpers.TimeAdd(*createdAt, time.Duration(saleInfo.AvailableIn)*time.Second),
+					Config:          saleInfo.LoanConfig,
 					CurrencyID:      currency.ID,
 					AssetID:         asset.ID,
 					Status:          models.LoanStatusNew,
@@ -155,6 +158,11 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				if offer == nil {
 					offerPrincipalAmount := models.ConvertWeiToCollateralFloatAmount(&saleOffer.LoanPrincipalAmount.Int, currency.Decimals)
 					offerInterestRate, _ := models.ConvertWeiToBigFloat(big.NewInt(int64(saleOffer.LoanInterestRate)), 4).Float64()
+					v, err := models.ConvertString2BigInt(saleOffer.CreatedAt)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					createdAt := helpers.TimeFromUnix(int64(v.Uint64()))
 					offer = &models.LoanOffer{
 						Network:         loan.Network,
 						LoanID:          loan.ID,
@@ -164,6 +172,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						Duration:        uint(saleOffer.LoanDuration),
 						Status:          models.LoanOfferStatusNew,
 						NonceHex:        fmt.Sprintf("%d", saleOffer.OfferID),
+						ValidAt:         helpers.TimeAdd(*createdAt, time.Duration(saleOffer.AvailableIn)*time.Second),
 					}
 					err = s.lod.Create(
 						tx,

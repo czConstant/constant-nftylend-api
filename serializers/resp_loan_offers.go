@@ -16,6 +16,7 @@ type LoanOfferResp struct {
 	Lender              string                 `json:"lender"`
 	PrincipalAmount     numeric.BigFloat       `json:"principal_amount"`
 	InterestRate        float64                `json:"interest_rate"`
+	ValidAt             *time.Time             `json:"valid_at"`
 	Duration            uint                   `json:"duration"`
 	NonceHex            string                 `json:"nonce_hex"`
 	Signature           string                 `json:"signature"`
@@ -51,6 +52,7 @@ func NewLoanOfferResp(m *models.LoanOffer) *LoanOfferResp {
 		AcceptTxHash:        m.AcceptTxHash,
 		CancelTxHash:        m.CancelTxHash,
 		CloseTxHash:         m.CloseTxHash,
+		ValidAt:             m.ValidAt,
 	}
 	return resp
 }

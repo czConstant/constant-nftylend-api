@@ -43,6 +43,8 @@ type Loan struct {
 	FinishedAt           *time.Time
 	PrincipalAmount      numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	InterestRate         float64          `gorm:"type:decimal(6,4);default:0"`
+	ValidAt              *time.Time
+	Config               uint `gorm:"default:0"`
 	OfferStartedAt       *time.Time
 	OfferDuration        uint `gorm:"default:0"`
 	OfferExpiredAt       *time.Time

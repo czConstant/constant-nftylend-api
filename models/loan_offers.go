@@ -32,6 +32,7 @@ type LoanOffer struct {
 	FinishedAt          *time.Time
 	PrincipalAmount     numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	InterestRate        float64          `gorm:"type:decimal(6,4);default:0"`
+	ValidAt             *time.Time
 	NonceHex            string
 	Signature           string
 	Status              LoanOfferStatus

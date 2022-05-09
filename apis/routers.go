@@ -91,4 +91,9 @@ func (s *Server) Routers() {
 		jobsNftAPI.POST("/evm-filter-logs", s.JobEvmNftypawnFilterLogs)
 		jobsNftAPI.POST("/update-price", s.JobUpdateCurrencyPrice)
 	}
+	userNftAPI := nftAPI.Group("/users")
+	{
+		userNftAPI.GET("/settings", s.UserGetSettings)
+		userNftAPI.POST("/email-settings", s.UserSettingEmail)
+	}
 }
