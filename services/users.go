@@ -2,12 +2,43 @@ package services
 
 import (
 	"context"
+	"strings"
 
 	"github.com/czConstant/constant-nftylend-api/daos"
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/models"
 	"github.com/jinzhu/gorm"
 )
+
+func (s *NftLend) getUser(tx *gorm.DB, address string, network models.Network) (*models.User, error) {
+	user, err := s.ud.First(
+		tx,
+		map[string][]interface{}{
+			"network = ?": []interface{}{network},
+			"address = ?": []interface{}{address},
+		},
+		map[string][]interface{}{},
+		[]string{},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	if user == nil {
+		user = &models.User{
+			Network:        network,
+			Address:        address,
+			AddressChecked: strings.ToLower(strings.TrimSpace(address)),
+		}
+		err = s.ud.Create(
+			tx,
+			user,
+		)
+		if err != nil {
+			return nil, errs.NewError(err)
+		}
+	}
+	return user, nil
+}
 
 func (s *NftLend) UserGetSettings(ctx context.Context, address string, network models.Network) (*models.User, error) {
 	var user *models.User
