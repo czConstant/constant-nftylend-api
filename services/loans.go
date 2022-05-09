@@ -289,6 +289,13 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 	req.NonceHex = strings.ToLower(req.NonceHex)
 	req.Signature = strings.ToLower(req.Signature)
 	req.ContractAddress = strings.ToLower(req.ContractAddress)
+	asset, err := s.EvmSynAsset(ctx, req.Network, req.ContractAddress, req.TokenID)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	if asset == nil {
+		return nil, errs.NewError(errs.ErrBadRequest)
+	}
 	switch req.Network {
 	case models.NetworkMATIC,
 		models.NetworkAVAX,
@@ -302,7 +309,7 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 			return nil, errs.NewError(errs.ErrBadRequest)
 		}
 	}
-	err := daos.WithTransaction(
+	err = daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
 			currency, err := s.GetCurrencyByID(tx, req.CurrencyID, req.Network)
@@ -328,91 +335,6 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 			)
 			if err != nil {
 				return errs.NewError(err)
-			}
-			asset, err := s.ad.First(
-				tx,
-				map[string][]interface{}{
-					"network = ?":          []interface{}{req.Network},
-					"contract_address = ?": []interface{}{req.ContractAddress},
-					"token_id = ?":         []interface{}{req.TokenID},
-				},
-				map[string][]interface{}{},
-				[]string{},
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			if asset == nil {
-				tokenURL, err := s.getEvmClientByNetwork(req.Network).NftTokenURI(req.ContractAddress, req.TokenID)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				meta, err := s.stc.GetEvmNftMetaResp(helpers.ConvertImageDataURL(tokenURL))
-				if err != nil {
-					return errs.NewError(err)
-				}
-				collection, err := s.cld.First(
-					tx,
-					map[string][]interface{}{
-						"network = ?":          []interface{}{req.Network},
-						"contract_address = ?": []interface{}{req.ContractAddress},
-					},
-					map[string][]interface{}{},
-					[]string{},
-				)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				if collection == nil {
-					collection = &models.Collection{
-						Network:         req.Network,
-						SeoURL:          helpers.MakeSeoURL(fmt.Sprintf("%s-%s", req.Network, req.ContractAddress)),
-						ContractAddress: req.ContractAddress,
-						Name:            "",
-						Description:     meta.Description,
-						Enabled:         true,
-					}
-					err = s.cld.Create(
-						tx,
-						collection,
-					)
-					if err != nil {
-						return errs.NewError(err)
-					}
-				}
-				attributes, err := json.Marshal(meta.Attributes)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				metaJson, err := json.Marshal(meta)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				asset = &models.Asset{
-					Network:               req.Network,
-					CollectionID:          collection.ID,
-					SeoURL:                helpers.MakeSeoURL(fmt.Sprintf("%s-%s", req.Network, fmt.Sprintf("%s-%s", req.ContractAddress, req.TokenID))),
-					ContractAddress:       collection.ContractAddress,
-					TokenID:               req.TokenID,
-					Symbol:                "",
-					Name:                  meta.Name,
-					TokenURL:              meta.Image,
-					ExternalUrl:           meta.ExternalUrl,
-					SellerFeeRate:         0,
-					Attributes:            string(attributes),
-					MetaJson:              string(metaJson),
-					MetaJsonUrl:           tokenURL,
-					OriginNetwork:         "",
-					OriginContractAddress: "",
-					OriginTokenID:         "",
-				}
-				err = s.ad.Create(
-					tx,
-					asset,
-				)
-				if err != nil {
-					return errs.NewError(err)
-				}
 			}
 			loan, err = s.ld.First(
 				tx,
@@ -578,4 +500,104 @@ func (s *NftLend) CreateLoanOffer(ctx context.Context, loanID uint, req *seriali
 		return nil, errs.NewError(err)
 	}
 	return offer, nil
+}
+
+func (s *NftLend) EvmSynAsset(ctx context.Context, network models.Network, contractAddress string, tokenID string) (*models.Asset, error) {
+	var asset *models.Asset
+	var err error
+	err = daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			asset, err = s.ad.First(
+				tx,
+				map[string][]interface{}{
+					"network = ?":          []interface{}{network},
+					"contract_address = ?": []interface{}{contractAddress},
+					"token_id = ?":         []interface{}{tokenID},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if asset == nil {
+				tokenURL, err := s.getEvmClientByNetwork(network).NftTokenURI(contractAddress, tokenID)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				meta, err := s.stc.GetEvmNftMetaResp(helpers.ConvertImageDataURL(tokenURL))
+				if err != nil {
+					return errs.NewError(err)
+				}
+				collection, err := s.cld.First(
+					tx,
+					map[string][]interface{}{
+						"network = ?":          []interface{}{network},
+						"contract_address = ?": []interface{}{contractAddress},
+					},
+					map[string][]interface{}{},
+					[]string{},
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if collection == nil {
+					collection = &models.Collection{
+						Network:         network,
+						SeoURL:          helpers.MakeSeoURL(fmt.Sprintf("%s-%s", network, contractAddress)),
+						ContractAddress: contractAddress,
+						Name:            "",
+						Description:     meta.Description,
+						Enabled:         true,
+					}
+					err = s.cld.Create(
+						tx,
+						collection,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
+				attributes, err := json.Marshal(meta.Attributes)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				metaJson, err := json.Marshal(meta)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				asset = &models.Asset{
+					Network:               network,
+					CollectionID:          collection.ID,
+					SeoURL:                helpers.MakeSeoURL(fmt.Sprintf("%s-%s", network, fmt.Sprintf("%s-%s", contractAddress, tokenID))),
+					ContractAddress:       collection.ContractAddress,
+					TokenID:               tokenID,
+					Symbol:                "",
+					Name:                  meta.Name,
+					TokenURL:              meta.Image,
+					ExternalUrl:           meta.ExternalUrl,
+					SellerFeeRate:         0,
+					Attributes:            string(attributes),
+					MetaJson:              string(metaJson),
+					MetaJsonUrl:           tokenURL,
+					OriginNetwork:         "",
+					OriginContractAddress: "",
+					OriginTokenID:         "",
+				}
+				err = s.ad.Create(
+					tx,
+					asset,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return asset, nil
 }
