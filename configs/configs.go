@@ -69,4 +69,7 @@ type Config struct {
 		OneNftypawnAddress   string `json:"one_nftypawn_address"`
 	} `json:"contract"`
 	Blockchain bcclient.Config `json:"blockchain"`
+	Mailer     struct {
+		URL string `json:"url"`
+	} `json:"mailer"`
 }

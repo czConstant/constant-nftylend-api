@@ -26,6 +26,7 @@ type LoanResp struct {
 	PrincipalAmount      numeric.BigFloat  `json:"principal_amount"`
 	InterestRate         float64           `json:"interest_rate"`
 	InterestAmount       numeric.BigFloat  `json:"interest_amount"`
+	ValidAt              *time.Time        `json:"valid_at"`
 	FeeRate              float64           `json:"fee_rate"`
 	FeeAmount            numeric.BigFloat  `json:"fee_amount"`
 	NonceHex             string            `json:"nonce_hex"`
@@ -87,6 +88,7 @@ func NewLoanResp(m *models.Loan) *LoanResp {
 		CancelTxHash:         m.CancelTxHash,
 		PayTxHash:            m.PayTxHash,
 		LiquidateTxHash:      m.LiquidateTxHash,
+		ValidAt:              m.ValidAt,
 	}
 	return resp
 }

@@ -20,6 +20,7 @@ import (
 	"github.com/czConstant/constant-nftylend-api/databases"
 	"github.com/czConstant/constant-nftylend-api/logger"
 	"github.com/czConstant/constant-nftylend-api/services"
+	"github.com/czConstant/constant-nftylend-api/services/3rd/mailer"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/moralis"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/saletrack"
 	"github.com/gin-gonic/gin"
@@ -90,6 +91,7 @@ func main() {
 	daos.InitDBConn(
 		dbMain,
 	)
+	mailer.SetURL(conf.Mailer.URL)
 	var (
 		bcs = bcclient.NewBlockchainClient(
 			conf.Blockchain,
