@@ -12,6 +12,24 @@ import (
 func (s *NftLend) UserGetSettings(ctx context.Context, address string, network models.Network) (*models.User, error) {
 	var user *models.User
 	var err error
+	if address == "" {
+		return nil, errs.NewError(errs.ErrBadRequest)
+	}
+	switch network {
+	case models.NetworkSOL,
+		models.NetworkAVAX,
+		models.NetworkBOBA,
+		models.NetworkBSC,
+		models.NetworkETH,
+		models.NetworkMATIC,
+		models.NetworkNEAR:
+		{
+		}
+	default:
+		{
+			return nil, errs.NewError(errs.ErrBadRequest)
+		}
+	}
 	err = daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
@@ -31,6 +49,12 @@ func (s *NftLend) UserGetSettings(ctx context.Context, address string, network m
 func (s *NftLend) UserSettingEmail(ctx context.Context, address string, network models.Network, email string) (*models.User, error) {
 	var user *models.User
 	var err error
+	if address == "" {
+		return nil, errs.NewError(errs.ErrBadRequest)
+	}
+	if email == "" {
+		return nil, errs.NewError(errs.ErrBadRequest)
+	}
 	switch network {
 	case models.NetworkSOL,
 		models.NetworkAVAX,
