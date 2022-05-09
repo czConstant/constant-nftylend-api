@@ -195,35 +195,6 @@ func (s *NftLend) getEvmContractAddress(network models.Network) string {
 	return ""
 }
 
-func (s *NftLend) getUser(tx *gorm.DB, address string, network models.Network) (*models.User, error) {
-	user, err := s.ud.First(
-		tx,
-		map[string][]interface{}{
-			"network = ?": []interface{}{network},
-			"address = ?": []interface{}{address},
-		},
-		map[string][]interface{}{},
-		[]string{},
-	)
-	if err != nil {
-		return nil, errs.NewError(err)
-	}
-	if user == nil {
-		user = &models.User{
-			Network: network,
-			Address: address,
-		}
-		err = s.ud.Create(
-			tx,
-			user,
-		)
-		if err != nil {
-			return nil, errs.NewError(err)
-		}
-	}
-	return user, nil
-}
-
 func (s *NftLend) getLendCurrency(tx *gorm.DB, address string) (*models.Currency, error) {
 	c, err := s.cd.First(
 		tx,

@@ -6,7 +6,8 @@ import (
 
 type User struct {
 	gorm.Model
-	Network Network
-	Address string
-	Email   string
+	Network        Network
+	Address        string
+	AddressChecked string
+	Email          string
 }
