@@ -11,6 +11,24 @@ import (
 )
 
 func (s *NftLend) getUser(tx *gorm.DB, address string, network models.Network) (*models.User, error) {
+	if address == "" {
+		return nil, errs.NewError(errs.ErrBadRequest)
+	}
+	switch network {
+	case models.NetworkSOL,
+		models.NetworkAVAX,
+		models.NetworkBOBA,
+		models.NetworkBSC,
+		models.NetworkETH,
+		models.NetworkMATIC,
+		models.NetworkNEAR:
+		{
+		}
+	default:
+		{
+			return nil, errs.NewError(errs.ErrBadRequest)
+		}
+	}
 	user, err := s.ud.First(
 		tx,
 		map[string][]interface{}{
