@@ -14,8 +14,8 @@ func (s *NftLend) getUser(tx *gorm.DB, address string, network models.Network) (
 	user, err := s.ud.First(
 		tx,
 		map[string][]interface{}{
-			"network = ?": []interface{}{network},
-			"address = ?": []interface{}{address},
+			"network = ?":         []interface{}{network},
+			"address_checked = ?": []interface{}{strings.ToLower(strings.TrimSpace(address))},
 		},
 		map[string][]interface{}{},
 		[]string{},
