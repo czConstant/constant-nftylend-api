@@ -9,6 +9,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func (s *Server) UserGetSettings(c *gin.Context) {
+	ctx := s.requestContext(c)
+	user, err := s.nls.UserGetSettings(ctx, s.stringFromContextQuery(c, "address"), models.Network(s.stringFromContextQuery(c, "network")))
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewUserResp(user)})
+}
+
 func (s *Server) UserSettingEmail(c *gin.Context) {
 	ctx := s.requestContext(c)
 	var req struct {
