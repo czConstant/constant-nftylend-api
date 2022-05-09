@@ -36,7 +36,7 @@ func (s *NftLend) GetListingLoans(
 			[]models.LoanStatus{
 				models.LoanStatusNew,
 			}},
-		"valid_at is null or valid_at <= ?": []interface{}{time.Now()},
+		"valid_at is null or valid_at >= ?": []interface{}{time.Now()},
 	}
 	if network != "" {
 		filters["network = ?"] = []interface{}{network}
