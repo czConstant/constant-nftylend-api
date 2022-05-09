@@ -28,6 +28,7 @@ type NftLend struct {
 	bcs  *bcclient.Client
 	stc  *saletrack.Client
 	mc   *moralis.Client
+	ud   *daos.User
 	cd   *daos.Currency
 	cld  *daos.Collection
 	clsd *daos.CollectionSubmitted
@@ -44,6 +45,7 @@ func NewNftLend(
 	bcs *bcclient.Client,
 	stc *saletrack.Client,
 	mc *moralis.Client,
+	ud *daos.User,
 	cd *daos.Currency,
 	cld *daos.Collection,
 	clsd *daos.CollectionSubmitted,
@@ -60,6 +62,7 @@ func NewNftLend(
 		bcs:  bcs,
 		stc:  stc,
 		mc:   mc,
+		ud:   ud,
 		cd:   cd,
 		cld:  cld,
 		clsd: clsd,
@@ -175,6 +178,35 @@ func (s *NftLend) getEvmContractAddress(network models.Network) string {
 		}
 	}
 	return ""
+}
+
+func (s *NftLend) getUser(tx *gorm.DB, address string, network models.Network) (*models.User, error) {
+	user, err := s.ud.First(
+		tx,
+		map[string][]interface{}{
+			"network = ?": []interface{}{network},
+			"address = ?": []interface{}{address},
+		},
+		map[string][]interface{}{},
+		[]string{},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	if user == nil {
+		user = &models.User{
+			Network: network,
+			Address: address,
+		}
+		err = s.ud.Create(
+			tx,
+			user,
+		)
+		if err != nil {
+			return nil, errs.NewError(err)
+		}
+	}
+	return user, nil
 }
 
 func (s *NftLend) getLendCurrency(tx *gorm.DB, address string) (*models.Currency, error) {

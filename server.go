@@ -96,6 +96,7 @@ func main() {
 		bcs = bcclient.NewBlockchainClient(
 			conf.Blockchain,
 		)
+		ud   = &daos.User{}
 		cd   = &daos.Currency{}
 		cld  = &daos.Collection{}
 		clsd = &daos.CollectionSubmitted{}
@@ -118,6 +119,7 @@ func main() {
 			bcs,
 			stc,
 			mc,
+			ud,
 			cd,
 			cld,
 			clsd,
