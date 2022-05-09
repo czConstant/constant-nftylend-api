@@ -9,6 +9,25 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+func (s *NftLend) UserGetSettings(ctx context.Context, address string, network models.Network) (*models.User, error) {
+	var user *models.User
+	var err error
+	err = daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			user, err = s.getUser(tx, address, network)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return user, nil
+}
+
 func (s *NftLend) UserSettingEmail(ctx context.Context, address string, network models.Network, email string) (*models.User, error) {
 	var user *models.User
 	var err error

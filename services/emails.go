@@ -1,40 +1,70 @@
 package services
 
-import "context"
+import (
+	"context"
+
+	"github.com/czConstant/constant-nftylend-api/errs"
+	"github.com/czConstant/constant-nftylend-api/models"
+	"github.com/czConstant/constant-nftylend-api/services/3rd/mailer"
+)
 
 func (s *NftLend) JobEmailSchedule(ctx context.Context) error {
 	var retErr error
 	return retErr
 }
 
-func (s *NftLend) emailForBorrowerNewOffer(ctx context.Context, offerID uint) error {
+func (s *NftLend) sendEmailToUser(ctx context.Context, emailType string, toEmail string, reqMap interface{}) error {
+	err := mailer.Send(
+		"hello@nftpawn.financial",
+		"Nftpawn",
+		toEmail,
+		"",
+		emailType,
+		"en",
+		reqMap,
+		[]string{},
+		[]string{},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
 	return nil
 }
 
-func (s *NftLend) emailForBorrowerRemindPaybackLoan(ctx context.Context, offerID uint) error {
+func (s *NftLend) EmailForBorrowerOfferNew(ctx context.Context, offerID uint) error {
+	reqMap := map[string]interface{}{}
+	err := s.sendEmailToUser(
+		ctx,
+		models.EMAIL_BORROWER_NEW_OFFER,
+		"",
+		reqMap,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
 	return nil
 }
 
-func (s *NftLend) emailForBorrowerAcceptLoan(ctx context.Context, offerID uint) error {
+func (s *NftLend) EmailForBorrowerLoanRemind(ctx context.Context, loanID uint) error {
 	return nil
 }
 
-func (s *NftLend) emailForBorrowerLiquidateLoanDone(ctx context.Context, offerID uint) error {
+func (s *NftLend) EmailForBorrowerLoanStarted(ctx context.Context, loanID uint) error {
 	return nil
 }
 
-func (s *NftLend) emailForLenderRequestExtendLoan(ctx context.Context, offerID uint) error {
+func (s *NftLend) EmailForBorrowerLoanLiquidated(ctx context.Context, loanID uint) error {
 	return nil
 }
 
-func (s *NftLend) emailForLenderAcceptOffer(ctx context.Context, offerID uint) error {
+func (s *NftLend) EmailForLenderOfferStarted(ctx context.Context, offerID uint) error {
 	return nil
 }
 
-func (s *NftLend) emailForLenderPaybackLoanDone(ctx context.Context, offerID uint) error {
+func (s *NftLend) EmailForLenderLoanRepaid(ctx context.Context, loanID uint) error {
 	return nil
 }
 
-func (s *NftLend) emailForLenderLiquidateLoanDone(ctx context.Context, offerID uint) error {
+func (s *NftLend) EmailForLenderLoanLiquidated(ctx context.Context, loanID uint) error {
 	return nil
 }
