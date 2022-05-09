@@ -97,7 +97,6 @@ func (d *Loan) GetBorrowerStats(tx *gorm.DB, borrower string) (*models.BorrowerS
 				sum(
 						case
 							when status in (
-											'created',
 											'done',
 											'liquidated',
 											'expired'
@@ -118,7 +117,9 @@ func (d *Loan) GetBorrowerStats(tx *gorm.DB, borrower string) (*models.BorrowerS
 				sum(
 						case
 							when status in (
-								'done'
+								'done',
+								'liquidated',
+								'expired'
 								) then 1
 							else 0 end
 					), 0
