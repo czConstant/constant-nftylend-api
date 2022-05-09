@@ -53,7 +53,8 @@ func (s *NftLend) UserGetSettings(ctx context.Context, address string, network m
 		models.NetworkBSC,
 		models.NetworkETH,
 		models.NetworkMATIC,
-		models.NetworkNEAR:
+		models.NetworkNEAR,
+		models.NetworkONE:
 		{
 		}
 	default:
@@ -93,7 +94,8 @@ func (s *NftLend) UserSettingEmail(ctx context.Context, address string, network 
 		models.NetworkBSC,
 		models.NetworkETH,
 		models.NetworkMATIC,
-		models.NetworkNEAR:
+		models.NetworkNEAR,
+		models.NetworkONE:
 		{
 		}
 	default:
