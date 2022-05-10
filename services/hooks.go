@@ -75,7 +75,7 @@ func (s *NftLend) MoralisGetNFTs(ctx context.Context, chain string, address stri
 }
 
 func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) error {
-	emailQueue := []models.EmailQueue{}
+	emailQueue := []*models.EmailQueue{}
 	var loadAssetTransactionForId uint
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
@@ -360,6 +360,13 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							if err != nil {
 								return errs.NewError(err)
 							}
+							emailQueue = append(
+								emailQueue,
+								&models.EmailQueue{
+									EmailType: models.EMAIL_BORROWER_NEW_OFFER,
+									ObjectID:  offer.ID,
+								},
+							)
 						}
 					case "AcceptOffer":
 						{
@@ -470,6 +477,17 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							if err != nil {
 								return errs.NewError(err)
 							}
+							emailQueue = append(
+								emailQueue,
+								&models.EmailQueue{
+									EmailType: models.EMAIL_BORROWER_LOAN_STARTED,
+									ObjectID:  loan.ID,
+								},
+								&models.EmailQueue{
+									EmailType: models.EMAIL_LENDER_OFFER_STARTED,
+									ObjectID:  offer.ID,
+								},
+							)
 						}
 					case "CancelLoan":
 						{
@@ -1019,6 +1037,17 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							if err != nil {
 								return errs.NewError(err)
 							}
+							emailQueue = append(
+								emailQueue,
+								&models.EmailQueue{
+									EmailType: models.EMAIL_BORROWER_LOAN_STARTED,
+									ObjectID:  loan.ID,
+								},
+								&models.EmailQueue{
+									EmailType: models.EMAIL_LENDER_OFFER_STARTED,
+									ObjectID:  offer.ID,
+								},
+							)
 						}
 					case "CancelNonce":
 						{
@@ -1195,6 +1224,13 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							if err != nil {
 								return errs.NewError(err)
 							}
+							emailQueue = append(
+								emailQueue,
+								&models.EmailQueue{
+									EmailType: models.EMAIL_LENDER_LOAN_REPAID,
+									ObjectID:  offer.ID,
+								},
+							)
 						}
 					case "LoanLiquidated":
 						{
@@ -1289,6 +1325,13 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							if err != nil {
 								return errs.NewError(err)
 							}
+							emailQueue = append(
+								emailQueue,
+								&models.EmailQueue{
+									EmailType: models.EMAIL_BORROWER_LOAN_LIQUIDATED,
+									ObjectID:  loan.ID,
+								},
+							)
 						}
 					case "OfferNow":
 						{
@@ -1398,6 +1441,17 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							if err != nil {
 								return errs.NewError(err)
 							}
+							emailQueue = append(
+								emailQueue,
+								&models.EmailQueue{
+									EmailType: models.EMAIL_BORROWER_LOAN_STARTED,
+									ObjectID:  loan.ID,
+								},
+								&models.EmailQueue{
+									EmailType: models.EMAIL_LENDER_OFFER_STARTED,
+									ObjectID:  offer.ID,
+								},
+							)
 						}
 					default:
 						{

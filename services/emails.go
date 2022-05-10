@@ -37,7 +37,7 @@ func (s *NftLend) sendEmailToUser(ctx context.Context, address string, network m
 	return nil
 }
 
-func (s *NftLend) EmailForReference(ctx context.Context, emailQuueue []models.EmailQueue) error {
+func (s *NftLend) EmailForReference(ctx context.Context, emailQuueue []*models.EmailQueue) error {
 	var retErr error
 	for _, q := range emailQuueue {
 		var err error
