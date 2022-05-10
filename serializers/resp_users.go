@@ -7,12 +7,14 @@ import (
 )
 
 type UserResp struct {
-	ID        uint           `json:"id"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	Network   models.Network `json:"network"`
-	Address   string         `json:"address"`
-	Email     string         `json:"email"`
+	ID              uint           `json:"id"`
+	CreatedAt       time.Time      `json:"created_at"`
+	UpdatedAt       time.Time      `json:"updated_at"`
+	Network         models.Network `json:"network"`
+	Address         string         `json:"address"`
+	Email           string         `json:"email"`
+	NewsNotiEnabled bool           `json:"news_noti_enabled"`
+	LoanNotiEnabled bool           `json:"loan_noti_enabled"`
 }
 
 func NewUserResp(m *models.User) *UserResp {
@@ -20,12 +22,14 @@ func NewUserResp(m *models.User) *UserResp {
 		return nil
 	}
 	resp := &UserResp{
-		ID:        m.ID,
-		CreatedAt: m.CreatedAt,
-		UpdatedAt: m.UpdatedAt,
-		Network:   m.Network,
-		Address:   m.Address,
-		Email:     m.Email,
+		ID:              m.ID,
+		CreatedAt:       m.CreatedAt,
+		UpdatedAt:       m.UpdatedAt,
+		Network:         m.Network,
+		Address:         m.Address,
+		Email:           m.Email,
+		NewsNotiEnabled: m.NewsNotiEnabled,
+		LoanNotiEnabled: m.LoanNotiEnabled,
 	}
 	return resp
 }
