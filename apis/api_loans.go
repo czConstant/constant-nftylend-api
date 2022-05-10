@@ -13,7 +13,7 @@ func (s *Server) GetBorrowerStats(c *gin.Context) {
 	ctx := s.requestContext(c)
 	stats, err := s.nls.GetBorrowerStats(
 		ctx,
-		s.stringFromContextParam(c, "borrower"),
+		s.stringFromContextParam(c, "address"),
 	)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
