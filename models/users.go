@@ -6,8 +6,10 @@ import (
 
 type User struct {
 	gorm.Model
-	Network        Network
-	Address        string
-	AddressChecked string
-	Email          string
+	Network         Network
+	Address         string
+	AddressChecked  string
+	Email           string
+	NewsNotiEnabled bool `gorm:"default:0"`
+	LoanNotiEnabled bool `gorm:"default:0"`
 }

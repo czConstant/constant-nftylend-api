@@ -7,6 +7,7 @@ import (
 	"github.com/czConstant/constant-nftylend-api/daos"
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/models"
+	"github.com/czConstant/constant-nftylend-api/serializers"
 	"github.com/jinzhu/gorm"
 )
 
@@ -43,9 +44,11 @@ func (s *NftLend) getUser(tx *gorm.DB, address string, network models.Network) (
 	}
 	if user == nil {
 		user = &models.User{
-			Network:        network,
-			Address:        address,
-			AddressChecked: strings.ToLower(strings.TrimSpace(address)),
+			Network:         network,
+			Address:         address,
+			AddressChecked:  strings.ToLower(strings.TrimSpace(address)),
+			NewsNotiEnabled: true,
+			LoanNotiEnabled: true,
 		}
 		err = s.ud.Create(
 			tx,
@@ -95,16 +98,16 @@ func (s *NftLend) UserGetSettings(ctx context.Context, address string, network m
 	return user, nil
 }
 
-func (s *NftLend) UserSettingEmail(ctx context.Context, address string, network models.Network, email string) (*models.User, error) {
+func (s *NftLend) UserSettingEmail(ctx context.Context, req *serializers.UpdateUserSettingReq) (*models.User, error) {
 	var user *models.User
 	var err error
-	if address == "" {
+	if req.Address == "" {
 		return nil, errs.NewError(errs.ErrBadRequest)
 	}
-	if email == "" {
+	if req.Email == "" {
 		return nil, errs.NewError(errs.ErrBadRequest)
 	}
-	switch network {
+	switch req.Network {
 	case models.NetworkSOL,
 		models.NetworkAVAX,
 		models.NetworkBOBA,
@@ -122,11 +125,13 @@ func (s *NftLend) UserSettingEmail(ctx context.Context, address string, network 
 	err = daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			user, err = s.getUser(tx, address, network)
+			user, err = s.getUser(tx, req.Address, req.Network)
 			if err != nil {
 				return errs.NewError(err)
 			}
-			user.Email = email
+			user.Email = req.Email
+			user.NewsNotiEnabled = req.NewsNotiEnabled
+			user.LoanNotiEnabled = req.LoanNotiEnabled
 			if err != nil {
 				return errs.NewError(err)
 			}
