@@ -98,7 +98,7 @@ func (s *NftLend) UserGetSettings(ctx context.Context, address string, network m
 	return user, nil
 }
 
-func (s *NftLend) UserSettingEmail(ctx context.Context, req *serializers.UpdateUserSettingReq) (*models.User, error) {
+func (s *NftLend) UserUpdateSetting(ctx context.Context, req *serializers.UpdateUserSettingReq) (*models.User, error) {
 	var user *models.User
 	var err error
 	if req.Address == "" {
