@@ -352,6 +352,10 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 			if loan != nil {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			var validAt *time.Time
+			if req.AvaibaleIn > 0 {
+				validAt = helpers.TimeAdd(time.Now(), time.Duration(req.AvaibaleIn)*time.Second)
+			}
 			loan = &models.Loan{
 				Network:         req.Network,
 				Owner:           req.Borrower,
@@ -365,6 +369,7 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 				Status:          models.LoanStatusNew,
 				Signature:       req.Signature,
 				NonceHex:        req.NonceHex,
+				ValidAt:         validAt,
 			}
 			err = s.ld.Create(
 				tx,
@@ -475,6 +480,10 @@ func (s *NftLend) CreateLoanOffer(ctx context.Context, loanID uint, req *seriali
 			if offer != nil {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			var validAt *time.Time
+			if req.AvaibaleIn > 0 {
+				validAt = helpers.TimeAdd(time.Now(), time.Duration(req.AvaibaleIn)*time.Second)
+			}
 			offer = &models.LoanOffer{
 				Network:         loan.Network,
 				LoanID:          loan.ID,
@@ -485,6 +494,7 @@ func (s *NftLend) CreateLoanOffer(ctx context.Context, loanID uint, req *seriali
 				Status:          models.LoanOfferStatusNew,
 				NonceHex:        req.NonceHex,
 				Signature:       req.Signature,
+				ValidAt:         validAt,
 			}
 			err = s.lod.Create(
 				tx,
