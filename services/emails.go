@@ -13,20 +13,26 @@ func (s *NftLend) JobEmailSchedule(ctx context.Context) error {
 	return retErr
 }
 
-func (s *NftLend) sendEmailToUser(ctx context.Context, emailType string, toEmail string, reqMap interface{}) error {
-	err := mailer.Send(
-		"hello@nftpawn.financial",
-		"Nftpawn",
-		toEmail,
-		"",
-		emailType,
-		"en",
-		reqMap,
-		[]string{},
-		[]string{},
-	)
+func (s *NftLend) sendEmailToUser(ctx context.Context, address string, network models.Network, emailType string, reqMap interface{}) error {
+	user, err := s.GetUser(ctx, address, network)
 	if err != nil {
 		return errs.NewError(err)
+	}
+	if user.Email != "" {
+		err := mailer.Send(
+			"hello@nftpawn.financial",
+			"Admin",
+			user.Email,
+			"",
+			emailType,
+			"en",
+			reqMap,
+			[]string{},
+			[]string{},
+		)
+		if err != nil {
+			return errs.NewError(err)
+		}
 	}
 	return nil
 }
@@ -35,8 +41,9 @@ func (s *NftLend) EmailForBorrowerOfferNew(ctx context.Context, offerID uint) er
 	reqMap := map[string]interface{}{}
 	err := s.sendEmailToUser(
 		ctx,
-		models.EMAIL_BORROWER_NEW_OFFER,
 		"",
+		models.NetworkBSC,
+		models.EMAIL_BORROWER_NEW_OFFER,
 		reqMap,
 	)
 	if err != nil {
