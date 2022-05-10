@@ -21,16 +21,12 @@ func (s *Server) UserGetSettings(c *gin.Context) {
 
 func (s *Server) UserSettingEmail(c *gin.Context) {
 	ctx := s.requestContext(c)
-	var req struct {
-		Address string         `json:"address"`
-		Network models.Network `json:"network"`
-		Email   string         `json:"email"`
-	}
+	var req serializers.UpdateUserSettingReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	_, err := s.nls.UserSettingEmail(ctx, req.Address, req.Network, req.Email)
+	_, err := s.nls.UserSettingEmail(ctx, &req)
 	if err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
