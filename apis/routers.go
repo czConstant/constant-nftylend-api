@@ -94,6 +94,6 @@ func (s *Server) Routers() {
 	userNftAPI := nftAPI.Group("/users")
 	{
 		userNftAPI.GET("/settings", s.UserGetSettings)
-		userNftAPI.POST("/email-settings", s.UserSettingEmail)
+		userNftAPI.POST("/settings", s.UserUpdateSetting)
 	}
 }
