@@ -120,7 +120,7 @@ func (d *Loan) GetBorrowerStats(tx *gorm.DB, borrower string) (*models.BorrowerS
 								'done',
 								'liquidated',
 								'expired'
-								) then 1
+								) then principal_amount
 							else 0 end
 					), 0
 			) total_volume
