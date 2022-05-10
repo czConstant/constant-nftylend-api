@@ -19,6 +19,7 @@ import (
 )
 
 func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoanNearReq, lastUpdatedClient string) (*models.Loan, bool, error) {
+	emailQueue := []models.EmailQueue{}
 	var isUpdated bool
 	var loan *models.Loan
 	if req.ContractAddress == "" ||
@@ -275,6 +276,9 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 	)
 	if err != nil {
 		return nil, false, errs.NewError(err)
+	}
+	{
+		s.EmailForReference(ctx, emailQueue)
 	}
 	return loan, isUpdated, nil
 }

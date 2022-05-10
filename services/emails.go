@@ -37,6 +37,47 @@ func (s *NftLend) sendEmailToUser(ctx context.Context, address string, network m
 	return nil
 }
 
+func (s *NftLend) EmailForReference(ctx context.Context, emailQuueue []models.EmailQueue) error {
+	var retErr error
+	for _, q := range emailQuueue {
+		var err error
+		switch q.EmailType {
+		case models.EMAIL_BORROWER_NEW_OFFER:
+			{
+				err = s.EmailForBorrowerOfferNew(ctx, q.ObjectID)
+			}
+		case models.EMAIL_BORROWER_REMIND_PAYBACK:
+			{
+				err = s.EmailForBorrowerLoanRemind(ctx, q.ObjectID)
+			}
+		case models.EMAIL_BORROWER_LOAN_STARTED:
+			{
+				err = s.EmailForBorrowerLoanStarted(ctx, q.ObjectID)
+			}
+		case models.EMAIL_BORROWER_LOAN_LIQUIDATED:
+			{
+				err = s.EmailForBorrowerLoanLiquidated(ctx, q.ObjectID)
+			}
+		case models.EMAIL_LENDER_OFFER_STARTED:
+			{
+				err = s.EmailForLenderOfferStarted(ctx, q.ObjectID)
+			}
+		case models.EMAIL_LENDER_LOAN_REPAID:
+			{
+				err = s.EmailForLenderLoanRepaid(ctx, q.ObjectID)
+			}
+		case models.EMAIL_LENDER_LOAN_LIQUIDATED:
+			{
+				err = s.EmailForLenderLoanLiquidated(ctx, q.ObjectID)
+			}
+		}
+		if err != nil {
+			retErr = errs.MergeError(retErr, err)
+		}
+	}
+	return retErr
+}
+
 func (s *NftLend) EmailForBorrowerOfferNew(ctx context.Context, offerID uint) error {
 	reqMap := map[string]interface{}{}
 	err := s.sendEmailToUser(

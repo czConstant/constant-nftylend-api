@@ -75,6 +75,7 @@ func (s *NftLend) MoralisGetNFTs(ctx context.Context, chain string, address stri
 }
 
 func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) error {
+	emailQueue := []models.EmailQueue{}
 	var loadAssetTransactionForId uint
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
@@ -1425,6 +1426,9 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 	}
 	if loadAssetTransactionForId > 0 {
 		s.updateAssetTransactions(ctx, loadAssetTransactionForId)
+	}
+	{
+		s.EmailForReference(ctx, emailQueue)
 	}
 	return nil
 }
