@@ -84,8 +84,8 @@ github.com/coreos/go-semver v0.2.0/go.mod h1:nnelYz7RCh+5ahJtPPxZlU+153eP4D4r3Ee
 github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e/go.mod h1:F5haX7vjVVG0kc13fIWeqUViNPyEJxv/OmvnBo0Yme4=
 github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f/go.mod h1:E3G3o1h8I7cfcXa63jLwjI0eiQQMgzzUDFVpN/nH/eA=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
-github.com/czConstant/blockchain-api v0.0.0-20220509040909-f3f1f90c3808 h1:lsFu/oj5RJqKV8vAvd+oYsmmuTf8+HBwBM83FEMID+U=
-github.com/czConstant/blockchain-api v0.0.0-20220509040909-f3f1f90c3808/go.mod h1:CMEYIr7bYKGtiqGZtXlq5mcvy0bDG2gHR5YzFhCiFDg=
+github.com/czConstant/blockchain-api v0.0.0-20220510110538-cfdac330a35c h1:xXu3R6P8QL4d0vJm/6AACrVNzBOYsuEJZLpLh1ee/wE=
+github.com/czConstant/blockchain-api v0.0.0-20220510110538-cfdac330a35c/go.mod h1:CMEYIr7bYKGtiqGZtXlq5mcvy0bDG2gHR5YzFhCiFDg=
 github.com/czConstant/constant-core v0.0.0-20210916103853-a22db9f518c2 h1:dLdPxzM3VRCLQCgYUHXgqr6wTwijP9DRrLyscfBIZnY=
 github.com/czConstant/constant-core v0.0.0-20210916103853-a22db9f518c2/go.mod h1:vjzhRm9wI/ChMV3h1CFzayGhzTJ+rxvSm+AapcSbLdA=
 github.com/czConstant/constant-evn v0.0.0-20210621093849-5a457b90a058 h1:xIAgOl07nOudxGSCEFfwp5k22PpclSBoHtgBrlYnu/E=

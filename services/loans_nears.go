@@ -74,7 +74,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					Duration:        uint(saleInfo.LoanDuration),
 					StartedAt:       createdAt,
 					ExpiredAt:       helpers.TimeAdd(*createdAt, time.Duration(saleInfo.LoanDuration)*time.Second),
-					ValidAt:         helpers.TimeAdd(*createdAt, time.Duration(saleInfo.AvailableIn)*time.Second),
+					ValidAt:         helpers.TimeFromUnix(int64(saleInfo.AvailableAt)),
 					Config:          saleInfo.LoanConfig,
 					CurrencyID:      currency.ID,
 					AssetID:         asset.ID,
@@ -172,11 +172,6 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				if offer == nil {
 					offerPrincipalAmount := models.ConvertWeiToCollateralFloatAmount(&saleOffer.LoanPrincipalAmount.Int, currency.Decimals)
 					offerInterestRate, _ := models.ConvertWeiToBigFloat(big.NewInt(int64(saleOffer.LoanInterestRate)), 4).Float64()
-					v, err := models.ConvertString2BigInt(saleOffer.CreatedAt)
-					if err != nil {
-						return errs.NewError(err)
-					}
-					createdAt := helpers.TimeFromUnix(int64(v.Uint64()))
 					offer = &models.LoanOffer{
 						Network:         loan.Network,
 						LoanID:          loan.ID,
@@ -186,7 +181,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						Duration:        uint(saleOffer.LoanDuration),
 						Status:          models.LoanOfferStatusNew,
 						NonceHex:        fmt.Sprintf("%d", saleOffer.OfferID),
-						ValidAt:         helpers.TimeAdd(*createdAt, time.Duration(saleOffer.AvailableIn)*time.Second),
+						ValidAt:         helpers.TimeFromUnix(int64(saleOffer.AvailableAt)),
 					}
 					err = s.lod.Create(
 						tx,
