@@ -16,7 +16,7 @@ type CreateLoanReq struct {
 	TokenID         string           `json:"token_id"`
 	Signature       string           `json:"signature"`
 	NonceHex        string           `json:"nonce_hex"`
-	AvaibaleIn      uint             `json:"avaibale_in"`
+	AvailableAt     int64            `json:"available_at"`
 }
 
 type CreateLoanOfferReq struct {
@@ -26,7 +26,7 @@ type CreateLoanOfferReq struct {
 	Duration        uint             `json:"duration"`
 	Signature       string           `json:"signature"`
 	NonceHex        string           `json:"nonce_hex"`
-	AvaibaleIn      uint             `json:"avaibale_in"`
+	AvailableAt     int64            `json:"available_at"`
 }
 
 type CreateLoanNearReq struct {

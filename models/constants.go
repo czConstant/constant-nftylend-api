@@ -9,3 +9,8 @@ const (
 	EMAIL_LENDER_LOAN_REPAID       = "nftpawn_lender_loan_repaid"
 	EMAIL_LENDER_LOAN_LIQUIDATED   = "nftpawn_lender_loan_liquidated"
 )
+
+type EmailQueue struct {
+	EmailType string
+	ObjectID  uint
+}
