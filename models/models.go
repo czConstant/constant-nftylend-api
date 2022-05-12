@@ -290,3 +290,14 @@ func FormatStringNumber(amt string) string {
 	}
 	return amt
 }
+
+func FormatBigFloatNumber(amt *big.Float) string {
+	return FormatStringNumber(amt.Text('f', 18))
+}
+
+func FormatEmailTime(t *time.Time) string {
+	if t == nil {
+		return ""
+	}
+	return t.Format("2006-01-02 15:04:05")
+}

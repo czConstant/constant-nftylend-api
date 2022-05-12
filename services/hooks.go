@@ -363,7 +363,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							emailQueue = append(
 								emailQueue,
 								&models.EmailQueue{
-									EmailType: models.EMAIL_BORROWER_NEW_OFFER,
+									EmailType: models.EMAIL_BORROWER_OFFER_NEW,
 									ObjectID:  offer.ID,
 								},
 							)

@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 
+	"github.com/czConstant/constant-nftylend-api/daos"
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/models"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/mailer"
@@ -11,6 +12,91 @@ import (
 func (s *NftLend) JobEmailSchedule(ctx context.Context) error {
 	var retErr error
 	return retErr
+}
+
+func (s *NftLend) getCurrencyMap(ctx context.Context, m *models.Currency) map[string]interface{} {
+	if m == nil {
+		return map[string]interface{}{}
+	}
+	return map[string]interface{}{
+		"id":               m.ID,
+		"created_at":       m.CreatedAt,
+		"updated_at":       m.UpdatedAt,
+		"network":          m.Network,
+		"contract_address": m.ContractAddress,
+		"decimals":         m.Decimals,
+		"symbol":           m.Symbol,
+		"name":             m.Name,
+		"icon_url":         m.IconURL,
+	}
+}
+
+func (s *NftLend) getAssetMap(ctx context.Context, m *models.Asset) map[string]interface{} {
+	if m == nil {
+		return map[string]interface{}{}
+	}
+	return map[string]interface{}{
+		"id":                      m.ID,
+		"created_at":              m.CreatedAt,
+		"updated_at":              m.UpdatedAt,
+		"network":                 m.Network,
+		"collection_id":           m.CollectionID,
+		"seo_url":                 m.SeoURL,
+		"contract_address":        m.ContractAddress,
+		"token_url":               m.TokenURL,
+		"token_id":                m.TokenID,
+		"name":                    m.Name,
+		"seller_fee_rate":         m.SellerFeeRate,
+		"origin_network":          m.OriginNetwork,
+		"origin_contract_address": m.OriginContractAddress,
+		"origin_token_id":         m.OriginTokenID,
+	}
+}
+
+func (s *NftLend) getLoanMap(ctx context.Context, m *models.Loan) map[string]interface{} {
+	if m == nil {
+		return map[string]interface{}{}
+	}
+	return map[string]interface{}{
+		"id":               m.ID,
+		"created_at":       m.CreatedAt,
+		"updated_at":       m.UpdatedAt,
+		"network":          m.Network,
+		"owner":            m.Owner,
+		"lender":           m.Lender,
+		"asset":            s.getAssetMap(ctx, m.Asset),
+		"currency":         s.getCurrencyMap(ctx, m.Currency),
+		"started_at":       models.FormatEmailTime(m.StartedAt),
+		"duration":         models.FormatFloatNumber("%.2f", models.DivFloats(float64(m.Duration), 60*24)),
+		"expired_at":       models.FormatEmailTime(m.ExpiredAt),
+		"finished_at":      models.FormatEmailTime(m.FinishedAt),
+		"principal_amount": models.FormatBigFloatNumber(&m.PrincipalAmount.Float),
+		"interest_rate":    models.FormatFloatNumber("%.18f", m.InterestRate),
+		"fee_rate":         models.FormatFloatNumber("%.18f", m.FeeRate),
+		"fee_amount":       m.FeeAmount,
+		"status":           m.Status,
+	}
+}
+
+func (s *NftLend) getLoanOfferMap(ctx context.Context, m *models.LoanOffer) map[string]interface{} {
+	if m == nil {
+		return map[string]interface{}{}
+	}
+	return map[string]interface{}{
+		"id":               m.ID,
+		"created_at":       m.CreatedAt,
+		"updated_at":       m.UpdatedAt,
+		"network":          m.Network,
+		"lender":           m.Lender,
+		"started_at":       models.FormatEmailTime(m.StartedAt),
+		"duration":         models.FormatFloatNumber("%.2f", models.DivFloats(float64(m.Duration), 60*24)),
+		"expired_at":       models.FormatEmailTime(m.ExpiredAt),
+		"finished_at":      models.FormatEmailTime(m.FinishedAt),
+		"principal_amount": models.FormatBigFloatNumber(&m.PrincipalAmount.Float),
+		"interest_rate":    models.FormatFloatNumber("%.18f", m.InterestRate),
+		"status":           m.Status,
+		"loan":             s.getLoanMap(ctx, m.Loan),
+	}
 }
 
 func (s *NftLend) sendEmailToUser(ctx context.Context, address string, network models.Network, emailType string, reqMap interface{}) error {
@@ -42,7 +128,7 @@ func (s *NftLend) EmailForReference(ctx context.Context, emailQuueue []*models.E
 	for _, q := range emailQuueue {
 		var err error
 		switch q.EmailType {
-		case models.EMAIL_BORROWER_NEW_OFFER:
+		case models.EMAIL_BORROWER_OFFER_NEW:
 			{
 				err = s.EmailForBorrowerOfferNew(ctx, q.ObjectID)
 			}
@@ -79,12 +165,28 @@ func (s *NftLend) EmailForReference(ctx context.Context, emailQuueue []*models.E
 }
 
 func (s *NftLend) EmailForBorrowerOfferNew(ctx context.Context, offerID uint) error {
-	reqMap := map[string]interface{}{}
-	err := s.sendEmailToUser(
+	offer, err := s.lod.FirstByID(
+		daos.GetDBMainCtx(ctx),
+		offerID,
+		map[string][]interface{}{
+			"Loan.Asset":    []interface{}{},
+			"Loan.Currency": []interface{}{},
+		},
+		false,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	reqMap := map[string]interface{}{
+		"offer": s.getLoanOfferMap(ctx, offer),
+	}
+	network := offer.Loan.Network
+	address := offer.Loan.Owner
+	err = s.sendEmailToUser(
 		ctx,
-		"",
-		models.NetworkBSC,
-		models.EMAIL_BORROWER_NEW_OFFER,
+		address,
+		network,
+		models.EMAIL_BORROWER_OFFER_NEW,
 		reqMap,
 	)
 	if err != nil {
@@ -94,25 +196,187 @@ func (s *NftLend) EmailForBorrowerOfferNew(ctx context.Context, offerID uint) er
 }
 
 func (s *NftLend) EmailForBorrowerLoanRemind(ctx context.Context, loanID uint) error {
+	loan, err := s.ld.FirstByID(
+		daos.GetDBMainCtx(ctx),
+		loanID,
+		map[string][]interface{}{
+			"Loan.Asset":    []interface{}{},
+			"Loan.Currency": []interface{}{},
+		},
+		false,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	reqMap := map[string]interface{}{
+		"loan": s.getLoanMap(ctx, loan),
+	}
+	network := loan.Network
+	address := loan.Owner
+	err = s.sendEmailToUser(
+		ctx,
+		address,
+		network,
+		models.EMAIL_BORROWER_REMIND_PAYBACK,
+		reqMap,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
 	return nil
 }
 
 func (s *NftLend) EmailForBorrowerLoanStarted(ctx context.Context, loanID uint) error {
+	loan, err := s.ld.FirstByID(
+		daos.GetDBMainCtx(ctx),
+		loanID,
+		map[string][]interface{}{
+			"Loan.Asset":    []interface{}{},
+			"Loan.Currency": []interface{}{},
+		},
+		false,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	reqMap := map[string]interface{}{
+		"loan": s.getLoanMap(ctx, loan),
+	}
+	network := loan.Network
+	address := loan.Owner
+	err = s.sendEmailToUser(
+		ctx,
+		address,
+		network,
+		models.EMAIL_BORROWER_LOAN_STARTED,
+		reqMap,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
 	return nil
 }
 
 func (s *NftLend) EmailForBorrowerLoanLiquidated(ctx context.Context, loanID uint) error {
+	loan, err := s.ld.FirstByID(
+		daos.GetDBMainCtx(ctx),
+		loanID,
+		map[string][]interface{}{
+			"Loan.Asset":    []interface{}{},
+			"Loan.Currency": []interface{}{},
+		},
+		false,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	reqMap := map[string]interface{}{
+		"loan": s.getLoanMap(ctx, loan),
+	}
+	network := loan.Network
+	address := loan.Owner
+	err = s.sendEmailToUser(
+		ctx,
+		address,
+		network,
+		models.EMAIL_BORROWER_LOAN_LIQUIDATED,
+		reqMap,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
 	return nil
 }
 
 func (s *NftLend) EmailForLenderOfferStarted(ctx context.Context, offerID uint) error {
+	offer, err := s.lod.FirstByID(
+		daos.GetDBMainCtx(ctx),
+		offerID,
+		map[string][]interface{}{
+			"Loan.Asset":    []interface{}{},
+			"Loan.Currency": []interface{}{},
+		},
+		false,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	reqMap := map[string]interface{}{
+		"offer": s.getLoanOfferMap(ctx, offer),
+	}
+	network := offer.Loan.Network
+	address := offer.Loan.Owner
+	err = s.sendEmailToUser(
+		ctx,
+		address,
+		network,
+		models.EMAIL_LENDER_OFFER_STARTED,
+		reqMap,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
 	return nil
 }
 
 func (s *NftLend) EmailForLenderLoanRepaid(ctx context.Context, loanID uint) error {
+	loan, err := s.ld.FirstByID(
+		daos.GetDBMainCtx(ctx),
+		loanID,
+		map[string][]interface{}{
+			"Loan.Asset":    []interface{}{},
+			"Loan.Currency": []interface{}{},
+		},
+		false,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	reqMap := map[string]interface{}{
+		"loan": s.getLoanMap(ctx, loan),
+	}
+	network := loan.Network
+	address := loan.Owner
+	err = s.sendEmailToUser(
+		ctx,
+		address,
+		network,
+		models.EMAIL_LENDER_LOAN_REPAID,
+		reqMap,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
 	return nil
 }
 
 func (s *NftLend) EmailForLenderLoanLiquidated(ctx context.Context, loanID uint) error {
+	loan, err := s.ld.FirstByID(
+		daos.GetDBMainCtx(ctx),
+		loanID,
+		map[string][]interface{}{
+			"Loan.Asset":    []interface{}{},
+			"Loan.Currency": []interface{}{},
+		},
+		false,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	reqMap := map[string]interface{}{
+		"loan": s.getLoanMap(ctx, loan),
+	}
+	network := loan.Network
+	address := loan.Owner
+	err = s.sendEmailToUser(
+		ctx,
+		address,
+		network,
+		models.EMAIL_LENDER_LOAN_LIQUIDATED,
+		reqMap,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
 	return nil
 }

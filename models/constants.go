@@ -1,7 +1,7 @@
 package models
 
 const (
-	EMAIL_BORROWER_NEW_OFFER       = "nftpawn_borrower_offer_new"
+	EMAIL_BORROWER_OFFER_NEW       = "nftpawn_borrower_offer_new"
 	EMAIL_BORROWER_REMIND_PAYBACK  = "nftpawn_borrower_loan_remind"
 	EMAIL_BORROWER_LOAN_STARTED    = "nftpawn_borrower_loan_started"
 	EMAIL_BORROWER_LOAN_LIQUIDATED = "nftpawn_borrower_loan_liquidated"
