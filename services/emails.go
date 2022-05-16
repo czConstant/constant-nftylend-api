@@ -71,7 +71,7 @@ func (s *NftLend) getLoanMap(ctx context.Context, m *models.Loan) map[string]int
 		"expired_at":       models.FormatEmailTime(m.ExpiredAt),
 		"finished_at":      models.FormatEmailTime(m.FinishedAt),
 		"principal_amount": models.FormatBigFloatNumber(&m.PrincipalAmount.Float),
-		"interest_rate":    models.FormatFloatNumber("%.18f", m.InterestRate),
+		"interest_rate":    models.FormatFloatNumber("%.18f", m.InterestRate*100),
 		"fee_rate":         models.FormatFloatNumber("%.18f", m.FeeRate),
 		"fee_amount":       m.FeeAmount,
 		"status":           m.Status,
@@ -93,7 +93,7 @@ func (s *NftLend) getLoanOfferMap(ctx context.Context, m *models.LoanOffer) map[
 		"expired_at":       models.FormatEmailTime(m.ExpiredAt),
 		"finished_at":      models.FormatEmailTime(m.FinishedAt),
 		"principal_amount": models.FormatBigFloatNumber(&m.PrincipalAmount.Float),
-		"interest_rate":    models.FormatFloatNumber("%.18f", m.InterestRate),
+		"interest_rate":    models.FormatFloatNumber("%.18f", m.InterestRate*100),
 		"status":           m.Status,
 		"loan":             s.getLoanMap(ctx, m.Loan),
 	}
