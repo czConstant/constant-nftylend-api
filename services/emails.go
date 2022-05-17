@@ -90,19 +90,21 @@ func (s *NftLend) getLoanOfferMap(ctx context.Context, m *models.LoanOffer) map[
 		return map[string]interface{}{}
 	}
 	return map[string]interface{}{
-		"id":               m.ID,
-		"created_at":       m.CreatedAt,
-		"updated_at":       m.UpdatedAt,
-		"network":          m.Network,
-		"lender":           m.Lender,
-		"started_at":       models.FormatEmailTime(m.StartedAt),
-		"duration":         models.FormatFloatNumber("%.2f", models.DivFloats(float64(m.Duration), 60*24)),
-		"expired_at":       models.FormatEmailTime(m.ExpiredAt),
-		"finished_at":      models.FormatEmailTime(m.FinishedAt),
-		"principal_amount": models.FormatBigFloatNumber(&m.PrincipalAmount.Float),
-		"interest_rate":    models.FormatFloatNumber("%.18f", m.InterestRate*100),
-		"status":           m.Status,
-		"loan":             s.getLoanMap(ctx, m.Loan),
+		"id":                     m.ID,
+		"created_at":             m.CreatedAt,
+		"updated_at":             m.UpdatedAt,
+		"network":                m.Network,
+		"lender":                 m.Lender,
+		"started_at":             models.FormatEmailTime(m.StartedAt),
+		"duration":               models.FormatFloatNumber("%.2f", models.DivFloats(float64(m.Duration), 60*24)),
+		"expired_at":             models.FormatEmailTime(m.ExpiredAt),
+		"finished_at":            models.FormatEmailTime(m.FinishedAt),
+		"principal_amount":       models.FormatBigFloatNumber(&m.PrincipalAmount.Float),
+		"interest_rate":          models.FormatFloatNumber("%.18f", m.InterestRate*100),
+		"status":                 m.Status,
+		"matured_payment_amount": models.FormatBigFloatNumber(m.MaturedOfferPaymentAmount()),
+		"early_payment_amount":   models.FormatBigFloatNumber(m.EarlyOfferPaymentAmount()),
+		"loan":                   s.getLoanMap(ctx, m.Loan),
 	}
 }
 
