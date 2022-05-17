@@ -356,6 +356,9 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 			var validAt *time.Time
 			if req.AvailableAt > 0 {
 				t := time.Unix(req.AvailableAt, 0)
+				if t.Before(time.Now()) {
+					return errs.NewError(errs.ErrBadRequest)
+				}
 				validAt = &t
 			}
 			loan = &models.Loan{
@@ -485,6 +488,9 @@ func (s *NftLend) CreateLoanOffer(ctx context.Context, loanID uint, req *seriali
 			var validAt *time.Time
 			if req.AvailableAt > 0 {
 				t := time.Unix(req.AvailableAt, 0)
+				if t.Before(time.Now()) {
+					return errs.NewError(errs.ErrBadRequest)
+				}
 				validAt = &t
 			}
 			offer = &models.LoanOffer{

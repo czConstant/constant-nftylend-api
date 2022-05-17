@@ -192,7 +192,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					}
 					isUpdated = true
 					eqLoan = &models.EmailQueue{
-						EmailType: models.EMAIL_BORROWER_NEW_OFFER,
+						EmailType: models.EMAIL_BORROWER_OFFER_NEW,
 						ObjectID:  offer.ID,
 					}
 				}

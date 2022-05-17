@@ -1,6 +1,8 @@
 package models
 
 import (
+	"math"
+	"math/big"
 	"time"
 
 	"github.com/czConstant/constant-nftylend-api/types/numeric"
@@ -44,4 +46,30 @@ type LoanOffer struct {
 	AcceptTxHash        string
 	CancelTxHash        string
 	CloseTxHash         string
+}
+
+func (m *LoanOffer) MaturedOfferPaymentAmount() *big.Float {
+	var amount big.Float
+	if m.StartedAt != nil {
+		amount = m.PrincipalAmount.Float
+		duration := float64(m.Duration) / (24 * 60 * 60)
+		amount = *MulBigFloats(&amount, big.NewFloat(m.InterestRate), big.NewFloat(duration/365))
+	}
+	amount = *AddBigFloats(&amount, &m.PrincipalAmount.Float)
+	return &amount
+}
+
+func (m *LoanOffer) EarlyOfferPaymentAmount() *big.Float {
+	var amount big.Float
+	if m.StartedAt != nil {
+		amount = m.PrincipalAmount.Float
+		duration := float64(m.Duration) / (24 * 60 * 60)
+		if time.Now().Before(*m.ExpiredAt) {
+			duration = math.Ceil(float64(time.Since(*m.StartedAt)) / float64(24*time.Hour))
+		}
+		amount = *MulBigFloats(&amount, big.NewFloat(m.InterestRate), big.NewFloat(duration/365))
+	}
+	amount = *AddBigFloats(&amount, &m.PrincipalAmount.Float)
+	amount = *QuoBigFloats(AddBigFloats(&amount, m.MaturedOfferPaymentAmount()), big.NewFloat(2))
+	return &amount
 }
