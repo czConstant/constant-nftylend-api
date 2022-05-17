@@ -58,23 +58,30 @@ func (s *NftLend) getLoanMap(ctx context.Context, m *models.Loan) map[string]int
 		return map[string]interface{}{}
 	}
 	return map[string]interface{}{
-		"id":               m.ID,
-		"created_at":       m.CreatedAt,
-		"updated_at":       m.UpdatedAt,
-		"network":          m.Network,
-		"owner":            m.Owner,
-		"lender":           m.Lender,
-		"asset":            s.getAssetMap(ctx, m.Asset),
-		"currency":         s.getCurrencyMap(ctx, m.Currency),
-		"started_at":       models.FormatEmailTime(m.StartedAt),
-		"duration":         models.FormatFloatNumber("%.2f", models.DivFloats(float64(m.Duration), 60*24)),
-		"expired_at":       models.FormatEmailTime(m.ExpiredAt),
-		"finished_at":      models.FormatEmailTime(m.FinishedAt),
-		"principal_amount": models.FormatBigFloatNumber(&m.PrincipalAmount.Float),
-		"interest_rate":    models.FormatFloatNumber("%.18f", m.InterestRate*100),
-		"fee_rate":         models.FormatFloatNumber("%.18f", m.FeeRate),
-		"fee_amount":       m.FeeAmount,
-		"status":           m.Status,
+		"id":                           m.ID,
+		"created_at":                   m.CreatedAt,
+		"updated_at":                   m.UpdatedAt,
+		"network":                      m.Network,
+		"owner":                        m.Owner,
+		"lender":                       m.Lender,
+		"asset":                        s.getAssetMap(ctx, m.Asset),
+		"currency":                     s.getCurrencyMap(ctx, m.Currency),
+		"started_at":                   models.FormatEmailTime(m.StartedAt),
+		"duration":                     models.FormatFloatNumber("%.2f", models.DivFloats(float64(m.Duration), 60*24)),
+		"expired_at":                   models.FormatEmailTime(m.ExpiredAt),
+		"finished_at":                  models.FormatEmailTime(m.FinishedAt),
+		"principal_amount":             models.FormatBigFloatNumber(&m.PrincipalAmount.Float),
+		"interest_rate":                models.FormatFloatNumber("%.18f", m.InterestRate*100),
+		"fee_rate":                     models.FormatFloatNumber("%.18f", m.FeeRate),
+		"fee_amount":                   m.FeeAmount,
+		"status":                       m.Status,
+		"offer_principal_amount":       models.FormatBigFloatNumber(&m.OfferPrincipalAmount.Float),
+		"offer_interest_rate":          models.FormatFloatNumber("%.18f", m.OfferInterestRate*100),
+		"offer_duration":               models.FormatFloatNumber("%.2f", models.DivFloats(float64(m.OfferDuration), 60*24)),
+		"offer_started_at":             models.FormatEmailTime(m.OfferStartedAt),
+		"offer_expired_at":             models.FormatEmailTime(m.OfferExpiredAt),
+		"matured_offer_payment_amount": models.FormatBigFloatNumber(m.MaturedOfferPaymentAmount()),
+		"early_offer_payment_amount":   models.FormatBigFloatNumber(m.EarlyOfferPaymentAmount()),
 	}
 }
 
@@ -104,20 +111,22 @@ func (s *NftLend) sendEmailToUser(ctx context.Context, address string, network m
 	if err != nil {
 		return errs.NewError(err)
 	}
-	if user.Email != "" {
-		err := mailer.Send(
-			"hello@nftpawn.financial",
-			"Admin",
-			user.Email,
-			"",
-			emailType,
-			"en",
-			reqMap,
-			[]string{},
-			[]string{},
-		)
-		if err != nil {
-			return errs.NewError(err)
+	if user.LoanNotiEnabled {
+		if user.Email != "" {
+			err := mailer.Send(
+				"hello@nftpawn.financial",
+				"Admin",
+				user.Email,
+				"",
+				emailType,
+				"en",
+				reqMap,
+				[]string{},
+				[]string{},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
 		}
 	}
 	return nil
@@ -132,13 +141,21 @@ func (s *NftLend) EmailForReference(ctx context.Context, emailQuueue []*models.E
 			{
 				err = s.EmailForBorrowerOfferNew(ctx, q.ObjectID)
 			}
-		case models.EMAIL_BORROWER_REMIND_PAYBACK:
-			{
-				err = s.EmailForBorrowerLoanRemind(ctx, q.ObjectID)
-			}
 		case models.EMAIL_BORROWER_LOAN_STARTED:
 			{
 				err = s.EmailForBorrowerLoanStarted(ctx, q.ObjectID)
+			}
+		case models.EMAIL_BORROWER_LOAN_REMIND7:
+			{
+				err = s.EmailForBorrowerLoanRemind7(ctx, q.ObjectID)
+			}
+		case models.EMAIL_BORROWER_LOAN_REMIND3:
+			{
+				err = s.EmailForBorrowerLoanRemind7(ctx, q.ObjectID)
+			}
+		case models.EMAIL_BORROWER_LOAN_REMIND1:
+			{
+				err = s.EmailForBorrowerLoanRemind7(ctx, q.ObjectID)
 			}
 		case models.EMAIL_BORROWER_LOAN_LIQUIDATED:
 			{
@@ -195,44 +212,13 @@ func (s *NftLend) EmailForBorrowerOfferNew(ctx context.Context, offerID uint) er
 	return nil
 }
 
-func (s *NftLend) EmailForBorrowerLoanRemind(ctx context.Context, loanID uint) error {
-	loan, err := s.ld.FirstByID(
-		daos.GetDBMainCtx(ctx),
-		loanID,
-		map[string][]interface{}{
-			"Loan.Asset":    []interface{}{},
-			"Loan.Currency": []interface{}{},
-		},
-		false,
-	)
-	if err != nil {
-		return errs.NewError(err)
-	}
-	reqMap := map[string]interface{}{
-		"loan": s.getLoanMap(ctx, loan),
-	}
-	network := loan.Network
-	address := loan.Owner
-	err = s.sendEmailToUser(
-		ctx,
-		address,
-		network,
-		models.EMAIL_BORROWER_REMIND_PAYBACK,
-		reqMap,
-	)
-	if err != nil {
-		return errs.NewError(err)
-	}
-	return nil
-}
-
 func (s *NftLend) EmailForBorrowerLoanStarted(ctx context.Context, loanID uint) error {
 	loan, err := s.ld.FirstByID(
 		daos.GetDBMainCtx(ctx),
 		loanID,
 		map[string][]interface{}{
-			"Loan.Asset":    []interface{}{},
-			"Loan.Currency": []interface{}{},
+			"Asset":    []interface{}{},
+			"Currency": []interface{}{},
 		},
 		false,
 	)
@@ -257,13 +243,106 @@ func (s *NftLend) EmailForBorrowerLoanStarted(ctx context.Context, loanID uint) 
 	return nil
 }
 
+func (s *NftLend) EmailForBorrowerLoanRemind7(ctx context.Context, loanID uint) error {
+	loan, err := s.ld.FirstByID(
+		daos.GetDBMainCtx(ctx),
+		loanID,
+		map[string][]interface{}{
+			"Asset":    []interface{}{},
+			"Currency": []interface{}{},
+		},
+		false,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	reqMap := map[string]interface{}{
+		"loan": s.getLoanMap(ctx, loan),
+	}
+	network := loan.Network
+	address := loan.Owner
+	err = s.sendEmailToUser(
+		ctx,
+		address,
+		network,
+		models.EMAIL_BORROWER_LOAN_REMIND7,
+		reqMap,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *NftLend) EmailForBorrowerLoanRemind3(ctx context.Context, loanID uint) error {
+	loan, err := s.ld.FirstByID(
+		daos.GetDBMainCtx(ctx),
+		loanID,
+		map[string][]interface{}{
+			"Asset":    []interface{}{},
+			"Currency": []interface{}{},
+		},
+		false,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	reqMap := map[string]interface{}{
+		"loan": s.getLoanMap(ctx, loan),
+	}
+	network := loan.Network
+	address := loan.Owner
+	err = s.sendEmailToUser(
+		ctx,
+		address,
+		network,
+		models.EMAIL_BORROWER_LOAN_REMIND3,
+		reqMap,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *NftLend) EmailForBorrowerLoanRemind1(ctx context.Context, loanID uint) error {
+	loan, err := s.ld.FirstByID(
+		daos.GetDBMainCtx(ctx),
+		loanID,
+		map[string][]interface{}{
+			"Asset":    []interface{}{},
+			"Currency": []interface{}{},
+		},
+		false,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	reqMap := map[string]interface{}{
+		"loan": s.getLoanMap(ctx, loan),
+	}
+	network := loan.Network
+	address := loan.Owner
+	err = s.sendEmailToUser(
+		ctx,
+		address,
+		network,
+		models.EMAIL_BORROWER_LOAN_REMIND1,
+		reqMap,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
 func (s *NftLend) EmailForBorrowerLoanLiquidated(ctx context.Context, loanID uint) error {
 	loan, err := s.ld.FirstByID(
 		daos.GetDBMainCtx(ctx),
 		loanID,
 		map[string][]interface{}{
-			"Loan.Asset":    []interface{}{},
-			"Loan.Currency": []interface{}{},
+			"Asset":    []interface{}{},
+			"Currency": []interface{}{},
 		},
 		false,
 	)
@@ -324,8 +403,8 @@ func (s *NftLend) EmailForLenderLoanRepaid(ctx context.Context, loanID uint) err
 		daos.GetDBMainCtx(ctx),
 		loanID,
 		map[string][]interface{}{
-			"Loan.Asset":    []interface{}{},
-			"Loan.Currency": []interface{}{},
+			"Asset":    []interface{}{},
+			"Currency": []interface{}{},
 		},
 		false,
 	)
@@ -355,8 +434,8 @@ func (s *NftLend) EmailForLenderLoanLiquidated(ctx context.Context, loanID uint)
 		daos.GetDBMainCtx(ctx),
 		loanID,
 		map[string][]interface{}{
-			"Loan.Asset":    []interface{}{},
-			"Loan.Currency": []interface{}{},
+			"Asset":    []interface{}{},
+			"Currency": []interface{}{},
 		},
 		false,
 	)
