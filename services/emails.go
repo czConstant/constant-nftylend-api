@@ -161,18 +161,18 @@ func (s *NftLend) getLoanMap(ctx context.Context, m *models.Loan) map[string]int
 		"duration":                     models.FormatFloatNumber("%.2f", models.DivFloats(float64(m.Duration), 60*60*24)),
 		"expired_at":                   models.FormatEmailTime(m.ExpiredAt),
 		"finished_at":                  models.FormatEmailTime(m.FinishedAt),
-		"principal_amount":             models.FormatBigFloatNumber(&m.PrincipalAmount.Float),
+		"principal_amount":             models.FormatStringNumber(m.PrincipalAmount.Float.Text('f', 8)),
 		"interest_rate":                models.FormatFloatNumber("%.18f", m.InterestRate*100),
 		"fee_rate":                     models.FormatFloatNumber("%.18f", m.FeeRate),
 		"fee_amount":                   m.FeeAmount,
 		"status":                       m.Status,
-		"offer_principal_amount":       models.FormatBigFloatNumber(&m.OfferPrincipalAmount.Float),
+		"offer_principal_amount":       models.FormatStringNumber(m.OfferPrincipalAmount.Float.Text('f', 8)),
 		"offer_interest_rate":          models.FormatFloatNumber("%.18f", m.OfferInterestRate*100),
 		"offer_duration":               models.FormatFloatNumber("%.2f", models.DivFloats(float64(m.OfferDuration), 60*60*24)),
 		"offer_started_at":             models.FormatEmailTime(m.OfferStartedAt),
 		"offer_expired_at":             models.FormatEmailTime(m.OfferExpiredAt),
-		"matured_offer_payment_amount": models.FormatBigFloatNumber(m.MaturedOfferPaymentAmount()),
-		"early_offer_payment_amount":   models.FormatBigFloatNumber(m.EarlyOfferPaymentAmount()),
+		"matured_offer_payment_amount": models.FormatStringNumber(m.MaturedOfferPaymentAmount().Text('f', 8)),
+		"early_offer_payment_amount":   models.FormatStringNumber(m.EarlyOfferPaymentAmount().Text('f', 8)),
 	}
 }
 
@@ -190,22 +190,23 @@ func (s *NftLend) getLoanOfferMap(ctx context.Context, m *models.LoanOffer) map[
 		"duration":               models.FormatFloatNumber("%.2f", models.DivFloats(float64(m.Duration), 60*60*24)),
 		"expired_at":             models.FormatEmailTime(m.ExpiredAt),
 		"finished_at":            models.FormatEmailTime(m.FinishedAt),
-		"principal_amount":       models.FormatBigFloatNumber(&m.PrincipalAmount.Float),
+		"principal_amount":       models.FormatStringNumber(m.PrincipalAmount.Float.Text('f', 8)),
 		"interest_rate":          models.FormatFloatNumber("%.18f", m.InterestRate*100),
 		"status":                 m.Status,
-		"matured_payment_amount": models.FormatBigFloatNumber(m.MaturedOfferPaymentAmount()),
-		"early_payment_amount":   models.FormatBigFloatNumber(m.EarlyOfferPaymentAmount()),
+		"matured_payment_amount": models.FormatStringNumber(m.MaturedOfferPaymentAmount().Text('f', 8)),
+		"early_payment_amount":   models.FormatStringNumber(m.EarlyOfferPaymentAmount().Text('f', 8)),
 		"loan":                   s.getLoanMap(ctx, m.Loan),
 	}
 }
 
-func (s *NftLend) sendEmailToUser(ctx context.Context, address string, network models.Network, emailType string, reqMap interface{}) error {
+func (s *NftLend) sendEmailToUser(ctx context.Context, address string, network models.Network, emailType string, reqMap map[string]interface{}) error {
 	user, err := s.GetUser(ctx, address, network)
 	if err != nil {
 		return errs.NewError(err)
 	}
 	if user.LoanNotiEnabled {
 		if user.Email != "" {
+			reqMap["web_url"] = s.conf.WebUrl
 			err := mailer.Send(
 				"hello@nftpawn.financial",
 				"Admin",

@@ -48,6 +48,7 @@ type Config struct {
 	Debug             bool   `json:"debug"`
 	RecaptchaV3Serect string `json:"recaptcha_v3_serect"`
 	JobToken          string `json:"job_token"`
+	WebUrl            string `json:"web_url"`
 	Datadog           struct {
 		Env     string `json:"env"`
 		Service string `json:"service"`
