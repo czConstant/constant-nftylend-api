@@ -109,8 +109,6 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				isUpdated = true
 			}
 			loanPrevStatus := loan.Status
-			var eqLoan *models.EmailQueue
-			var eqOffer *models.EmailQueue
 			switch saleInfo.Status {
 			case 0:
 				{
@@ -119,9 +117,11 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 			case 1:
 				{
 					loan.Status = models.LoanStatusCreated
-					eqLoan = &models.EmailQueue{
-						EmailType: models.EMAIL_BORROWER_LOAN_STARTED,
-						ObjectID:  loan.ID,
+					if loanPrevStatus != loan.Status {
+						emailQueue = append(emailQueue, &models.EmailQueue{
+							EmailType: models.EMAIL_BORROWER_LOAN_STARTED,
+							ObjectID:  loan.ID,
+						})
 					}
 				}
 			case 2:
@@ -131,9 +131,11 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 			case 3:
 				{
 					loan.Status = models.LoanStatusLiquidated
-					eqLoan = &models.EmailQueue{
-						EmailType: models.EMAIL_BORROWER_LOAN_LIQUIDATED,
-						ObjectID:  loan.ID,
+					if loanPrevStatus != loan.Status {
+						emailQueue = append(emailQueue, &models.EmailQueue{
+							EmailType: models.EMAIL_BORROWER_LOAN_LIQUIDATED,
+							ObjectID:  loan.ID,
+						})
 					}
 				}
 			case 4:
@@ -151,9 +153,6 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 			}
 			if loanPrevStatus != loan.Status {
 				isUpdated = true
-				if eqLoan != nil {
-					emailQueue = append(emailQueue, eqLoan)
-				}
 			}
 			for _, saleOffer := range saleInfo.Offers {
 				offer, err := s.lod.First(
@@ -191,10 +190,10 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						return errs.NewError(err)
 					}
 					isUpdated = true
-					eqLoan = &models.EmailQueue{
+					emailQueue = append(emailQueue, &models.EmailQueue{
 						EmailType: models.EMAIL_BORROWER_OFFER_NEW,
 						ObjectID:  offer.ID,
-					}
+					})
 				}
 				var isOffered bool
 				offerPrevStatus := offer.Status
@@ -214,9 +213,11 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						offer.ExpiredAt = helpers.TimeAdd(*offer.StartedAt, time.Second*time.Duration(offer.Duration))
 						offer.Status = models.LoanOfferStatusApproved
 						isOffered = true
-						eqLoan = &models.EmailQueue{
-							EmailType: models.EMAIL_LENDER_OFFER_STARTED,
-							ObjectID:  offer.ID,
+						if offerPrevStatus != offer.Status {
+							emailQueue = append(emailQueue, &models.EmailQueue{
+								EmailType: models.EMAIL_LENDER_OFFER_STARTED,
+								ObjectID:  offer.ID,
+							})
 						}
 					}
 				case 2:
@@ -278,9 +279,6 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 			if loan.UpdatedAt.After(time.Now().Add(30*time.Second)) &&
 				loan.LastUpdatedClient == "worker" {
 				isUpdated = true
-				if eqOffer != nil {
-					emailQueue = append(emailQueue, eqOffer)
-				}
 			}
 			loan.LastUpdatedClient = lastUpdatedClient
 			err = s.ld.Save(
