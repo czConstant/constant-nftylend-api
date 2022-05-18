@@ -191,7 +191,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						return errs.NewError(err)
 					}
 					isUpdated = true
-					eqLoan = &models.EmailQueue{
+					eqOffer = &models.EmailQueue{
 						EmailType: models.EMAIL_BORROWER_OFFER_NEW,
 						ObjectID:  offer.ID,
 					}
@@ -214,7 +214,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						offer.ExpiredAt = helpers.TimeAdd(*offer.StartedAt, time.Second*time.Duration(offer.Duration))
 						offer.Status = models.LoanOfferStatusApproved
 						isOffered = true
-						eqLoan = &models.EmailQueue{
+						eqOffer = &models.EmailQueue{
 							EmailType: models.EMAIL_LENDER_OFFER_STARTED,
 							ObjectID:  offer.ID,
 						}
