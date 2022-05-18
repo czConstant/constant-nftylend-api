@@ -50,11 +50,9 @@ type LoanOffer struct {
 
 func (m *LoanOffer) MaturedOfferPaymentAmount() *big.Float {
 	var amount big.Float
-	if m.StartedAt != nil {
-		amount = m.PrincipalAmount.Float
-		duration := float64(m.Duration) / (24 * 60 * 60)
-		amount = *MulBigFloats(&amount, big.NewFloat(m.InterestRate), big.NewFloat(duration/365))
-	}
+	amount = m.PrincipalAmount.Float
+	duration := float64(m.Duration) / (24 * 60 * 60)
+	amount = *MulBigFloats(&amount, big.NewFloat(m.InterestRate), big.NewFloat(duration/365))
 	amount = *AddBigFloats(&amount, &m.PrincipalAmount.Float)
 	return &amount
 }
