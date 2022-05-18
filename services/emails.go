@@ -199,13 +199,14 @@ func (s *NftLend) getLoanOfferMap(ctx context.Context, m *models.LoanOffer) map[
 	}
 }
 
-func (s *NftLend) sendEmailToUser(ctx context.Context, address string, network models.Network, emailType string, reqMap interface{}) error {
+func (s *NftLend) sendEmailToUser(ctx context.Context, address string, network models.Network, emailType string, reqMap map[string]interface{}) error {
 	user, err := s.GetUser(ctx, address, network)
 	if err != nil {
 		return errs.NewError(err)
 	}
 	if user.LoanNotiEnabled {
 		if user.Email != "" {
+			reqMap["web_url"] = s.conf.WebUrl
 			err := mailer.Send(
 				"hello@nftpawn.financial",
 				"Admin",
