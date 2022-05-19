@@ -24,6 +24,14 @@ func (s *NftLend) JobEmailSchedule(ctx context.Context) error {
 	if err != nil {
 		retErr = errs.MergeError(retErr, err)
 	}
+	err = s.JobEmailScheduleBorrowerLoanLiquidated(ctx)
+	if err != nil {
+		retErr = errs.MergeError(retErr, err)
+	}
+	err = s.JobEmailScheduleLenderLoanLiquidated(ctx)
+	if err != nil {
+		retErr = errs.MergeError(retErr, err)
+	}
 	return retErr
 }
 
@@ -33,8 +41,8 @@ func (s *NftLend) JobEmailScheduleBorrowerLoanRemind7(ctx context.Context) error
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
 			"status = ?":            []interface{}{models.LoanStatusCreated},
-			"offer_expired_at >= ?": []interface{}{time.Now().Add((7 * 24) * time.Hour)},
-			"offer_expired_at < ?":  []interface{}{time.Now().Add((7*24 + 1) * time.Hour)},
+			"offer_expired_at < ?":  []interface{}{time.Now().Add((7 * 24) * time.Hour)},
+			"offer_expired_at >= ?": []interface{}{time.Now().Add((7*24 - 1) * time.Hour)},
 		},
 		map[string][]interface{}{},
 		[]string{},
@@ -59,8 +67,8 @@ func (s *NftLend) JobEmailScheduleBorrowerLoanRemind3(ctx context.Context) error
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
 			"status = ?":            []interface{}{models.LoanStatusCreated},
-			"offer_expired_at >= ?": []interface{}{time.Now().Add((3 * 24) * time.Hour)},
-			"offer_expired_at < ?":  []interface{}{time.Now().Add((3*24 + 1) * time.Hour)},
+			"offer_expired_at < ?":  []interface{}{time.Now().Add((3 * 24) * time.Hour)},
+			"offer_expired_at >= ?": []interface{}{time.Now().Add((3*24 - 1) * time.Hour)},
 		},
 		map[string][]interface{}{},
 		[]string{},
@@ -85,8 +93,8 @@ func (s *NftLend) JobEmailScheduleBorrowerLoanRemind1(ctx context.Context) error
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
 			"status = ?":            []interface{}{models.LoanStatusCreated},
-			"offer_expired_at >= ?": []interface{}{time.Now().Add((1 * 24) * time.Hour)},
-			"offer_expired_at < ?":  []interface{}{time.Now().Add((1*24 + 1) * time.Hour)},
+			"offer_expired_at < ?":  []interface{}{time.Now().Add((1 * 24) * time.Hour)},
+			"offer_expired_at >= ?": []interface{}{time.Now().Add((1*24 - 1) * time.Hour)},
 		},
 		map[string][]interface{}{},
 		[]string{},
@@ -98,6 +106,58 @@ func (s *NftLend) JobEmailScheduleBorrowerLoanRemind1(ctx context.Context) error
 	}
 	for _, loan := range loans {
 		err = s.EmailForBorrowerLoanRemind1(ctx, loan.ID)
+		if err != nil {
+			retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, loan.ID))
+		}
+	}
+	return retErr
+}
+
+func (s *NftLend) JobEmailScheduleBorrowerLoanLiquidated(ctx context.Context) error {
+	var retErr error
+	loans, err := s.ld.Find(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"status = ?":            []interface{}{models.LoanStatusCreated},
+			"offer_expired_at >= ?": []interface{}{time.Now().Add((-1) * time.Hour)},
+			"offer_expired_at < ?":  []interface{}{time.Now()},
+		},
+		map[string][]interface{}{},
+		[]string{},
+		0,
+		999999,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	for _, loan := range loans {
+		err = s.EmailForBorrowerLoanLiquidated(ctx, loan.ID)
+		if err != nil {
+			retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, loan.ID))
+		}
+	}
+	return retErr
+}
+
+func (s *NftLend) JobEmailScheduleLenderLoanLiquidated(ctx context.Context) error {
+	var retErr error
+	loans, err := s.ld.Find(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"status = ?":            []interface{}{models.LoanStatusCreated},
+			"offer_expired_at >= ?": []interface{}{time.Now().Add((-1) * time.Hour)},
+			"offer_expired_at < ?":  []interface{}{time.Now()},
+		},
+		map[string][]interface{}{},
+		[]string{},
+		0,
+		999999,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	for _, loan := range loans {
+		err = s.EmailForLenderLoanLiquidated(ctx, loan.ID)
 		if err != nil {
 			retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, loan.ID))
 		}

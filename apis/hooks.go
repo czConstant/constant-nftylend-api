@@ -126,6 +126,20 @@ func (s *Server) JobEvmNftypawnFilterLogs(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
 }
 
+func (s *Server) JobEmailSchedule(c *gin.Context) {
+	ctx := s.requestContext(c)
+	var retErr error
+	err := s.nls.JobEmailSchedule(ctx)
+	if err != nil {
+		retErr = errs.MergeError(retErr, err)
+	}
+	if retErr != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(retErr)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
+}
+
 func (s *Server) NearSync(c *gin.Context) {
 	ctx := s.requestContext(c)
 	var req struct {
