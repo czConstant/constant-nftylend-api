@@ -538,7 +538,7 @@ func (s *NftLend) EmailForLenderOfferStarted(ctx context.Context, offerID uint) 
 		"offer": s.getLoanOfferMap(ctx, offer),
 	}
 	network := offer.Loan.Network
-	address := offer.Loan.Owner
+	address := offer.Loan.Lender
 	err = s.sendEmailToUser(
 		ctx,
 		address,
@@ -569,7 +569,7 @@ func (s *NftLend) EmailForLenderLoanRepaid(ctx context.Context, loanID uint) err
 		"loan": s.getLoanMap(ctx, loan),
 	}
 	network := loan.Network
-	address := loan.Owner
+	address := loan.Lender
 	err = s.sendEmailToUser(
 		ctx,
 		address,
@@ -600,7 +600,7 @@ func (s *NftLend) EmailForLenderLoanLiquidated(ctx context.Context, loanID uint)
 		"loan": s.getLoanMap(ctx, loan),
 	}
 	network := loan.Network
-	address := loan.Owner
+	address := loan.Lender
 	err = s.sendEmailToUser(
 		ctx,
 		address,
