@@ -127,6 +127,12 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 			case 2:
 				{
 					loan.Status = models.LoanStatusDone
+					if loanPrevStatus != loan.Status {
+						emailQueue = append(emailQueue, &models.EmailQueue{
+							EmailType: models.EMAIL_LENDER_LOAN_REPAID,
+							ObjectID:  loan.ID,
+						})
+					}
 				}
 			case 3:
 				{
