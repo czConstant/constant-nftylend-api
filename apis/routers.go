@@ -42,7 +42,7 @@ func (s *Server) Routers() {
 	}))
 	s.g.Use(s.logApiMiddleware())
 	s.g.Use(s.recoveryMiddleware(raven.DefaultClient, false))
-	nftAPI := s.g.Group("/nfty-lend-api")
+	nftAPI := s.g.Group("/api")
 	{
 		nftAPI.GET("/", func(c *gin.Context) {
 			ctxJSON(c, http.StatusOK, &serializers.Resp{Error: nil})
