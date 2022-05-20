@@ -16,7 +16,7 @@ const (
 
 var logger *zap.Logger
 
-func NewLogger(appName string, logPath string, stdout bool) {
+func NewLogger(appName string, env string, logPath string, stdout bool) {
 	var err error
 	outputPaths := []string{}
 	if stdout {
@@ -44,6 +44,7 @@ func NewLogger(appName string, logPath string, stdout bool) {
 	node, _ := os.Hostname()
 	cfg.InitialFields = map[string]interface{}{
 		"app_name": appName,
+		"env":      env,
 		"node":     node,
 	}
 	logger, err = cfg.Build(

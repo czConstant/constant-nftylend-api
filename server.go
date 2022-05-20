@@ -38,7 +38,7 @@ func init() {
 
 func main() {
 	conf := configs.GetConfig()
-	logger.NewLogger("nft-api", conf.LogPath, true)
+	logger.NewLogger("nft-api", conf.Env, conf.LogPath, true)
 	defer logger.Sync()
 	raven.SetDSN(conf.RavenDNS)
 	raven.SetEnvironment(conf.RavenENV)
