@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/czConstant/blockchain-api/bcclient"
-	"github.com/czConstant/constant-evn/client"
 )
 
 var config *Config
@@ -22,15 +21,6 @@ func init() {
 		panic(err)
 	}
 	config = &v
-	evnClient := &client.Client{
-		URL: config.EvnURL,
-	}
-
-	dbURL, _, err := evnClient.GetSecret("DB-NFTLEND-URL")
-	if err != nil {
-		panic(err)
-	}
-	config.DbURL = client.ParseDBURL(dbURL)
 }
 
 func GetConfig() *Config {

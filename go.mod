@@ -7,8 +7,7 @@ require (
 	github.com/Microsoft/go-winio v0.5.0 // indirect
 	github.com/certifi/gocertifi v0.0.0-20210507211836-431795d63e8d // indirect
 	github.com/czConstant/blockchain-api v0.0.0-20220510110538-cfdac330a35c
-	github.com/czConstant/constant-core v0.0.0-20210916103853-a22db9f518c2
-	github.com/czConstant/constant-evn v0.0.0-20210621093849-5a457b90a058
+	github.com/czConstant/constant-core v0.0.0-20220517073308-54d5c6cabfdd
 	github.com/getsentry/raven-go v0.2.1-0.20190619092523-5c24d5110e0e
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.7.2
