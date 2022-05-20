@@ -17,8 +17,8 @@ type Asset struct {
 	TokenID                   string
 	TestContractAddress       string
 	TestTokenID               string
-	TokenURL                  string
-	ExternalUrl               string
+	TokenURL                  string `gorm:"type:text"`
+	ExternalUrl               string `gorm:"type:text"`
 	Name                      string
 	Symbol                    string
 	SellerFeeRate             float64 `gorm:"type:decimal(6,4);default:0"`
