@@ -108,6 +108,20 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				}
 				isUpdated = true
 			}
+			loan, err = s.ld.FirstByID(
+				tx,
+				loan.ID,
+				map[string][]interface{}{},
+				true,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if loan.SynchronizedAt != nil &&
+				loan.SynchronizedAt.After(time.Now().Add(-15*time.Second)) {
+				isUpdated = true
+				return nil
+			}
 			loanPrevStatus := loan.Status
 			switch saleInfo.Status {
 			case 0:
@@ -276,11 +290,9 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					loan.OfferInterestRate = offer.InterestRate
 				}
 			}
-			if loan.UpdatedAt.After(time.Now().Add(-30*time.Second)) &&
-				loan.LastUpdatedClient == "worker" {
-				isUpdated = true
+			if isUpdated {
+				loan.SynchronizedAt = helpers.TimeNow()
 			}
-			loan.LastUpdatedClient = lastUpdatedClient
 			err = s.ld.Save(
 				tx,
 				loan,
