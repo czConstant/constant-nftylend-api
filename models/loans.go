@@ -67,7 +67,7 @@ type Loan struct {
 	CancelTxHash         string
 	PayTxHash            string
 	LiquidateTxHash      string
-	LastUpdatedClient    string
+	SynchronizedAt       *time.Time
 }
 
 func (m *Loan) MaturedOfferPaymentAmount() *big.Float {
