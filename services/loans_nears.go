@@ -276,7 +276,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					loan.OfferInterestRate = offer.InterestRate
 				}
 			}
-			if loan.UpdatedAt.After(time.Now().Add(30*time.Second)) &&
+			if loan.UpdatedAt.After(time.Now().Add(-30*time.Second)) &&
 				loan.LastUpdatedClient == "worker" {
 				isUpdated = true
 			}
