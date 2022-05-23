@@ -63,6 +63,18 @@ func (e *Error) Error() string {
 	return e.Message
 }
 
+func (e *Error) SetExtra(extra []interface{}) {
+	e.extra = extra
+}
+
+func (e *Error) Extra() []interface{} {
+	return e.extra
+}
+
+func (e *Error) ExtraJson() string {
+	return helpers.ConvertJsonString(e.extra)
+}
+
 func NewErrorWithId(err error, id interface{}) error {
 	if err != nil {
 		msg := err.Error()
@@ -72,7 +84,7 @@ func NewErrorWithId(err error, id interface{}) error {
 	return err
 }
 
-func NewError(err error) error {
+func NewError(err error, extras ...interface{}) error {
 	if err == nil {
 		return nil
 	}
@@ -84,7 +96,8 @@ func NewError(err error) error {
 			Message: err.(*Error).Message,
 		}
 		if sterr == "" {
-			retErr.SetStacktrace(fmt.Sprintf("%s\n\n%s", err.Error(), NewStacktraceString()))
+			retErr.SetStacktrace(fmt.Sprintf("%s\n\n%s", err.Error(), NewStacktraceString(extras...)))
+			err.(*Error).SetExtra(extras)
 		} else {
 			retErr.SetStacktrace(sterr)
 		}
@@ -94,12 +107,15 @@ func NewError(err error) error {
 		Code:    ErrSystemError.Code,
 		Message: err.Error(),
 	}
-	retErr.SetStacktrace(fmt.Sprintf("%s\n\n%s", err.Error(), NewStacktraceString()))
+	retErr.SetStacktrace(fmt.Sprintf("%s\n\n%s", err.Error(), NewStacktraceString(extras...)))
 	return retErr
 }
 
-func NewStacktraceString() string {
+func NewStacktraceString(extras ...interface{}) string {
 	var rets []string
+	if len(extras) > 0 {
+		rets = append(rets, fmt.Sprintf("Extras -> %s", helpers.ConvertJsonString(extras)))
+	}
 	st := raven.NewStacktrace(1, 3, nil)
 	for i := len(st.Frames) - 1; i >= 0; i-- {
 		frame := st.Frames[i]
