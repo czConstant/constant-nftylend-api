@@ -35,6 +35,7 @@ func NewCurrencyResp(m *models.Currency) *CurrencyResp {
 		Name:            m.Name,
 		IconURL:         m.IconURL,
 		AdminFeeAddress: m.AdminFeeAddress,
+		Price:           m.Price,
 	}
 	return resp
 }
