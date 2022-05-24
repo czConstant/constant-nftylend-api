@@ -550,6 +550,7 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 				if creatorID != "" {
 					seoURL = helpers.MakeSeoURL(fmt.Sprintf("%s-%s-%s", models.NetworkNEAR, contractAddress, creatorID))
 				}
+				return errs.NewError(errs.ErrBadRequest, contractAddress, creatorID, seoURL)
 				collection, err := s.cld.First(
 					tx,
 					map[string][]interface{}{
