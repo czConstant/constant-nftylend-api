@@ -251,7 +251,7 @@ func (s *Server) recoveryMiddleware(client *raven.Client, onlyCrashes bool) gin.
 func (s *Server) pagingFromContext(c *gin.Context) (int, int) {
 	var (
 		pageS  = c.DefaultQuery("page", "1")
-		limitS = c.DefaultQuery("limit", "500")
+		limitS = c.DefaultQuery("limit", "30")
 		page   int
 		limit  int
 		err    error
