@@ -316,7 +316,8 @@ type EvmNftMetaResp struct {
 }
 
 func (c *Client) GetEvmNftMetaResp(tokenURL string) (*EvmNftMetaResp, error) {
-	tokenURL = strings.Replace(tokenURL, "https://ipfs.fleek.co/ipfs", "https://ipfs.io", -1)
+	tokenURL = strings.Replace(tokenURL, "https://ipfs.fleek.co/ipfs", "https://ipfs.io/ipfs", -1)
+	fmt.Sprintln(tokenURL)
 	var rs EvmNftMetaResp
 	client := &http.Client{}
 	resp, err := client.Get(tokenURL)
