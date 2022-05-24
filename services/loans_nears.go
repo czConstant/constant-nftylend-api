@@ -516,6 +516,7 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 					assetName = tokenData.Metadata.Title
 				}
 				var tokenURL string
+				parasCollectionID := contractAddress
 				mediaURL := helpers.MergeMetaInfoURL(metaData.BaseUri, tokenData.Metadata.Media)
 				var metaInfo *saletrack.EvmNftMetaResp
 				if tokenData.Metadata.Reference != "" {
@@ -530,15 +531,29 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 					if assetName == "" {
 						assetName = metaInfo.Name
 					}
+					switch contractAddress {
+					case "x.paras.near":
+						{
+							parasCollectionID = metaInfo.CollectionID
+							if parasCollectionID == "" {
+								return errs.NewError(errs.ErrBadRequest)
+							}
+							collectionName = metaInfo.Collection
+							description = metaInfo.Collection
+						}
+					}
 				}
 				if collectionName == "" {
 					return errs.NewError(errs.ErrBadRequest)
 				}
+				seoURL := helpers.MakeSeoURL(fmt.Sprintf("%s-%s", models.NetworkNEAR, contractAddress))
+				if parasCollectionID != "" {
+					seoURL = helpers.MakeSeoURL(fmt.Sprintf("%s-%s-%s", models.NetworkNEAR, contractAddress, parasCollectionID))
+				}
 				collection, err := s.cld.First(
 					tx,
 					map[string][]interface{}{
-						"network = ?":          []interface{}{models.NetworkNEAR},
-						"contract_address = ?": []interface{}{contractAddress},
+						"seo_url = ?": []interface{}{seoURL},
 					},
 					map[string][]interface{}{},
 					[]string{},
@@ -548,7 +563,7 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 				}
 				if collection == nil {
 					var isVerified bool
-					parasProfiles, err := s.stc.GetParasProfile(asset.GetContractAddress())
+					parasProfiles, err := s.stc.GetParasProfile(parasCollectionID)
 					if err != nil {
 						return errs.NewError(err)
 					}
@@ -556,13 +571,14 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 						isVerified = parasProfiles[0].IsCreator
 					}
 					collection = &models.Collection{
-						Network:         models.NetworkNEAR,
-						SeoURL:          helpers.MakeSeoURL(fmt.Sprintf("%s-%s", models.NetworkNEAR, contractAddress)),
-						ContractAddress: contractAddress,
-						Name:            collectionName,
-						Description:     description,
-						Enabled:         true,
-						Verified:        isVerified,
+						Network:           models.NetworkNEAR,
+						SeoURL:            seoURL,
+						ContractAddress:   contractAddress,
+						Name:              collectionName,
+						Description:       description,
+						Enabled:           true,
+						Verified:          isVerified,
+						ParasCollectionID: parasCollectionID,
 					}
 					err = s.cld.Create(
 						tx,

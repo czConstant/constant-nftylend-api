@@ -19,6 +19,7 @@ type Collection struct {
 	Verified              bool `gorm:"default:0"`
 	ListingAsset          *Asset
 	RandAsset             *Asset
+	ParasCollectionID     string
 }
 
 type NftyRPTListingCollection struct {
