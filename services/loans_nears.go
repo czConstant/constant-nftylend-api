@@ -232,6 +232,24 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 								EmailType: models.EMAIL_LENDER_OFFER_STARTED,
 								ObjectID:  offer.ID,
 							})
+							err = s.ltd.Create(
+								tx,
+								&models.LoanTransaction{
+									Network:         models.NetworkSOL,
+									Type:            models.LoanTransactionTypeOffered,
+									LoanID:          loan.ID,
+									Borrower:        loan.Owner,
+									Lender:          offer.Lender,
+									PrincipalAmount: offer.PrincipalAmount,
+									InterestRate:    offer.InterestRate,
+									StartedAt:       offer.StartedAt,
+									Duration:        offer.Duration,
+									ExpiredAt:       offer.ExpiredAt,
+								},
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
 						}
 					}
 				case 2:
@@ -245,6 +263,26 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						offer.ExpiredAt = helpers.TimeAdd(*offer.StartedAt, time.Second*time.Duration(offer.Duration))
 						offer.Status = models.LoanOfferStatusDone
 						isOffered = true
+						if offerPrevStatus != offer.Status {
+							err = s.ltd.Create(
+								tx,
+								&models.LoanTransaction{
+									Network:         models.NetworkSOL,
+									Type:            models.LoanTransactionTypeRepaid,
+									LoanID:          loan.ID,
+									Borrower:        loan.Owner,
+									Lender:          offer.Lender,
+									PrincipalAmount: offer.PrincipalAmount,
+									InterestRate:    offer.InterestRate,
+									StartedAt:       offer.StartedAt,
+									Duration:        offer.Duration,
+									ExpiredAt:       offer.ExpiredAt,
+								},
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+						}
 					}
 				case 3:
 					{
@@ -257,6 +295,26 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						offer.ExpiredAt = helpers.TimeAdd(*offer.StartedAt, time.Second*time.Duration(offer.Duration))
 						offer.Status = models.LoanOfferStatusLiquidated
 						isOffered = true
+						if offerPrevStatus != offer.Status {
+							err = s.ltd.Create(
+								tx,
+								&models.LoanTransaction{
+									Network:         models.NetworkSOL,
+									Type:            models.LoanTransactionTypeLiquidated,
+									LoanID:          loan.ID,
+									Borrower:        loan.Owner,
+									Lender:          offer.Lender,
+									PrincipalAmount: offer.PrincipalAmount,
+									InterestRate:    offer.InterestRate,
+									StartedAt:       offer.StartedAt,
+									Duration:        offer.Duration,
+									ExpiredAt:       offer.ExpiredAt,
+								},
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+						}
 					}
 				case 4:
 					{

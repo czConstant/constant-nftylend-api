@@ -305,11 +305,14 @@ func (c *Client) PubSolseaMsg(msg string) {
 }
 
 type EvmNftMetaResp struct {
-	Description string `json:"description"`
-	ExternalUrl string `json:"external_url"`
-	Image       string `json:"image"`
-	Name        string `json:"name"`
-	Attributes  []struct {
+	Description  string `json:"description"`
+	ExternalUrl  string `json:"external_url"`
+	Image        string `json:"image"`
+	Name         string `json:"name"`
+	Collection   string `json:"collection"`
+	CollectionID string `json:"collection_id"`
+	CreatorID    string `json:"creator_id"`
+	Attributes   []struct {
 		TraitType string      `json:"trait_type"`
 		Value     interface{} `json:"value"`
 	} `json:"attributes"`
