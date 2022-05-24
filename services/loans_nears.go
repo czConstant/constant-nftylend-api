@@ -536,6 +536,7 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 						{
 							creatorID = metaInfo.CreatorID
 							parasCollectionID = metaInfo.CollectionID
+							collectionName = metaInfo.Collection
 						}
 					}
 				}
