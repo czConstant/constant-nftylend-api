@@ -929,7 +929,9 @@ func (s *NftLend) GetAssetFloorPrice(ctx context.Context, assetID uint) (numeric
 	m, err := s.ad.FirstByID(
 		daos.GetDBMainCtx(ctx),
 		assetID,
-		map[string][]interface{}{},
+		map[string][]interface{}{
+			"Collection": []interface{}{},
+		},
 		false,
 	)
 	if err != nil {
@@ -972,7 +974,7 @@ func (s *NftLend) GetAssetFloorPrice(ctx context.Context, assetID uint) (numeric
 			}
 		case models.NetworkNEAR:
 			{
-				parasStats, _ := s.stc.GetParasCollectionStats(m.GetContractAddress())
+				parasStats, _ := s.stc.GetParasCollectionStats(m.Collection.ParasCollectionID)
 				if parasStats != nil {
 					floorPrice := models.ConvertWeiToBigFloat(&parasStats.FloorPrice.Int, saleCurrency.Decimals)
 					assetFloorPrice = numeric.BigFloat{*floorPrice}
