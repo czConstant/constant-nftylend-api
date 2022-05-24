@@ -539,6 +539,7 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 								return errs.NewError(errs.ErrBadRequest)
 							}
 							collectionName = metaInfo.Collection
+							description = metaInfo.Collection
 						}
 					}
 				}
