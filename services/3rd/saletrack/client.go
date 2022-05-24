@@ -316,6 +316,7 @@ type EvmNftMetaResp struct {
 }
 
 func (c *Client) GetEvmNftMetaResp(tokenURL string) (*EvmNftMetaResp, error) {
+	tokenURL = strings.Replace(tokenURL, "https://ipfs.fleek.co/ipfs", "https://ipfs.io/", -1)
 	var rs EvmNftMetaResp
 	client := &http.Client{}
 	resp, err := client.Get(tokenURL)
@@ -346,6 +347,7 @@ type NearNftMetaResp struct {
 }
 
 func (c *Client) GetNearNftMetaResp(tokenURL string) (*NearNftMetaResp, error) {
+	tokenURL = strings.Replace(tokenURL, "https://ipfs.fleek.co/ipfs", "https://ipfs.io/", -1)
 	var rs NearNftMetaResp
 	client := &http.Client{}
 	resp, err := client.Get(tokenURL)
