@@ -515,7 +515,7 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 				if assetName == "" {
 					assetName = tokenData.Metadata.Title
 				}
-				var tokenURL, creatorID string
+				var tokenURL string
 				parasCollectionID := contractAddress
 				mediaURL := helpers.MergeMetaInfoURL(metaData.BaseUri, tokenData.Metadata.Media)
 				var metaInfo *saletrack.EvmNftMetaResp
@@ -534,11 +534,10 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 					switch contractAddress {
 					case "x.paras.near":
 						{
-							creatorID = metaInfo.CreatorID
-							if creatorID == "" {
+							parasCollectionID = metaInfo.CollectionID
+							if parasCollectionID == "" {
 								return errs.NewError(errs.ErrBadRequest)
 							}
-							parasCollectionID = metaInfo.CollectionID
 							collectionName = metaInfo.Collection
 						}
 					}
@@ -547,8 +546,8 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 					return errs.NewError(errs.ErrBadRequest)
 				}
 				seoURL := helpers.MakeSeoURL(fmt.Sprintf("%s-%s", models.NetworkNEAR, contractAddress))
-				if creatorID != "" {
-					seoURL = helpers.MakeSeoURL(fmt.Sprintf("%s-%s-%s", models.NetworkNEAR, contractAddress, creatorID))
+				if parasCollectionID != "" {
+					seoURL = helpers.MakeSeoURL(fmt.Sprintf("%s-%s-%s", models.NetworkNEAR, contractAddress, parasCollectionID))
 				}
 				collection, err := s.cld.First(
 					tx,
