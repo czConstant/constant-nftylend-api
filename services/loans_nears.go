@@ -493,15 +493,15 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 				return errs.NewError(err)
 			}
 			if asset == nil {
-				var collectionName, description, assetName string
-				metaData, err := s.bcs.Near.GetNftMetadata(contractAddress)
+				var collectionName, description, assetDescription, assetName string
+				collectionData, err := s.bcs.Near.GetNftMetadata(contractAddress)
 				if err != nil {
 					return errs.NewError(err)
 				}
-				if metaData == nil {
+				if collectionData == nil {
 					return errs.NewError(errs.ErrBadRequest)
 				}
-				collectionName = metaData.Name
+				collectionName = collectionData.Name
 				tokenData, err := s.bcs.Near.GetNftToken(contractAddress, tokenID)
 				if err != nil {
 					return errs.NewError(err)
@@ -517,38 +517,51 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 				}
 				var tokenURL string
 				parasCollectionID := contractAddress
-				mediaURL := helpers.MergeMetaInfoURL(metaData.BaseUri, tokenData.Metadata.Media)
-				var metaInfo *saletrack.EvmNftMetaResp
+				mediaURL := helpers.MergeMetaInfoURL(collectionData.BaseUri, tokenData.Metadata.Media)
+				var tokenMetaData *saletrack.EvmNftMetaResp
+				var sellerFeeRate float64
+				seoURL := helpers.MakeSeoURL(fmt.Sprintf("%s-%s", models.NetworkNEAR, contractAddress))
 				if tokenData.Metadata.Reference != "" {
-					tokenURL = helpers.MergeMetaInfoURL(metaData.BaseUri, tokenData.Metadata.Reference)
-					metaInfo, err = s.stc.GetEvmNftMetaResp(helpers.ConvertImageDataURL(tokenURL))
+					tokenURL = helpers.MergeMetaInfoURL(collectionData.BaseUri, tokenData.Metadata.Reference)
+					tokenMetaData, err = s.stc.GetEvmNftMetaResp(helpers.ConvertImageDataURL(tokenURL))
 					if err != nil {
 						return errs.NewError(err, tokenURL)
 					}
 					if description == "" {
-						description = metaInfo.Description
+						description = tokenMetaData.Description
+						assetDescription = tokenMetaData.Description
 					}
 					if assetName == "" {
-						assetName = metaInfo.Name
+						assetName = tokenMetaData.Name
 					}
 					switch contractAddress {
 					case "x.paras.near":
 						{
-							parasCollectionID = metaInfo.CollectionID
+							seriesData, err := s.bcs.Near.GetNftSeries(contractAddress, strings.Split(tokenID, ":")[0])
+							if err != nil {
+								return errs.NewError(err)
+							}
+							if seriesData == nil {
+								return errs.NewError(errs.ErrBadRequest)
+							}
+							seriesURL := helpers.MergeMetaInfoURL(collectionData.BaseUri, seriesData.Metadata.Reference)
+							seriesMetaData, err := s.stc.GetEvmNftMetaResp(helpers.ConvertImageDataURL(seriesURL))
+							if err != nil {
+								return errs.NewError(err, seriesURL)
+							}
+							parasCollectionID = seriesMetaData.CollectionID
 							if parasCollectionID == "" {
 								return errs.NewError(errs.ErrBadRequest)
 							}
-							collectionName = metaInfo.Collection
-							description = metaInfo.Collection
+							collectionName = seriesMetaData.Collection
+							description = seriesMetaData.Description
+							sellerFeeRate, _ = models.ConvertWeiToBigFloat(big.NewInt(seriesData.RoyaltyRate), 4).Float64()
+							seoURL = helpers.MakeSeoURL(fmt.Sprintf("%s-%s-%s", models.NetworkNEAR, contractAddress, parasCollectionID))
 						}
 					}
 				}
 				if collectionName == "" {
 					return errs.NewError(errs.ErrBadRequest)
-				}
-				seoURL := helpers.MakeSeoURL(fmt.Sprintf("%s-%s", models.NetworkNEAR, contractAddress))
-				if parasCollectionID != "" {
-					seoURL = helpers.MakeSeoURL(fmt.Sprintf("%s-%s-%s", models.NetworkNEAR, contractAddress, parasCollectionID))
 				}
 				collection, err := s.cld.First(
 					tx,
@@ -598,19 +611,20 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 					Name:                  assetName,
 					TokenURL:              mediaURL,
 					ExternalUrl:           tokenURL,
-					SellerFeeRate:         0,
+					SellerFeeRate:         sellerFeeRate,
 					MetaJsonUrl:           tokenURL,
 					OriginNetwork:         "",
 					OriginContractAddress: "",
 					OriginTokenID:         "",
+					Description:           assetDescription,
 				}
-				if metaInfo != nil {
-					attributes, err := json.Marshal(metaInfo.Attributes)
+				if tokenMetaData != nil {
+					attributes, err := json.Marshal(tokenMetaData.Attributes)
 					if err != nil {
 						return errs.NewError(err)
 					}
 					asset.Attributes = string(attributes)
-					metaJson, err := json.Marshal(metaInfo)
+					metaJson, err := json.Marshal(tokenMetaData)
 					if err != nil {
 						return errs.NewError(err)
 					}
