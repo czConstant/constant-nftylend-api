@@ -104,7 +104,7 @@ func (d *AssetTransaction) GetAssetAvgPrice(tx *gorm.DB, assetID uint) (numeric.
 		AvgPrice numeric.BigFloat
 	}
 	err := tx.Raw(`
-	select ifnull(sum(asset_transactions.amount), 0) avg_price
+	select ifnull(avg(asset_transactions.amount), 0) avg_price
 	from asset_transactions
 	where asset_transactions.asset_id = ?
 		and asset_transactions.transaction_at >= adddate(now(), interval -12 month)
