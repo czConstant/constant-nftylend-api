@@ -21,6 +21,7 @@ type AssetResp struct {
 	TokenID               string          `json:"token_id"`
 	Name                  string          `json:"name"`
 	Description           string          `json:"description"`
+	MimeType              string          `json:"mime_type"`
 	SellerFeeRate         float64         `json:"seller_fee_rate"`
 	Attributes            interface{}     `json:"attributes"`
 	OriginNetwork         models.Network  `json:"origin_network"`
@@ -49,6 +50,7 @@ func NewAssetResp(m *models.Asset) *AssetResp {
 		TokenID:               m.TokenID,
 		Name:                  m.Name,
 		Description:           m.Description,
+		MimeType:              m.MimeType,
 		SellerFeeRate:         m.SellerFeeRate,
 		Attributes:            attr,
 		OriginNetwork:         m.OriginNetwork,
