@@ -521,6 +521,7 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 				var tokenMetaData *saletrack.EvmNftMetaResp
 				var sellerFeeRate float64
 				seoURL := helpers.MakeSeoURL(fmt.Sprintf("%s-%s", models.NetworkNEAR, contractAddress))
+				creator := tokenData.OwnerID
 				if tokenData.Metadata.Reference != "" {
 					tokenURL = helpers.MergeMetaInfoURL(collectionData.BaseUri, tokenData.Metadata.Reference)
 					tokenMetaData, err = s.stc.GetEvmNftMetaResp(helpers.ConvertImageDataURL(tokenURL))
@@ -545,6 +546,7 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 							if seriesData == nil {
 								return errs.NewError(errs.ErrBadRequest)
 							}
+							creator = seriesData.CreatorID
 							seriesURL := helpers.MergeMetaInfoURL(collectionData.BaseUri, seriesData.Metadata.Reference)
 							seriesMetaData, err := s.stc.GetEvmNftMetaResp(helpers.ConvertImageDataURL(seriesURL))
 							if err != nil {
@@ -577,7 +579,7 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 				}
 				if collection == nil {
 					var isVerified bool
-					parasProfiles, err := s.stc.GetParasProfile(parasCollectionID)
+					parasProfiles, err := s.stc.GetParasProfile(creator)
 					if err != nil {
 						return errs.NewError(err)
 					}
@@ -593,6 +595,7 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 						Enabled:           true,
 						Verified:          isVerified,
 						ParasCollectionID: parasCollectionID,
+						Creator:           creator,
 					}
 					err = s.cld.Create(
 						tx,
