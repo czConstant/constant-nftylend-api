@@ -153,6 +153,44 @@ GET /api/loans/listing
 }
 ```
 
+#### Get collection list
+
+```http
+GET /api/collections/list
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `page` | `number` | page number |
+| `limt` | `number` | page size |
+
+```json
+{
+    "result": [
+        {
+            "id": 26,
+            "created_at": "2022-05-24T16:42:24Z",
+            "updated_at": "2022-05-24T16:42:24Z",
+            "network": "NEAR",
+            "seo_url": "near-x-paras-near-metamorphoses-by-ludanear",
+            "name": "MetaMorphoses",
+            "description": "The new Metaverse is approaching! \n\nWe invite you to take your unique chance and steal an egg! Exactly in a week a new story will begin and the egg will disappear.",
+            "verified": false,
+            "listing_asset": null,
+            "listing_total": 0,
+            "total_volume": 0.0000000000,
+            "total_listed": 0,
+            "avg24h_amount": 0.0000000000,
+            "origin_network": "",
+            "origin_contract_address": "",
+            "rand_asset": null
+        }
+    ],
+    "error": null,
+    "count": 8
+}
+```
+
 #### Get collection detail
 
 ```http
