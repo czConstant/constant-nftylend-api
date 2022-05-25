@@ -700,3 +700,185 @@ GET /api/loans/offers
     "count": 4
 }
 ```
+
+#### Get borrower stats
+
+```http
+GET /api/loans/borrower-stats/${address}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `address`      | `string` | borrower address |
+
+```
+{
+    "result": {
+        "total_loans": 3,
+        "total_done_loans": 3,
+        "total_volume": 3.0000000000
+    },
+    "error": null
+}
+```
+
+#### Get loan transactions
+
+```http
+GET /api/loans/transactions
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `asset_id`      | `number` | id of asset to fetch |
+| `page` | `number` | page number |
+| `limt` | `number` | page size |
+
+```
+{
+    "result": [
+        {
+            "id": 7,
+            "created_at": "2022-05-24T03:23:19Z",
+            "updated_at": "2022-05-24T03:23:19Z",
+            "network": "NEAR",
+            "loan_id": 7,
+            "loan": {
+                "id": 7,
+                "created_at": "2022-05-24T03:23:19Z",
+                "updated_at": "2022-05-24T03:23:19Z",
+                "network": "NEAR",
+                "owner": "trihuynh.near",
+                "lender": "",
+                "asset_id": 1,
+                "asset": {
+                    "id": 1,
+                    "created_at": "2022-05-23T08:05:44Z",
+                    "updated_at": "2022-05-24T08:50:39Z",
+                    "network": "NEAR",
+                    "collection_id": 1,
+                    "collection": {
+                        "id": 1,
+                        "created_at": "2022-05-23T08:05:44Z",
+                        "updated_at": "2022-05-23T08:05:44Z",
+                        "network": "NEAR",
+                        "seo_url": "near-pgonft-crayonlabs-near",
+                        "name": "PRIVATE GHOST ORGANIZATION",
+                        "description": "999 Ghosts from a Private Organization are coming to haunt $NEAR blockchain",
+                        "verified": false,
+                        "listing_asset": null,
+                        "listing_total": 0,
+                        "total_volume": 0.0000000000,
+                        "total_listed": 0,
+                        "avg24h_amount": 0.0000000000,
+                        "origin_network": "",
+                        "origin_contract_address": "",
+                        "rand_asset": null
+                    },
+                    "seo_url": "near-pgonft-crayonlabs-near-691",
+                    "contract_address": "pgonft.crayonlabs.near",
+                    "token_url": "https://ipfs.io/ipfs/QmVEnyy59WGCLLsDMrqHkRf1cm8FwSrEVqQJEqm2ug65pg//691.png",
+                    "token_id": "691",
+                    "name": "691",
+                    "description": "",
+                    "mime_type": "",
+                    "seller_fee_rate": 0,
+                    "attributes": [
+                        {
+                            "trait_type": "Backgrounds",
+                            "value": "Blue"
+                        },
+                        {
+                            "trait_type": "Skins",
+                            "value": "Light Red Skin"
+                        },
+                        {
+                            "trait_type": "Clothes",
+                            "value": "Prisoner Suit"
+                        },
+                        {
+                            "trait_type": "Hand Accessories",
+                            "value": "Dynamite"
+                        },
+                        {
+                            "trait_type": "Eyes",
+                            "value": "Intense Classic Eyes"
+                        },
+                        {
+                            "trait_type": "Eyes Accessories",
+                            "value": "Pirate Eye Patch"
+                        },
+                        {
+                            "trait_type": "Mouths",
+                            "value": "Holywood Mouth"
+                        },
+                        {
+                            "trait_type": "Head Accessories",
+                            "value": "Mexican Hat"
+                        }
+                    ],
+                    "origin_network": "",
+                    "origin_contract_address": "",
+                    "origin_token_id": "",
+                    "new_loan": null,
+                    "stats": null
+                },
+                "description": "",
+                "currency_id": 4,
+                "currency": {
+                    "id": 4,
+                    "created_at": "2022-03-03T14:16:53Z",
+                    "updated_at": "2022-03-03T14:16:55Z",
+                    "network": "NEAR",
+                    "contract_address": "usn",
+                    "decimals": 18,
+                    "symbol": "USN",
+                    "name": "USN",
+                    "icon_url": "https://s2.coinmarketcap.com/static/img/coins/64x64/19682.png",
+                    "admin_fee_address": "",
+                    "price": 1
+                },
+                "started_at": "2022-05-24T03:23:15Z",
+                "duration": 864000,
+                "expired_at": "2022-06-03T03:23:15Z",
+                "finished_at": null,
+                "principal_amount": 1.0000000000,
+                "interest_rate": 0.02,
+                "interest_amount": 0.0000000000,
+                "valid_at": "2022-08-22T03:22:58Z",
+                "config": 111,
+                "fee_rate": 0,
+                "fee_amount": 0.0000000000,
+                "nonce_hex": "1653362595",
+                "image_url": "",
+                "signature": "",
+                "status": "new",
+                "data_loan_address": "8",
+                "data_asset_address": "",
+                "offers": [],
+                "approved_offer": null,
+                "offer_started_at": null,
+                "offer_duration": 0,
+                "offer_expired_at": null,
+                "offer_principal_amount": 0.0000000000,
+                "offer_interest_rate": 0,
+                "init_tx_hash": "",
+                "cancel_tx_hash": "",
+                "pay_tx_hash": "",
+                "liquidate_tx_hash": ""
+            },
+            "type": "listed",
+            "borrower": "trihuynh.near",
+            "lender": "",
+            "started_at": "2022-05-24T03:23:15Z",
+            "duration": 864000,
+            "expired_at": "2022-06-03T03:23:15Z",
+            "principal_amount": 1.0000000000,
+            "interest_rate": 0.02,
+            "tx_hash": ""
+        }
+    ],
+    "error": null,
+    "count": 3
+}
+```
