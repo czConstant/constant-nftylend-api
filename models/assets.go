@@ -21,7 +21,8 @@ type Asset struct {
 	ExternalUrl               string `gorm:"type:text"`
 	Name                      string
 	Symbol                    string
-	Description               string  `gorm:"type:text"`
+	Description               string `gorm:"type:text"`
+	MimeType                  string
 	SellerFeeRate             float64 `gorm:"type:decimal(6,4);default:0"`
 	Attributes                string  `gorm:"type:text"`
 	MetaJson                  string  `gorm:"type:text"`
