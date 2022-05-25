@@ -13,7 +13,7 @@ GET /api/loans/listing
 | `page` | `number` | page number |
 | `limt` | `number` | page size |
 
-```javascript
+```json
 {
     "result": [
         {
@@ -163,7 +163,7 @@ GET /api/collections/detail/${seo_url}
 | :-------- | :------- | :-------------------------------- |
 | `seo_url`      | `string` | **Required**. seo_url of collection to fetch |
 
-```
+```json
 {
     "result": {
         "id": 25,
@@ -258,7 +258,7 @@ GET /api/assets/detail/${seo_url}
 | :-------- | :------- | :-------------------------------- |
 | `seo_url`      | `string` | **Required**. seo_url of asset to fetch |
 
-```
+```json
 {
     "result": {
         "id": 17,
@@ -427,7 +427,7 @@ GET /api/loans/list
 | `page` | `number` | page number |
 | `limt` | `number` | page size |
 
-```
+```json
 {
     "result": [
         {
@@ -582,7 +582,7 @@ GET /api/loans/offers
 | `page` | `number` | page number |
 | `limt` | `number` | page size |
 
-```
+```json
 {
     "result": [
         {
@@ -711,7 +711,7 @@ GET /api/loans/borrower-stats/${address}
 | :-------- | :------- | :-------------------------------- |
 | `address`      | `string` | borrower address |
 
-```
+```json
 {
     "result": {
         "total_loans": 3,
@@ -734,7 +734,7 @@ GET /api/loans/transactions
 | `page` | `number` | page number |
 | `limt` | `number` | page size |
 
-```
+```json
 {
     "result": [
         {
