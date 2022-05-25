@@ -318,8 +318,15 @@ type EvmNftMetaResp struct {
 	} `json:"attributes"`
 }
 
+var ipfsReplaces = []string{
+	"https://ipfs.fleek.co/ipfs",
+	"ipfs.io/ipfs",
+}
+
 func (c *Client) GetEvmNftMetaResp(tokenURL string) (*EvmNftMetaResp, error) {
-	tokenURL = strings.Replace(tokenURL, "https://ipfs.fleek.co/ipfs", "https://cloudflare-ipfs.com/ipfs", -1)
+	for _, ipfsReplace := range ipfsReplaces {
+		tokenURL = strings.Replace(tokenURL, ipfsReplace, "https://cloudflare-ipfs.com/ipfs", -1)
+	}
 	var rs EvmNftMetaResp
 	client := &http.Client{}
 	resp, err := client.Get(tokenURL)
