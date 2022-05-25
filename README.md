@@ -4,7 +4,7 @@
 #### Get all listed loans
 
 ```http
-  GET /api/loans/listing
+GET /api/loans/listing
 ```
 
 | Parameter | Type     | Description                |
@@ -156,7 +156,7 @@
 #### Get collection detail
 
 ```http
-  GET /api/collections/detail/${seo_url}
+GET /api/collections/detail/${seo_url}
 ```
 
 | Parameter | Type     | Description                       |
@@ -251,7 +251,7 @@
 #### Get asset detail
 
 ```http
-  GET /api/assets/detail/${seo_url}
+GET /api/assets/detail/${seo_url}
 ```
 
 | Parameter | Type     | Description                       |
@@ -415,7 +415,7 @@
 #### Get list loan
 
 ```http
-  GET /api/loans/list
+GET /api/loans/list
 ```
 
 | Parameter | Type     | Description                       |
@@ -570,7 +570,7 @@
 #### Get list offer
 
 ```http
-  GET /api/loans/offers
+GET /api/loans/offers
 ```
 
 | Parameter | Type     | Description                       |
