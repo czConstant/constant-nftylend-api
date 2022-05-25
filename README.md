@@ -221,7 +221,13 @@ GET /api/loans/transactions
 | `id` | `number` | collection id |
 | `created_at` | `date` | created time |
 | `updated_at` | `date` | update time |
-| `network` | `date` | network of collection |
+| `network` | `string` | network of currency |
+| `contract_address` | `string` | contract address of currency |
+| `decimals` | `number` | decimals of currency |
+| `symbol` | `string` | symbol of currency |
+| `name` | `string` | name of currency |
+| `icon_url` | `string` | image url of currency |
+| `price` | `number` | price of currency |
 
 #### CollectionResponse
 
@@ -248,7 +254,7 @@ GET /api/loans/transactions
 | `id` | `number` | collection id |
 | `created_at` | `date` | created time |
 | `updated_at` | `date` | update time |
-| `network` | `date` | network of collection |
+| `network` | `string` | network of collection |
 | `seo_url` | `string` | seo url of collection |
 | `name` | `string` | name of collection |
 | `description` | `string` | description of collection |
@@ -325,7 +331,7 @@ GET /api/loans/transactions
 | `id` | `number` | asset id |
 | `created_at` | `date` | created time |
 | `updated_at` | `date` | update time |
-| `network` | `date` | network of asset |
+| `network` | `string` | network of asset |
 | `collection_id` | `number` | collection id |
 | `collection` | `CollectionResponse` | collection detail |
 | `seo_url` | `string` | seo url of asset |
@@ -387,7 +393,40 @@ GET /api/loans/transactions
 | `id` | `number` | loan id |
 | `created_at` | `date` | created time |
 | `updated_at` | `date` | update time |
-| `network` | `date` | network of loan |
+| `network` | `string` | network of loan |
+| `owner` | `string` |  |
+| `lender` | `string` |  |
+| `asset_id` | `number` |  |
+| `asset` | `AssetResponse` |  |
+| `currency_id` | `number` |  |
+| `currency` | `CurrencyResponse` |  |
+| `started_at` | `date` |  |
+| `duration` | `number` |  |
+| `expired_at` | `date` |  |
+| `finished_at` | `date` |  |
+| `principal_amount` | `number` |  |
+| `interest_rate` | `number` |  |
+| `interest_amount` | `number` |  |
+| `valid_at` | `date` |  |
+| `config` | `number` |  |
+| `fee_rate` | `string` |  |
+| `fee_amount` | `string` |  |
+| `nonce_hex` | `string` |  |
+| `signature` | `string` |  |
+| `status` | `string` |  |
+| `data_loan_address` | `string` |  |
+| `data_asset_address` | `string` |  |
+| `offers` | `string` |  |
+| `approved_offer` | `string` |  |
+| `offer_started_at` | `string` |  |
+| `offer_duration` | `string` |  |
+| `offer_expired_at` | `string` |  |
+| `offer_principal_amount` | `string` |  |
+| `offer_interest_rate` | `string` |  |
+| `init_tx_hash` | `string` |  |
+| `cancel_tx_hash` | `string` |  |
+| `pay_tx_hash` | `string` |  |
+| `liquidate_tx_hash` | `string` |  |
 
 #### LoanOfferResponse
 
@@ -420,7 +459,7 @@ GET /api/loans/transactions
 | `id` | `number` | loan id |
 | `created_at` | `date` | created time |
 | `updated_at` | `date` | update time |
-| `network` | `date` | network of loan offer |
+| `network` | `string` | network of loan offer |
 
 #### LoanTransactionResponse
 
@@ -449,4 +488,4 @@ GET /api/loans/transactions
 | `id` | `number` | loan id |
 | `created_at` | `date` | created time |
 | `updated_at` | `date` | update time |
-| `network` | `date` | network of loan |
+| `network` | `string` | network of loan |
