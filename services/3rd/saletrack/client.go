@@ -316,6 +316,7 @@ type EvmNftMetaResp struct {
 		TraitType string      `json:"trait_type"`
 		Value     interface{} `json:"value"`
 	} `json:"attributes"`
+	MimeType string `json:"mime_type"`
 }
 
 var ipfsReplaces = []string{

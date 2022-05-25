@@ -515,7 +515,7 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 				if assetName == "" {
 					assetName = tokenData.Metadata.Title
 				}
-				var tokenURL string
+				var tokenURL, mimeType string
 				parasCollectionID := contractAddress
 				mediaURL := helpers.MergeMetaInfoURL(collectionData.BaseUri, tokenData.Metadata.Media)
 				var tokenMetaData *saletrack.EvmNftMetaResp
@@ -534,6 +534,7 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 					if assetName == "" {
 						assetName = tokenMetaData.Name
 					}
+					mimeType = tokenMetaData.MimeType
 					switch contractAddress {
 					case "x.paras.near":
 						{
@@ -617,6 +618,7 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 					OriginContractAddress: "",
 					OriginTokenID:         "",
 					Description:           assetDescription,
+					MimeType:              mimeType,
 				}
 				if tokenMetaData != nil {
 					attributes, err := json.Marshal(tokenMetaData.Attributes)
