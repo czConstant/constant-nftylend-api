@@ -320,7 +320,7 @@ type EvmNftMetaResp struct {
 
 var ipfsReplaces = []string{
 	"https://ipfs.fleek.co/ipfs",
-	"ipfs.io/ipfs",
+	"https://ipfs.io/ipfs",
 }
 
 func (c *Client) GetEvmNftMetaResp(tokenURL string) (*EvmNftMetaResp, error) {
