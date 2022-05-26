@@ -1,6 +1,12 @@
 # API Reference
 
+The Nftpawn API support input and output format JSON.To use JSON in both the input and the output, specify the headers "Content-Type: application/json" and "Accept: application/json" in the request.
+
+It is a possibility that in the future, API keys will be required to access the API.
+
 ## API for collection
+
+The Collection API retrieves information for collections
 
 #### Get collection list
 
@@ -43,6 +49,8 @@ GET /api/collections/detail/${seo_url}
 
 ## API for asset
 
+The Asset API retrieves information for assets
+
 #### Get asset detail
 
 ```http
@@ -61,6 +69,8 @@ GET /api/assets/detail/${seo_url}
 ```
 
 ## API for loan
+
+The Loan API retrieves information for loans or offers
 
 #### Get all listed loans
 
