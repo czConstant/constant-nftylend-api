@@ -323,6 +323,23 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				case 5:
 					{
 						offer.Status = models.LoanOfferStatusCancelled
+						err = s.ltd.Create(
+							tx,
+							&models.LoanTransaction{
+								Network:         models.NetworkSOL,
+								Type:            models.LoanTransactionTypeCancelled,
+								LoanID:          loan.ID,
+								Borrower:        loan.Owner,
+								PrincipalAmount: loan.PrincipalAmount,
+								InterestRate:    loan.InterestRate,
+								StartedAt:       loan.StartedAt,
+								Duration:        loan.Duration,
+								ExpiredAt:       loan.ExpiredAt,
+							},
+						)
+						if err != nil {
+							return errs.NewError(err)
+						}
 					}
 				default:
 					{
