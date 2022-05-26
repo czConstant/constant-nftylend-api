@@ -10,6 +10,19 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+var MoralisNetworkMap = map[string]map[string]string{
+	"mainnet": map[string]string{
+		string(NetworkMATIC): "matic",
+		string(NetworkAVAX):  "avalanche",
+		string(NetworkBSC):   "bsc",
+	},
+	"testnet": map[string]string{
+		string(NetworkMATIC): "mumbai",
+		string(NetworkAVAX):  "0xa869",
+		string(NetworkBSC):   "0x61",
+	},
+}
+
 const (
 	AddressCheckTxDuraion = -120 * time.Second
 	// AxieClaimDuration     = 14 * 24 * time.Hour // for live
