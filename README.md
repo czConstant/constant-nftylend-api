@@ -196,6 +196,81 @@ GET /api/loans/transactions
 }
 ```
 
+#### Create loan
+
+```http
+POST /api/loans/create
+```
+
+```json
+{
+    "chain": "MATIC",
+    "borrower": "0x7A63FD46d5eDB9bA7b09CAb488Eb7950e1D8cE78",
+    "currency_id": 5,
+    "principal_amount": "142",
+    "interest_rate": 0.2,
+    "duration": 5184000,
+    "contract_address": "0xf55359251ce8d242a77521fc0f4f377c6d1be816",
+    "token_id": "8",
+    "signature": "0x4508963c5df3251d5513a525c9e82a6a1877b478924772987e1c90e7476c1e794546371119e3c9f7f2939b2005f997282023f1aeeaa6857e7313e6b079f9db801b",
+    "nonce_hex": "0xc93b1dcf3e51359830a88d1f2cb20d01b68a38dc73328459526bf3f8c9deedac"
+}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `chain`      | `string` | network |
+| `borrower` | `string` | borrower address |
+| `currency_id` | `number` | currency id |
+| `principal_amount` | `number` | loan principal amount |
+| `interest_rate` | `number` | loan interest rate |
+| `duration` | `number` | loan duration |
+| `contract_address` | `string` | nft contract address |
+| `token_id` | `string` | nft token id |
+| `signature` | `string` | signature of borrower |
+| `nonce_hex` | `string` | random hex number |
+
+```json
+{
+    "result": LoanResponse,
+    "error": null
+}
+```
+
+#### Create loan offer
+
+```http
+POST /api/loans/offers/create/${loan_id}
+```
+
+```json
+{
+    "lender": "0xed0f4dd087c636f1120a488e64b0aa274929e32a",
+    "principal_amount": "10",
+    "interest_rate": 0.25,
+    "duration": 2592000,
+    "signature": "0xe2372caf62a8ec9cf142071edda9d0df98e7249b09d54dd1ca4044e67f3e978e6b1ff5470d65f57014cd3eda2e3ae4f7c60893bd6068e812e7d20258decbb0531c",
+    "nonce_hex": "0xee009da2b2c84c9eaeda25edb22ffaeeb0c4194073c0ba7c85152ea758918492"
+}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `loan_id`      | `number` | loan id |
+| `lender` | `string` | lender address |
+| `principal_amount` | `number` | loan principal amount |
+| `interest_rate` | `number` | loan interest rate |
+| `duration` | `number` | loan duration |
+| `signature` | `string` | signature of lender |
+| `nonce_hex` | `string` | random hex number |
+
+```json
+{
+    "result": LoanOfferResponse,
+    "error": null
+}
+```
+
 # API Response
 
 #### CurrencyResponse
@@ -503,7 +578,7 @@ GET /api/loans/transactions
 | `network` | `string` | network of loan |
 | `loan_id` | `number` | loan id |
 | `loan` | `LoanResponse` | loan detail |
-| `type` | `string` | transaction type (listed, cancelled, offered, repaid, liquidated) |
+| `type` | `string` | transaction type |
 | `borrower` | `string` | borrower address |
 | `lender` | `string` | lender address |
 | `duration` | `number` | loan duration |
