@@ -394,39 +394,39 @@ GET /api/loans/transactions
 | `created_at` | `date` | created time |
 | `updated_at` | `date` | update time |
 | `network` | `string` | network of loan |
-| `owner` | `string` |  |
-| `lender` | `string` |  |
-| `asset_id` | `number` |  |
-| `asset` | `AssetResponse` |  |
-| `currency_id` | `number` |  |
-| `currency` | `CurrencyResponse` |  |
-| `started_at` | `date` |  |
-| `duration` | `number` |  |
-| `expired_at` | `date` |  |
-| `finished_at` | `date` |  |
-| `principal_amount` | `number` |  |
-| `interest_rate` | `number` |  |
-| `interest_amount` | `number` |  |
-| `valid_at` | `date` |  |
-| `config` | `number` |  |
-| `fee_rate` | `string` |  |
-| `fee_amount` | `string` |  |
-| `nonce_hex` | `string` |  |
-| `signature` | `string` |  |
-| `status` | `string` |  |
-| `data_loan_address` | `string` |  |
-| `data_asset_address` | `string` |  |
-| `offers` | `string` |  |
-| `approved_offer` | `string` |  |
-| `offer_started_at` | `string` |  |
-| `offer_duration` | `string` |  |
-| `offer_expired_at` | `string` |  |
-| `offer_principal_amount` | `string` |  |
-| `offer_interest_rate` | `string` |  |
-| `init_tx_hash` | `string` |  |
-| `cancel_tx_hash` | `string` |  |
-| `pay_tx_hash` | `string` |  |
-| `liquidate_tx_hash` | `string` |  |
+| `owner` | `string` | borrower address |
+| `lender` | `string` | lender address |
+| `asset_id` | `number` | asset id |
+| `asset` | `AssetResponse` | asset detail |
+| `currency_id` | `number` | currency id |
+| `currency` | `CurrencyResponse` | currency detail |
+| `started_at` | `date` | loan started time |
+| `duration` | `number` | loan duration |
+| `expired_at` | `date` | loan expired time |
+| `finished_at` | `date` | loan finished time |
+| `principal_amount` | `number` | loan principal amount |
+| `interest_rate` | `number` | loan interest rate |
+| `interest_amount` | `number` | loan interest amount |
+| `valid_at` | `date` | loan valid time |
+| `config` | `number` | loan config |
+| `fee_rate` | `string` | loan platform fee rate |
+| `fee_amount` | `string` | loan platform fee amount |
+| `nonce_hex` | `string` | random hex client |
+| `signature` | `string` | borrower signature |
+| `status` | `string` | loan status |
+| `data_loan_address` | `string` | loan data onchain address |
+| `data_asset_address` | `string` | loan data onchain address |
+| `offers` | `string` | list of loan offer |
+| `approved_offer` | `string` | actived offer |
+| `offer_started_at` | `string` | started time of offer |
+| `offer_duration` | `string` | duration of offer |
+| `offer_expired_at` | `string` | expired time of offer |
+| `offer_principal_amount` | `string` | principal amount of offer |
+| `offer_interest_rate` | `string` | interest rate of offer |
+| `init_tx_hash` | `string` | onchain hash when new loan |
+| `cancel_tx_hash` | `string` | onchain hash when cancel loan |
+| `pay_tx_hash` | `string` | onchain hash when repaid loan |
+| `liquidate_tx_hash` | `string` | onchain hash when liquidate loan |
 
 #### LoanOfferResponse
 
@@ -456,10 +456,22 @@ GET /api/loans/transactions
 
 | Key | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
-| `id` | `number` | loan id |
+| `id` | `number` | offer id |
 | `created_at` | `date` | created time |
 | `updated_at` | `date` | update time |
 | `network` | `string` | network of loan offer |
+| `loan_id` | `number` | loan id |
+| `loan` | `LoanResponse` | loan detail |
+| `lender` | `string` | lender of loan offer |
+| `duration` | `number` | offer duration |
+| `expired_at` | `date` | offer expired time |
+| `finished_at` | `date` | offer finished time |
+| `principal_amount` | `number` | offer principal amount |
+| `interest_rate` | `number` | offer interest rate |
+| `interest_amount` | `number` | offer interest amount |
+| `nonce_hex` | `string` | random hex client |
+| `signature` | `string` | lender signature |
+| `status` | `string` | offer status |
 
 #### LoanTransactionResponse
 
@@ -489,3 +501,13 @@ GET /api/loans/transactions
 | `created_at` | `date` | created time |
 | `updated_at` | `date` | update time |
 | `network` | `string` | network of loan |
+| `loan_id` | `number` | loan id |
+| `loan` | `LoanResponse` | loan detail |
+| `type` | `string` | transaction type (listed, cancelled, offered, repaid, liquidated) |
+| `borrower` | `string` | borrower address |
+| `lender` | `string` | lender address |
+| `duration` | `number` | loan duration |
+| `expired_at` | `date` | loan expired time |
+| `principal_amount` | `number` | loan principal amount |
+| `interest_rate` | `number` | loan interest rate |
+| `tx_hash` | `string` | transaction hash |
