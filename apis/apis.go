@@ -27,7 +27,7 @@ func (s *Server) AppConfigs(c *gin.Context) {
 
 func (s *Server) MoralisGetNFTs(c *gin.Context) {
 	limit, _ := s.uintFromContextQuery(c, "limit")
-	rs, err := s.nls.MoralisGetNFTs(s.requestContext(c), models.MoralisNetworkMap[s.stringFromContextQuery(c, "chain")][s.conf.Env], s.stringFromContextParam(c, "address"), s.stringFromContextQuery(c, "cursor"), int(limit))
+	rs, err := s.nls.MoralisGetNFTs(s.requestContext(c), models.MoralisNetworkMap[s.conf.Env][s.stringFromContextQuery(c, "chain")], s.stringFromContextParam(c, "address"), s.stringFromContextQuery(c, "cursor"), int(limit))
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
