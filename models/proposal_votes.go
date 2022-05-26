@@ -17,5 +17,6 @@ type ProposalVote struct {
 	Sig              string
 	PowerVote        numeric.BigFloat
 	Timestamp        *time.Time
+	IpfsHash         string
 	Status           string
 }

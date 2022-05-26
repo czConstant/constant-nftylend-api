@@ -6,6 +6,10 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+const (
+	ProposalTypeProposal = "proposal"
+)
+
 type Proposal struct {
 	gorm.Model
 	Network   Network
@@ -19,5 +23,6 @@ type Proposal struct {
 	Timestamp *time.Time
 	Start     *time.Time
 	End       *time.Time
+	IpfsHash  string
 	Status    string
 }
