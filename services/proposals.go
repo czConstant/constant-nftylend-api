@@ -233,10 +233,28 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if err != nil {
 				return errs.NewError(err)
 			}
+			proposalChoice, err = s.pcd.FirstByID(
+				tx,
+				proposalChoice.ID,
+				map[string][]interface{}{},
+				true,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
 			proposalChoice.PowerVote = numeric.BigFloat{*models.AddBigFloats(&proposalChoice.PowerVote.Float, &proposalVote.PowerVote.Float)}
 			err = s.pcd.Save(
 				tx,
 				proposalChoice,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			proposal, err = s.pd.FirstByID(
+				tx,
+				proposal.ID,
+				map[string][]interface{}{},
+				true,
 			)
 			if err != nil {
 				return errs.NewError(err)
