@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"math/big"
+	"time"
 
 	"github.com/czConstant/constant-nftylend-api/daos"
 	"github.com/czConstant/constant-nftylend-api/errs"
@@ -100,6 +101,19 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 				len(msg.Payload.Choices) <= 1 {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			if msg.Timestamp < time.Now().Add(-60*time.Second).Unix() ||
+				msg.Timestamp > time.Now().Add(60*time.Second).Unix() {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			if msg.Payload.Start < time.Now().Add(-60*time.Second).Unix() {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			if msg.Payload.End < time.Now().Add(-60*time.Second).Unix() {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			if msg.Payload.Start >= msg.Payload.End {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			ipfsData, err := json.Marshal(&req)
 			if err != nil {
 				return errs.NewError(err)
@@ -145,7 +159,6 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 			if err != nil {
 				return errs.NewError(err)
 			}
-
 			for idx, choice := range msg.Payload.Choices {
 				proposalChoice := &models.ProposalChoice{
 					Network:    proposal.Network,
@@ -209,6 +222,10 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 				msg.Timestamp <= 0 ||
 				msg.Payload.Proposal == "" ||
 				msg.Payload.Choice < 0 {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			if msg.Timestamp < time.Now().Add(-60*time.Second).Unix() ||
+				msg.Timestamp > time.Now().Add(60*time.Second).Unix() {
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			proposal, err := s.pd.First(
