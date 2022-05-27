@@ -86,6 +86,8 @@ github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f/go.mod h1:E3G3o1h8I7cfc
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/czConstant/blockchain-api v0.0.0-20220527091625-97d625136cac h1:643m0/s8iAwczZ55ljKWpaS46h1RO8YX7BUWiMowVoQ=
 github.com/czConstant/blockchain-api v0.0.0-20220527091625-97d625136cac/go.mod h1:CMEYIr7bYKGtiqGZtXlq5mcvy0bDG2gHR5YzFhCiFDg=
+github.com/czConstant/blockchain-api v0.0.0-20220527102227-56637b96829b h1:p2B8EMeGSJ+dPPHpY4HQpvfvzzZ4ewpJmo9isUlQP1k=
+github.com/czConstant/blockchain-api v0.0.0-20220527102227-56637b96829b/go.mod h1:CMEYIr7bYKGtiqGZtXlq5mcvy0bDG2gHR5YzFhCiFDg=
 github.com/czConstant/constant-core v0.0.0-20220517073308-54d5c6cabfdd h1:bvDBNKWxValDRkDSaUbZfl3+in5ymj31ySvOukX7n+s=
 github.com/czConstant/constant-core v0.0.0-20220517073308-54d5c6cabfdd/go.mod h1:vjzhRm9wI/ChMV3h1CFzayGhzTJ+rxvSm+AapcSbLdA=
 github.com/czConstant/constant-evn v0.0.0-20210621093849-5a457b90a058/go.mod h1:eZ3sZdClEzDZAAjkuyd77RQhK7TCq6rtY5qrBuBseH0=
