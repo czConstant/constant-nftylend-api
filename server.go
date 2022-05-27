@@ -45,12 +45,13 @@ func main() {
 	defer func() {
 		if err := recover(); err != nil {
 			panicErr := errors.Wrap(errors.New("panic start server"), string(debug.Stack()))
-			raven.CaptureErrorAndWait(panicErr, nil)
 			logger.Info(
 				logger.LOGGER_API_APP_PANIC,
 				"panic start server",
 				zap.Error(panicErr),
 			)
+			fmt.Println(err)
+			fmt.Println(panicErr)
 			return
 		}
 	}()

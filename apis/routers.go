@@ -82,6 +82,7 @@ func (s *Server) Routers() {
 	}
 	proposalAPI := nftAPI.Group("/proposals")
 	{
+		proposalAPI.GET("/list", s.GetProposals)
 		proposalAPI.POST("/create", s.CreateProposal)
 	}
 	hookInternalnftAPI := nftAPI.Group("/hook/internal")

@@ -10,5 +10,5 @@ type ProposalChoice struct {
 	Network    Network
 	ProposalID uint
 	Name       string
-	PowerVote  numeric.BigFloat
+	PowerVote  numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 }

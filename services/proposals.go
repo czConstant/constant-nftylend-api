@@ -14,6 +14,23 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+func (s *NftLend) GetProposals(ctx context.Context, page int, limit int) ([]*models.Proposal, uint, error) {
+	proposals, count, err := s.pd.Find4Page(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{},
+		map[string][]interface{}{
+			"Choices": []interface{}{},
+		},
+		[]string{"id desc"},
+		page,
+		limit,
+	)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	return proposals, count, nil
+}
+
 func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreateProposalReq) (*models.Proposal, error) {
 	switch req.Network {
 	case models.NetworkAURORA:
@@ -47,6 +64,7 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 				return errs.NewError(err)
 			}
 			if msg.Type == "" ||
+				msg.Timestamp <= 0 ||
 				msg.Payload.Snapshot <= 0 ||
 				msg.Payload.Start <= 0 ||
 				msg.Payload.End <= 0 ||
@@ -59,6 +77,7 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 				Network:    req.Network,
 				Address:    req.Address,
 				Type:       msg.Type,
+				Timestamp:  helpers.TimeFromUnix(msg.Timestamp),
 				ChoiceType: msg.Payload.Type,
 				Msg:        req.Msg,
 				Sig:        req.Sig,

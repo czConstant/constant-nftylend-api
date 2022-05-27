@@ -8,6 +8,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func (s *Server) GetProposals(c *gin.Context) {
+	ctx := s.requestContext(c)
+	page, limit := s.pagingFromContext(c)
+	proposals, count, err := s.nls.GetProposals(ctx, page, limit)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewProposalRespArr(proposals), Count: &count})
+}
+
 func (s *Server) CreateProposal(c *gin.Context) {
 	ctx := s.requestContext(c)
 	var req serializers.CreateProposalReq
@@ -15,7 +26,7 @@ func (s *Server) CreateProposal(c *gin.Context) {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	_, err := s.nls.CreateProposal(
+	proposal, err := s.nls.CreateProposal(
 		ctx,
 		&req,
 	)
@@ -23,5 +34,5 @@ func (s *Server) CreateProposal(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewProposalResp(proposal)})
 }
