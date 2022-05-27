@@ -1,6 +1,8 @@
 package databases
 
 import (
+	"fmt"
+
 	"github.com/czConstant/constant-nftylend-api/models"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
@@ -45,6 +47,7 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.ProposalVote)(nil),
 	}
 	if err := db.AutoMigrate(allTables...).Error; err != nil {
+		fmt.Println(err)
 		return err
 	}
 	return nil

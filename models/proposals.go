@@ -36,4 +36,5 @@ type Proposal struct {
 	End        *time.Time
 	IpfsHash   string
 	Status     string
+	Choices    []*ProposalChoice
 }
