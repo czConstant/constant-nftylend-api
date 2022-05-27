@@ -61,7 +61,14 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 			return nil, errs.NewError(errs.ErrBadRequest)
 		}
 	}
-	var err error
+	err := s.bcs.Aurora.ValidateMessageSignature(
+		req.Msg,
+		req.Sig,
+		req.Address,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
 	var proposal *models.Proposal
 	err = daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
@@ -174,7 +181,14 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			return nil, errs.NewError(errs.ErrBadRequest)
 		}
 	}
-	var err error
+	err := s.bcs.Aurora.ValidateMessageSignature(
+		req.Msg,
+		req.Sig,
+		req.Address,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
 	var proposalVote *models.ProposalVote
 	err = daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
