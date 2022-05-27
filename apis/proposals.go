@@ -36,3 +36,21 @@ func (s *Server) CreateProposal(c *gin.Context) {
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewProposalResp(proposal)})
 }
+
+func (s *Server) CreateProposalVote(c *gin.Context) {
+	ctx := s.requestContext(c)
+	var req serializers.CreateProposalVoteReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	proposalVote, err := s.nls.CreateProposalVote(
+		ctx,
+		&req,
+	)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewProposalVoteResp(proposalVote)})
+}
