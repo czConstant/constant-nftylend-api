@@ -10,6 +10,7 @@ import (
 type ProposalVote struct {
 	gorm.Model
 	Network          Network
+	Type             string
 	ProposalID       uint
 	ProposalChoiceID uint
 	Address          string
