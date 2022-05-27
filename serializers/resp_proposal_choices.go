@@ -13,6 +13,7 @@ type ProposalChoiceResp struct {
 	UpdatedAt  time.Time        `json:"updated_at"`
 	Network    models.Network   `json:"network"`
 	ProposalID uint             `json:"proposal_id"`
+	Proposal   *ProposalResp    `json:"proposal"`
 	Choice     int              `json:"choice"`
 	Name       string           `json:"name"`
 	PowerVote  numeric.BigFloat `json:"power_vote"`
@@ -28,6 +29,7 @@ func NewProposalChoiceResp(m *models.ProposalChoice) *ProposalChoiceResp {
 		UpdatedAt:  m.UpdatedAt,
 		Network:    m.Network,
 		ProposalID: m.ProposalID,
+		Proposal:   NewProposalResp(m.Proposal),
 		Choice:     m.Choice,
 		Name:       m.Name,
 		PowerVote:  m.PowerVote,

@@ -31,6 +31,23 @@ func (s *NftLend) GetProposals(ctx context.Context, page int, limit int) ([]*mod
 	return proposals, count, nil
 }
 
+func (s *NftLend) GetProposalVotes(ctx context.Context, proposalID uint, page int, limit int) ([]*models.ProposalVote, uint, error) {
+	proposalVotes, count, err := s.pvd.Find4Page(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"proposal_id": []interface{}{proposalID},
+		},
+		map[string][]interface{}{},
+		[]string{"id desc"},
+		page,
+		limit,
+	)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	return proposalVotes, count, nil
+}
+
 func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreateProposalReq) (*models.Proposal, error) {
 	switch req.Network {
 	case models.NetworkAURORA:
@@ -180,7 +197,6 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			proposal, err := s.pd.First(
 				tx,
 				map[string][]interface{}{
-					"network = ?":   []interface{}{req.Network},
 					"ipfs_hash = ?": []interface{}{msg.Payload.Proposal},
 				},
 				map[string][]interface{}{},
@@ -192,10 +208,25 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if proposal == nil {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			proposalVote, err = s.pvd.First(
+				tx,
+				map[string][]interface{}{
+					"proposal_id = ?": []interface{}{proposal.ID},
+					"address = ?":     []interface{}{req.Address},
+					"status = ?":      []interface{}{models.ProposalVoteStatusCreated},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if proposalVote != nil {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			proposalChoice, err := s.pcd.First(
 				tx,
 				map[string][]interface{}{
-					"network = ?":     []interface{}{req.Network},
 					"proposal_id = ?": []interface{}{proposal.ID},
 					"choice = ?":      []interface{}{msg.Payload.Choice},
 				},
@@ -216,6 +247,20 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if err != nil {
 				return errs.NewError(err)
 			}
+			proposalVote, err = s.pvd.First(
+				tx,
+				map[string][]interface{}{
+					"ipfs_hash = ?": []interface{}{ipfsHash},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if proposalVote != nil {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			proposalVote = &models.ProposalVote{
 				Network:          req.Network,
 				ProposalID:       proposal.ID,
@@ -225,6 +270,7 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 				Timestamp:        helpers.TimeFromUnix(msg.Timestamp),
 				PowerVote:        numeric.BigFloat{*big.NewFloat(0)},
 				IpfsHash:         ipfsHash,
+				Status:           models.ProposalVoteStatusCreated,
 			}
 			err = s.pvd.Create(
 				tx,
@@ -233,10 +279,28 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if err != nil {
 				return errs.NewError(err)
 			}
+			proposalChoice, err = s.pcd.FirstByID(
+				tx,
+				proposalChoice.ID,
+				map[string][]interface{}{},
+				true,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
 			proposalChoice.PowerVote = numeric.BigFloat{*models.AddBigFloats(&proposalChoice.PowerVote.Float, &proposalVote.PowerVote.Float)}
 			err = s.pcd.Save(
 				tx,
 				proposalChoice,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			proposal, err = s.pd.FirstByID(
+				tx,
+				proposal.ID,
+				map[string][]interface{}{},
+				true,
 			)
 			if err != nil {
 				return errs.NewError(err)
