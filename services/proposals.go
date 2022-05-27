@@ -73,6 +73,28 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 				len(msg.Payload.Choices) <= 1 {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			ipfsData, err := json.Marshal(&req)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			ipfsHash, err := s.ifc.UploadString(string(ipfsData))
+			if err != nil {
+				return errs.NewError(err)
+			}
+			proposal, err = s.pd.First(
+				tx,
+				map[string][]interface{}{
+					"ipfs_hash = ?": []interface{}{ipfsHash},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if proposal != nil {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			var proposal = &models.Proposal{
 				Network:    req.Network,
 				Address:    req.Address,
@@ -86,6 +108,7 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 				Snapshot:   msg.Payload.Snapshot,
 				Name:       msg.Payload.Name,
 				Body:       msg.Payload.Body,
+				IpfsHash:   ipfsHash,
 				Status:     models.ProposalStatusCreated,
 			}
 			err = s.pd.Create(
@@ -185,6 +208,14 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if proposalChoice == nil {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			ipfsData, err := json.Marshal(&req)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			ipfsHash, err := s.ifc.UploadString(string(ipfsData))
+			if err != nil {
+				return errs.NewError(err)
+			}
 			proposalVote = &models.ProposalVote{
 				Network:          req.Network,
 				ProposalID:       proposal.ID,
@@ -193,6 +224,7 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 				Type:             msg.Type,
 				Timestamp:        helpers.TimeFromUnix(msg.Timestamp),
 				PowerVote:        numeric.BigFloat{*big.NewFloat(0)},
+				IpfsHash:         ipfsHash,
 			}
 			err = s.pvd.Create(
 				tx,
