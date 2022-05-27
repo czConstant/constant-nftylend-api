@@ -35,7 +35,7 @@ func (s *NftLend) GetProposalVotes(ctx context.Context, proposalID uint, page in
 	proposalVotes, count, err := s.pvd.Find4Page(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
-			"proposal_id": []interface{}{proposalID},
+			"proposal_id = ?": []interface{}{proposalID},
 		},
 		map[string][]interface{}{
 			"Proposal":       []interface{}{},
