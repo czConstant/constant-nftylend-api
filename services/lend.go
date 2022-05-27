@@ -381,6 +381,22 @@ func (s *NftLend) GetCollectionDetail(ctx context.Context, seoURL string) (*mode
 	return m, nil
 }
 
+func (s *NftLend) GetCurrencyBySymbol(ctx context.Context, symbol string, network models.Network) (*models.Currency, error) {
+	m, err := s.cd.First(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"symbol = ?":  []interface{}{symbol},
+			"network = ?": []interface{}{network},
+		},
+		map[string][]interface{}{},
+		[]string{},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return m, nil
+}
+
 func (s *NftLend) GetCurrencies(ctx context.Context, network models.Network) ([]*models.Currency, error) {
 	currencies, err := s.cd.Find(
 		daos.GetDBMainCtx(ctx),

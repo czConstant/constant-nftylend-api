@@ -160,3 +160,13 @@ func (s *Server) GetAseetTransactions(c *gin.Context) {
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssetTransactionRespArr(tnxs), Count: &count})
 }
+
+func (s *Server) GetCurrencyPWPToken(c *gin.Context) {
+	ctx := s.requestContext(c)
+	m, err := s.nls.GetCurrencyBySymbol(ctx, models.SymbolPWPToken, models.NetworkAURORA)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewCurrencyResp(m)})
+}

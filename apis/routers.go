@@ -55,6 +55,7 @@ func (s *Server) Routers() {
 	currencynftAPI := nftAPI.Group("/currencies")
 	{
 		currencynftAPI.GET("/list", s.GetCurrencies)
+		currencynftAPI.GET("/pwp-token", s.GetCurrencyPWPToken)
 	}
 	assetnftAPI := nftAPI.Group("/assets")
 	{
