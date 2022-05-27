@@ -95,10 +95,12 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 			if err != nil {
 				return errs.NewError(err)
 			}
-			for _, choice := range msg.Payload.Choices {
+
+			for idx, choice := range msg.Payload.Choices {
 				proposalChoice := &models.ProposalChoice{
 					Network:    proposal.Network,
 					ProposalID: proposal.ID,
+					Choice:     idx,
 					Name:       choice,
 					PowerVote:  numeric.BigFloat{*big.NewFloat(0)},
 				}
@@ -109,6 +111,59 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 				if err != nil {
 					return errs.NewError(err)
 				}
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return proposal, nil
+}
+
+func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.CreateProposalVoteReq) (*models.Proposal, error) {
+	switch req.Network {
+	case models.NetworkAURORA:
+		{
+		}
+	default:
+		{
+			return nil, errs.NewError(errs.ErrBadRequest)
+		}
+	}
+	var err error
+	var proposal *models.Proposal
+	err = daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			var msg struct {
+				Timestamp int64  `json:"timestamp"`
+				Type      string `json:"type"`
+				Payload   struct {
+					Proposal string `json:"proposal"`
+					Choice   int    `json:"choice"`
+				} `json:"payload"`
+			}
+			err = json.Unmarshal([]byte(req.Msg), &msg)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if msg.Type == "" ||
+				msg.Timestamp <= 0 {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			var proposal = &models.ProposalVote{
+				Network:   req.Network,
+				Address:   req.Address,
+				Type:      msg.Type,
+				Timestamp: helpers.TimeFromUnix(msg.Timestamp),
+			}
+			err = s.pd.Create(
+				tx,
+				proposal,
+			)
+			if err != nil {
+				return errs.NewError(err)
 			}
 			return nil
 		},
