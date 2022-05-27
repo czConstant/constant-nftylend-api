@@ -20,6 +20,7 @@ import (
 	"github.com/czConstant/constant-nftylend-api/databases"
 	"github.com/czConstant/constant-nftylend-api/logger"
 	"github.com/czConstant/constant-nftylend-api/services"
+	"github.com/czConstant/constant-nftylend-api/services/3rd/ipfs"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/mailer"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/moralis"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/saletrack"
@@ -118,10 +119,16 @@ func main() {
 			APIKey: conf.Moralis.APIKey,
 		}
 
+		ifc = &ipfs.Client{
+			URL:       conf.Ipfs.URL,
+			BasicAuth: conf.Ipfs.BasicAuth,
+		}
+
 		s = services.NewNftLend(
 			conf,
 			bcs,
 			stc,
+			ifc,
 			mc,
 			ud,
 			cd,

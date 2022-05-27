@@ -63,4 +63,8 @@ type Config struct {
 	Mailer     struct {
 		URL string `json:"url"`
 	} `json:"mailer"`
+	Ipfs struct {
+		URL       string `json:"url"`
+		BasicAuth string `json:"basic_auth"`
+	} `json:"ipfs"`
 }
