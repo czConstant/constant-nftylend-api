@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/czConstant/constant-nftylend-api/types/numeric"
 	"github.com/jinzhu/gorm"
 )
 
@@ -35,6 +36,7 @@ type Proposal struct {
 	Start      *time.Time
 	End        *time.Time
 	IpfsHash   string
+	TotalVote  numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	Status     string
 	Choices    []*ProposalChoice
 }
