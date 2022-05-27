@@ -38,6 +38,8 @@ type NftLend struct {
 	lod  *daos.LoanOffer
 	ltd  *daos.LoanTransaction
 	id   *daos.Instruction
+	pd   *daos.Proposal
+	pcd  *daos.ProposalChoice
 }
 
 func NewNftLend(
@@ -55,6 +57,8 @@ func NewNftLend(
 	lod *daos.LoanOffer,
 	ltd *daos.LoanTransaction,
 	id *daos.Instruction,
+	pd *daos.Proposal,
+	pcd *daos.ProposalChoice,
 
 ) *NftLend {
 	s := &NftLend{
@@ -72,6 +76,8 @@ func NewNftLend(
 		lod:  lod,
 		ltd:  ltd,
 		id:   id,
+		pd:   pd,
+		pcd:  pcd,
 	}
 	if s.conf.Contract.ProgramID != "" {
 		go stc.StartWssSolsea(s.solseaMsgReceived)

@@ -80,6 +80,10 @@ func (s *Server) Routers() {
 		loannftAPI.POST("/offers/create/:loan_id", s.CreateLoanOffer)
 		loannftAPI.POST("/near/sync", s.NearUpdateLoan)
 	}
+	proposalAPI := nftAPI.Group("/proposals")
+	{
+		proposalAPI.POST("/create", s.CreateProposal)
+	}
 	hookInternalnftAPI := nftAPI.Group("/hook/internal")
 	{
 		hookInternalnftAPI.POST("/solana-instruction", s.LenInternalHookSolanaInstruction)

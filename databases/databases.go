@@ -40,6 +40,9 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.LoanOffer)(nil),
 		(*models.LoanTransaction)(nil),
 		(*models.Instruction)(nil),
+		(*models.Proposal)(nil),
+		(*models.ProposalChoice)(nil),
+		(*models.ProposalVote)(nil),
 	}
 	if err := db.AutoMigrate(allTables...).Error; err != nil {
 		return err
