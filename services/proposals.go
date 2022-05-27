@@ -108,6 +108,12 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 			if msg.Payload.Start < time.Now().Add(-60*time.Second).Unix() {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			if msg.Payload.End < time.Now().Add(-60*time.Second).Unix() {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			if msg.Payload.Start >= msg.Payload.End {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			ipfsData, err := json.Marshal(&req)
 			if err != nil {
 				return errs.NewError(err)
