@@ -37,7 +37,10 @@ func (s *NftLend) GetProposalVotes(ctx context.Context, proposalID uint, page in
 		map[string][]interface{}{
 			"proposal_id": []interface{}{proposalID},
 		},
-		map[string][]interface{}{},
+		map[string][]interface{}{
+			"Proposal":       []interface{}{},
+			"ProposalChoice": []interface{}{},
+		},
 		[]string{"id desc"},
 		page,
 		limit,
