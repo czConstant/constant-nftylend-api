@@ -114,6 +114,28 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 			if msg.Payload.Start >= msg.Payload.End {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			pwpToken, err := s.getLendCurrencyBySymbol(
+				tx,
+				models.SymbolPWPToken,
+				req.Network,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			pwpBalance, err := s.getEvmClientByNetwork(req.Network).Erc20Balance(
+				pwpToken.ContractAddress,
+				req.Address,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if pwpBalance.Cmp(big.NewInt(0)) <= 0 {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			powerVote := models.ConvertWeiToBigFloat(pwpBalance, pwpToken.Decimals)
+			if powerVote.Cmp(&pwpToken.ProposalThreshold.Float) < 0 {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			ipfsData, err := json.Marshal(&req)
 			if err != nil {
 				return errs.NewError(err)
@@ -137,20 +159,21 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			var proposal = &models.Proposal{
-				Network:    req.Network,
-				Address:    req.Address,
-				Type:       msg.Type,
-				Timestamp:  helpers.TimeFromUnix(msg.Timestamp),
-				ChoiceType: msg.Payload.Type,
-				Msg:        req.Msg,
-				Sig:        req.Sig,
-				Start:      helpers.TimeFromUnix(msg.Payload.Start),
-				End:        helpers.TimeFromUnix(msg.Payload.End),
-				Snapshot:   msg.Payload.Snapshot,
-				Name:       msg.Payload.Name,
-				Body:       msg.Payload.Body,
-				IpfsHash:   ipfsHash,
-				Status:     models.ProposalStatusCreated,
+				Network:           req.Network,
+				Address:           req.Address,
+				Type:              msg.Type,
+				Timestamp:         helpers.TimeFromUnix(msg.Timestamp),
+				ChoiceType:        msg.Payload.Type,
+				Msg:               req.Msg,
+				Sig:               req.Sig,
+				Start:             helpers.TimeFromUnix(msg.Payload.Start),
+				End:               helpers.TimeFromUnix(msg.Payload.End),
+				Snapshot:          msg.Payload.Snapshot,
+				Name:              msg.Payload.Name,
+				Body:              msg.Payload.Body,
+				IpfsHash:          ipfsHash,
+				ProposalThreshold: pwpToken.ProposalThreshold,
+				Status:            models.ProposalStatusCreated,
 			}
 			err = s.pd.Create(
 				tx,
