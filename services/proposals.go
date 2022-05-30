@@ -294,6 +294,9 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if proposal.End.Before(time.Now()) {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			if proposal.Network != req.Network {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			switch proposal.ChoiceType {
 			case models.ProposalChoiceTypeSingleChoice:
 				{
@@ -448,13 +451,14 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 	return proposalVote, nil
 }
 
-func (s *NftLend) ProposalUnVote(ctx context.Context, address string, txHash string, blockNumber uint64) error {
+func (s *NftLend) ProposalUnVote(ctx context.Context, network models.Network, address string, txHash string, blockNumber uint64) error {
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
 			proposalVotes, err := s.pvd.Find(
 				tx,
 				map[string][]interface{}{
+					"network = ?": []interface{}{network},
 					"address = ?": []interface{}{address},
 					"status = ?":  []interface{}{models.ProposalVoteStatusCreated},
 					`exists(
@@ -556,6 +560,7 @@ func (s *NftLend) JobProposalUnVote(ctx context.Context) error {
 		if strings.EqualFold(transferLog.Address, pwpToken.ContractAddress) {
 			err = s.ProposalUnVote(
 				ctx,
+				models.NetworkAURORA,
 				transferLog.From,
 				transferLog.Hash,
 				transferLog.BlockNumber,
