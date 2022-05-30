@@ -420,7 +420,7 @@ func (s *NftLend) ProposalUnVote(ctx context.Context, address string, txHash str
 				},
 				map[string][]interface{}{},
 				[]string{},
-				1,
+				0,
 				999999,
 			)
 			if err != nil {
@@ -503,8 +503,8 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 		},
 		map[string][]interface{}{},
 		[]string{},
-		1,
-		9999,
+		0,
+		999999,
 	)
 	if err != nil {
 		return errs.NewError(err)
@@ -520,12 +520,12 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 		map[string][]interface{}{
 			"status = ?":                       []interface{}{models.ProposalStatusActived},
 			"end <= ?":                         []interface{}{time.Now()},
-			"total_vote >= proposal_threshold": []interface{}{nil},
+			"total_vote >= proposal_threshold": []interface{}{},
 		},
 		map[string][]interface{}{},
 		[]string{},
-		1,
-		9999,
+		0,
+		999999,
 	)
 	if err != nil {
 		return errs.NewError(err)
@@ -541,12 +541,12 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 		map[string][]interface{}{
 			"status = ?":                      []interface{}{models.ProposalStatusActived},
 			"end <= ?":                        []interface{}{time.Now()},
-			"total_vote < proposal_threshold": []interface{}{nil},
+			"total_vote < proposal_threshold": []interface{}{},
 		},
 		map[string][]interface{}{},
 		[]string{},
-		1,
-		9999,
+		0,
+		999999,
 	)
 	if err != nil {
 		return errs.NewError(err)
