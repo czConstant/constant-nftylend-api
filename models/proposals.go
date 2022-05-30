@@ -8,6 +8,7 @@ import (
 )
 
 type ProposalStatus string
+type ProposalChoiceType string
 
 const (
 	ProposalTypeProposal = "proposal"
@@ -20,8 +21,8 @@ const (
 	ProposalStatusQueued    ProposalStatus = "queued"
 	ProposalStatusExecuted  ProposalStatus = "executed"
 
-	ProposalChoiceTypeSingleChoice   = "single-choice"
-	ProposalChoiceTypeMultipleChoice = "multiple-choice"
+	ProposalChoiceTypeSingleChoice   ProposalChoiceType = "single-choice"
+	ProposalChoiceTypeMultipleChoice ProposalChoiceType = "multiple-choice"
 )
 
 type Proposal struct {
@@ -29,7 +30,7 @@ type Proposal struct {
 	Network           Network
 	Address           string
 	Type              string
-	ChoiceType        string
+	ChoiceType        ProposalChoiceType
 	Msg               string `gorm:"type:text"`
 	Sig               string
 	Snapshot          int64

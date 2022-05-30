@@ -8,15 +8,16 @@ import (
 )
 
 type ProposalChoiceResp struct {
-	ID         uint             `json:"id"`
-	CreatedAt  time.Time        `json:"created_at"`
-	UpdatedAt  time.Time        `json:"updated_at"`
-	Network    models.Network   `json:"network"`
-	ProposalID uint             `json:"proposal_id"`
-	Proposal   *ProposalResp    `json:"proposal"`
-	Choice     int              `json:"choice"`
-	Name       string           `json:"name"`
-	PowerVote  numeric.BigFloat `json:"power_vote"`
+	ID         uint                        `json:"id"`
+	CreatedAt  time.Time                   `json:"created_at"`
+	UpdatedAt  time.Time                   `json:"updated_at"`
+	Network    models.Network              `json:"network"`
+	ProposalID uint                        `json:"proposal_id"`
+	Proposal   *ProposalResp               `json:"proposal"`
+	Choice     int                         `json:"choice"`
+	Name       string                      `json:"name"`
+	PowerVote  numeric.BigFloat            `json:"power_vote"`
+	Status     models.ProposalChoiceStatus `json:"status"`
 }
 
 func NewProposalChoiceResp(m *models.ProposalChoice) *ProposalChoiceResp {
@@ -33,6 +34,7 @@ func NewProposalChoiceResp(m *models.ProposalChoice) *ProposalChoiceResp {
 		Choice:     m.Choice,
 		Name:       m.Name,
 		PowerVote:  m.PowerVote,
+		Status:     m.Status,
 	}
 	return resp
 }
