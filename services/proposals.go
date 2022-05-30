@@ -600,6 +600,26 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 			retErr = errs.MergeError(retErr, err)
 		}
 	}
+	proposals, err = s.pd.Find(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"status = ?": []interface{}{models.ProposalStatusSucceeded},
+			"end <= ?":   []interface{}{time.Now().Add(-2 * 24 * time.Hour)},
+		},
+		map[string][]interface{}{},
+		[]string{},
+		0,
+		999999,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	for _, proposal := range proposals {
+		err = s.ProposalStatusQueued(ctx, proposal.ID)
+		if err != nil {
+			retErr = errs.MergeError(retErr, err)
+		}
+	}
 	return retErr
 }
 
@@ -701,6 +721,39 @@ func (s *NftLend) ProposalStatusDefeated(ctx context.Context, proposalID uint) e
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			proposal.Status = models.ProposalStatusDefeated
+			err = s.pd.Save(
+				tx,
+				proposal,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *NftLend) ProposalStatusQueued(ctx context.Context, proposalID uint) error {
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			proposal, err := s.pd.FirstByID(
+				tx,
+				proposalID,
+				map[string][]interface{}{},
+				true,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if proposal.Status != models.ProposalStatusSucceeded {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			proposal.Status = models.ProposalStatusQueued
 			err = s.pd.Save(
 				tx,
 				proposal,
