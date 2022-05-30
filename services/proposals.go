@@ -242,6 +242,9 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if proposal == nil {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			if proposal.Status != models.ProposalStatusCreated {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			proposalVote, err = s.pvd.First(
 				tx,
 				map[string][]interface{}{

@@ -8,16 +8,19 @@ import (
 )
 
 type ProposalVoteResp struct {
-	ID               uint                `json:"id"`
-	CreatedAt        time.Time           `json:"created_at"`
-	UpdatedAt        time.Time           `json:"updated_at"`
-	Network          models.Network      `json:"network"`
-	ProposalID       uint                `json:"proposal_id"`
-	Proposal         *ProposalResp       `json:"proposal"`
-	ProposalChoiceID uint                `json:"proposal_choice_id"`
-	ProposalChoice   *ProposalChoiceResp `json:"proposal_choice"`
-	Address          string              `json:"address"`
-	PowerVote        numeric.BigFloat    `json:"power_vote"`
+	ID               uint                      `json:"id"`
+	CreatedAt        time.Time                 `json:"created_at"`
+	UpdatedAt        time.Time                 `json:"updated_at"`
+	Network          models.Network            `json:"network"`
+	ProposalID       uint                      `json:"proposal_id"`
+	Proposal         *ProposalResp             `json:"proposal"`
+	ProposalChoiceID uint                      `json:"proposal_choice_id"`
+	ProposalChoice   *ProposalChoiceResp       `json:"proposal_choice"`
+	Address          string                    `json:"address"`
+	PowerVote        numeric.BigFloat          `json:"power_vote"`
+	Timestamp        *time.Time                `json:"timestamp"`
+	IpfsHash         string                    `json:"ipfs_hash"`
+	Status           models.ProposalVoteStatus `json:"status"`
 }
 
 func NewProposalVoteResp(m *models.ProposalVote) *ProposalVoteResp {
@@ -35,6 +38,9 @@ func NewProposalVoteResp(m *models.ProposalVote) *ProposalVoteResp {
 		ProposalChoice:   NewProposalChoiceResp(m.ProposalChoice),
 		Address:          m.Address,
 		PowerVote:        m.PowerVote,
+		Timestamp:        m.Timestamp,
+		IpfsHash:         m.IpfsHash,
+		Status:           m.Status,
 	}
 	return resp
 }

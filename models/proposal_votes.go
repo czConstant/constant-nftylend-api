@@ -7,9 +7,11 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+type ProposalVoteStatus string
+
 const (
-	ProposalVoteStatusCreated   = "created"
-	ProposalVoteStatusCancelled = "cancelled"
+	ProposalVoteStatusCreated   ProposalVoteStatus = "created"
+	ProposalVoteStatusCancelled ProposalVoteStatus = "cancelled"
 )
 
 type ProposalVote struct {
@@ -26,5 +28,5 @@ type ProposalVote struct {
 	PowerVote        numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	Timestamp        *time.Time
 	IpfsHash         string
-	Status           string
+	Status           ProposalVoteStatus
 }
