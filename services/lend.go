@@ -114,6 +114,10 @@ func (s *NftLend) getEvmClientByNetwork(network models.Network) *ethereum.Client
 		{
 			return s.bcs.Boba
 		}
+	case models.NetworkAURORA:
+		{
+			return s.bcs.Aurora
+		}
 	}
 	return nil
 }
