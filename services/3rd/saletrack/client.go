@@ -320,13 +320,14 @@ type EvmNftMetaResp struct {
 }
 
 var ipfsReplaces = []string{
+	"https://cloudflare-ipfs.com/ipfs",
 	"https://ipfs.fleek.co/ipfs",
 	"https://ipfs.io/ipfs",
 }
 
 func (c *Client) GetEvmNftMetaResp(tokenURL string) (*EvmNftMetaResp, error) {
 	for _, ipfsReplace := range ipfsReplaces {
-		tokenURL = strings.Replace(tokenURL, ipfsReplace, "https://cloudflare-ipfs.com/ipfs", -1)
+		tokenURL = strings.Replace(tokenURL, ipfsReplace, "https://gateway.ipfs.io/ipfs", -1)
 	}
 	var rs EvmNftMetaResp
 	client := &http.Client{}
