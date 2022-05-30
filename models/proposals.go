@@ -12,8 +12,8 @@ type ProposalStatus string
 const (
 	ProposalTypeProposal = "proposal"
 
+	ProposalStatusPending   ProposalStatus = "pending"
 	ProposalStatusCreated   ProposalStatus = "created"
-	ProposalStatusActived   ProposalStatus = "actived"
 	ProposalStatusCancelled ProposalStatus = "cancelled"
 	ProposalStatusSucceeded ProposalStatus = "succeeded"
 	ProposalStatusDefeated  ProposalStatus = "defeated"
