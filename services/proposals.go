@@ -211,6 +211,7 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 					Choice:     (idx + 1),
 					Name:       choice,
 					PowerVote:  numeric.BigFloat{*big.NewFloat(0)},
+					Status:     models.ProposalChoiceStatusPending,
 				}
 				err = s.pcd.Create(
 					tx,
@@ -680,6 +681,38 @@ func (s *NftLend) ProposalStatusCreated(ctx context.Context, proposalID uint) er
 			)
 			if err != nil {
 				return errs.NewError(err)
+			}
+			proposalChoices, err := s.pcd.Find(
+				tx,
+				map[string][]interface{}{
+					"proposal_id = ?": []interface{}{proposal.ID},
+				},
+				map[string][]interface{}{},
+				[]string{},
+				0,
+				999999,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			for _, proposalChoice := range proposalChoices {
+				proposalChoice, err = s.pcd.FirstByID(
+					tx,
+					proposalChoice.ID,
+					map[string][]interface{}{},
+					true,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				proposalChoice.Status = models.ProposalChoiceStatusCreated
+				err = s.pcd.Save(
+					tx,
+					proposalChoice,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
 			}
 			return nil
 		},

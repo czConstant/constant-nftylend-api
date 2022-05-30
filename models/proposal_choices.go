@@ -8,6 +8,7 @@ import (
 type ProposalChoiceStatus string
 
 const (
+	ProposalChoiceStatusPending   ProposalChoiceStatus = "pending"
 	ProposalChoiceStatusCreated   ProposalChoiceStatus = "created"
 	ProposalChoiceStatusCancelled ProposalChoiceStatus = "cancelled"
 	ProposalChoiceStatusSucceeded ProposalChoiceStatus = "succeeded"
