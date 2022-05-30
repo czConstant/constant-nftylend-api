@@ -24,4 +24,5 @@ type ProposalChoice struct {
 	Choice     int
 	Name       string
 	PowerVote  numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	Status     ProposalChoiceStatus
 }

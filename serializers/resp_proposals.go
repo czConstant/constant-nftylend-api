@@ -8,25 +8,25 @@ import (
 )
 
 type ProposalResp struct {
-	ID                uint                  `json:"id"`
-	CreatedAt         time.Time             `json:"created_at"`
-	UpdatedAt         time.Time             `json:"updated_at"`
-	Network           models.Network        `json:"network"`
-	Address           string                `json:"address"`
-	Type              string                `json:"type"`
-	ChoiceType        string                `json:"choice_type"`
-	Msg               string                `json:"msg"`
-	Sig               string                `json:"sig"`
-	Snapshot          int64                 `json:"snapshot"`
-	Name              string                `json:"name"`
-	Body              string                `json:"body"`
-	Timestamp         *time.Time            `json:"timestamp"`
-	Start             *time.Time            `json:"start"`
-	End               *time.Time            `json:"end"`
-	IpfsHash          string                `json:"ipfs_hash"`
-	ProposalThreshold numeric.BigFloat      `json:"proposal_threshold"`
-	Status            models.ProposalStatus `json:"status"`
-	Choices           []*ProposalChoiceResp `json:"choices"`
+	ID                uint                      `json:"id"`
+	CreatedAt         time.Time                 `json:"created_at"`
+	UpdatedAt         time.Time                 `json:"updated_at"`
+	Network           models.Network            `json:"network"`
+	Address           string                    `json:"address"`
+	Type              string                    `json:"type"`
+	ChoiceType        models.ProposalChoiceType `json:"choice_type"`
+	Msg               string                    `json:"msg"`
+	Sig               string                    `json:"sig"`
+	Snapshot          int64                     `json:"snapshot"`
+	Name              string                    `json:"name"`
+	Body              string                    `json:"body"`
+	Timestamp         *time.Time                `json:"timestamp"`
+	Start             *time.Time                `json:"start"`
+	End               *time.Time                `json:"end"`
+	IpfsHash          string                    `json:"ipfs_hash"`
+	ProposalThreshold numeric.BigFloat          `json:"proposal_threshold"`
+	Status            models.ProposalStatus     `json:"status"`
+	Choices           []*ProposalChoiceResp     `json:"choices"`
 }
 
 func NewProposalResp(m *models.Proposal) *ProposalResp {

@@ -126,6 +126,16 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 			if msg.Payload.Start >= msg.Payload.End {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			choiceType := models.ProposalChoiceType(msg.Payload.Type)
+			switch choiceType {
+			case models.ProposalChoiceTypeSingleChoice:
+				{
+				}
+			default:
+				{
+					return errs.NewError(errs.ErrBadRequest)
+				}
+			}
 			pwpToken, err := s.getLendCurrencyBySymbol(
 				tx,
 				models.SymbolPWPToken,
@@ -175,7 +185,7 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 				Address:           req.Address,
 				Type:              msg.Type,
 				Timestamp:         helpers.TimeFromUnix(msg.Timestamp),
-				ChoiceType:        msg.Payload.Type,
+				ChoiceType:        choiceType,
 				Msg:               req.Msg,
 				Sig:               req.Sig,
 				Start:             helpers.TimeFromUnix(msg.Payload.Start),
@@ -246,7 +256,7 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 				Type      string `json:"type"`
 				Payload   struct {
 					Proposal string `json:"proposal"`
-					Choice   int    `json:"choice"`
+					Choice   []int  `json:"choice"`
 				} `json:"payload"`
 			}
 			err = json.Unmarshal([]byte(req.Msg), &msg)
@@ -256,7 +266,7 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if msg.Type == "" ||
 				msg.Timestamp <= 0 ||
 				msg.Payload.Proposal == "" ||
-				msg.Payload.Choice < 0 {
+				len(msg.Payload.Choice) <= 0 {
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			if msg.Timestamp < time.Now().Add(-60*time.Second).Unix() ||
@@ -283,6 +293,21 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if proposal.End.Before(time.Now()) {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			switch proposal.ChoiceType {
+			case models.ProposalChoiceTypeSingleChoice:
+				{
+					if len(msg.Payload.Choice) != 1 {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+				}
+			case models.ProposalChoiceTypeMultipleChoice:
+				{
+				}
+			default:
+				{
+					return errs.NewError(errs.ErrBadRequest)
+				}
+			}
 			proposalVote, err = s.pvd.First(
 				tx,
 				map[string][]interface{}{
@@ -299,21 +324,44 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if proposalVote != nil {
 				return errs.NewError(errs.ErrBadRequest)
 			}
-			proposalChoice, err := s.pcd.First(
+			proposalChoices, err := s.pcd.Find(
 				tx,
 				map[string][]interface{}{
 					"proposal_id = ?": []interface{}{proposal.ID},
-					"choice = ?":      []interface{}{msg.Payload.Choice},
+					"choice in (?)":   []interface{}{msg.Payload.Choice},
 				},
 				map[string][]interface{}{},
 				[]string{},
+				0,
+				999999,
 			)
 			if err != nil {
 				return errs.NewError(err)
 			}
-			if proposalChoice == nil {
+			if len(proposalChoices) == len(msg.Payload.Choice) {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			// get power vote
+			pwpToken, err := s.getLendCurrencyBySymbol(
+				tx,
+				models.SymbolPWPToken,
+				req.Network,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			pwpBalance, err := s.getEvmClientByNetwork(req.Network).Erc20Balance(
+				pwpToken.ContractAddress,
+				req.Address,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if pwpBalance.Cmp(big.NewInt(0)) <= 0 {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			powerVote := models.ConvertWeiToBigFloat(pwpBalance, pwpToken.Decimals)
+			// end
 			ipfsData, err := json.Marshal(&req)
 			if err != nil {
 				return errs.NewError(err)
@@ -336,76 +384,59 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if proposalVote != nil {
 				return errs.NewError(errs.ErrBadRequest)
 			}
-			pwpToken, err := s.getLendCurrencyBySymbol(
-				tx,
-				models.SymbolPWPToken,
-				req.Network,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			pwpBalance, err := s.getEvmClientByNetwork(req.Network).Erc20Balance(
-				pwpToken.ContractAddress,
-				req.Address,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			if pwpBalance.Cmp(big.NewInt(0)) <= 0 {
-				return errs.NewError(errs.ErrBadRequest)
-			}
-			powerVote := models.ConvertWeiToBigFloat(pwpBalance, pwpToken.Decimals)
-			proposalVote = &models.ProposalVote{
-				Network:          req.Network,
-				ProposalID:       proposal.ID,
-				ProposalChoiceID: proposalChoice.ID,
-				Address:          req.Address,
-				Type:             msg.Type,
-				Timestamp:        helpers.TimeFromUnix(msg.Timestamp),
-				PowerVote:        numeric.BigFloat{*powerVote},
-				IpfsHash:         ipfsHash,
-				Status:           models.ProposalVoteStatusCreated,
-			}
-			err = s.pvd.Create(
-				tx,
-				proposalVote,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			proposalChoice, err = s.pcd.FirstByID(
-				tx,
-				proposalChoice.ID,
-				map[string][]interface{}{},
-				true,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			proposalChoice.PowerVote = numeric.BigFloat{*models.AddBigFloats(&proposalChoice.PowerVote.Float, &proposalVote.PowerVote.Float)}
-			err = s.pcd.Save(
-				tx,
-				proposalChoice,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			proposal, err = s.pd.FirstByID(
-				tx,
-				proposal.ID,
-				map[string][]interface{}{},
-				true,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			proposal.TotalVote = numeric.BigFloat{*models.AddBigFloats(&proposal.TotalVote.Float, &proposalVote.PowerVote.Float)}
-			err = s.pd.Save(
-				tx,
-				proposal,
-			)
-			if err != nil {
-				return errs.NewError(err)
+			for _, proposalChoice := range proposalChoices {
+				proposalVote = &models.ProposalVote{
+					Network:          req.Network,
+					ProposalID:       proposal.ID,
+					ProposalChoiceID: proposalChoice.ID,
+					Address:          req.Address,
+					Type:             msg.Type,
+					Timestamp:        helpers.TimeFromUnix(msg.Timestamp),
+					PowerVote:        numeric.BigFloat{*powerVote},
+					IpfsHash:         ipfsHash,
+					Status:           models.ProposalVoteStatusCreated,
+				}
+				err = s.pvd.Create(
+					tx,
+					proposalVote,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				proposalChoice, err = s.pcd.FirstByID(
+					tx,
+					proposalChoice.ID,
+					map[string][]interface{}{},
+					true,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				proposalChoice.PowerVote = numeric.BigFloat{*models.AddBigFloats(&proposalChoice.PowerVote.Float, &proposalVote.PowerVote.Float)}
+				err = s.pcd.Save(
+					tx,
+					proposalChoice,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				proposal, err = s.pd.FirstByID(
+					tx,
+					proposal.ID,
+					map[string][]interface{}{},
+					true,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				proposal.TotalVote = numeric.BigFloat{*models.AddBigFloats(&proposal.TotalVote.Float, &proposalVote.PowerVote.Float)}
+				err = s.pd.Save(
+					tx,
+					proposal,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
 			}
 			return nil
 		},
@@ -689,6 +720,61 @@ func (s *NftLend) ProposalStatusSucceeded(ctx context.Context, proposalID uint) 
 			if err != nil {
 				return errs.NewError(err)
 			}
+			proposalChoices, err := s.pcd.Find(
+				tx,
+				map[string][]interface{}{
+					"proposal_id = ?": []interface{}{proposal.ID},
+				},
+				map[string][]interface{}{},
+				[]string{},
+				0,
+				999999,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			var proposalChoiceSucceeded *models.ProposalChoice
+			for _, proposalChoice := range proposalChoices {
+				proposalChoice, err = s.pcd.FirstByID(
+					tx,
+					proposalChoice.ID,
+					map[string][]interface{}{},
+					true,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if proposalChoiceSucceeded == nil {
+					proposalChoiceSucceeded = proposalChoice
+				} else {
+					if proposalChoiceSucceeded.PowerVote.Float.Cmp(&proposalChoice.PowerVote.Float) < 0 {
+						proposalChoiceSucceeded = proposalChoice
+					}
+				}
+			}
+			for _, proposalChoice := range proposalChoices {
+				proposalChoice, err = s.pcd.FirstByID(
+					tx,
+					proposalChoice.ID,
+					map[string][]interface{}{},
+					true,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if proposalChoice.ID == proposalChoiceSucceeded.ID {
+					proposalChoice.Status = models.ProposalChoiceStatusSucceeded
+				} else {
+					proposalChoice.Status = models.ProposalChoiceStatusDefeated
+				}
+				err = s.pcd.Save(
+					tx,
+					proposalChoice,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+			}
 			return nil
 		},
 	)
@@ -728,6 +814,38 @@ func (s *NftLend) ProposalStatusDefeated(ctx context.Context, proposalID uint) e
 			if err != nil {
 				return errs.NewError(err)
 			}
+			proposalChoices, err := s.pcd.Find(
+				tx,
+				map[string][]interface{}{
+					"proposal_id = ?": []interface{}{proposal.ID},
+				},
+				map[string][]interface{}{},
+				[]string{},
+				0,
+				999999,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			for _, proposalChoice := range proposalChoices {
+				proposalChoice, err = s.pcd.FirstByID(
+					tx,
+					proposalChoice.ID,
+					map[string][]interface{}{},
+					true,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				proposalChoice.Status = models.ProposalChoiceStatusDefeated
+				err = s.pcd.Save(
+					tx,
+					proposalChoice,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+			}
 			return nil
 		},
 	)
@@ -757,6 +875,35 @@ func (s *NftLend) ProposalStatusQueued(ctx context.Context, proposalID uint) err
 			err = s.pd.Save(
 				tx,
 				proposal,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			proposalChoice, err := s.pcd.First(
+				tx,
+				map[string][]interface{}{
+					"proposal_id = ?": []interface{}{proposal.ID},
+					"status = ?":      []interface{}{models.ProposalChoiceStatusSucceeded},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			proposalChoice, err = s.pcd.FirstByID(
+				tx,
+				proposalChoice.ID,
+				map[string][]interface{}{},
+				true,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			proposalChoice.Status = models.ProposalChoiceStatusQueued
+			err = s.pcd.Save(
+				tx,
+				proposalChoice,
 			)
 			if err != nil {
 				return errs.NewError(err)
