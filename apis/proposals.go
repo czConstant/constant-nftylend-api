@@ -11,7 +11,8 @@ import (
 func (s *Server) GetProposals(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)
-	proposals, count, err := s.nls.GetProposals(ctx, page, limit)
+	statuses := s.stringArrayFromContextQuery(c, "status")
+	proposals, count, err := s.nls.GetProposals(ctx, statuses, page, limit)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

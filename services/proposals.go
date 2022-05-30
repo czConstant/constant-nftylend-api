@@ -16,10 +16,14 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func (s *NftLend) GetProposals(ctx context.Context, page int, limit int) ([]*models.Proposal, uint, error) {
+func (s *NftLend) GetProposals(ctx context.Context, statuses []string, page int, limit int) ([]*models.Proposal, uint, error) {
+	filters := map[string][]interface{}{}
+	if len(statuses) > 0 {
+		filters["status in (?)"] = []interface{}{statuses}
+	}
 	proposals, count, err := s.pd.Find4Page(
 		daos.GetDBMainCtx(ctx),
-		map[string][]interface{}{},
+		filters,
 		map[string][]interface{}{
 			"Choices": []interface{}{},
 		},
