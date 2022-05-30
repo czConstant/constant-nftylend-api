@@ -23,6 +23,10 @@ type CollectionResp struct {
 	Avg24hAmount          numeric.BigFloat `json:"avg24h_amount"`
 	OriginNetwork         models.Network   `json:"origin_network"`
 	OriginContractAddress string           `json:"origin_contract_address"`
+	CreatorURL            string           `json:"creator_url"`
+	TwitterURL            string           `json:"twitter_url"`
+	DiscordURL            string           `json:"discord_url"`
+	BannerURL             string           `json:"banner_url"`
 	RandAsset             *AssetResp       `json:"rand_asset"`
 }
 
@@ -41,6 +45,10 @@ func NewCollectionResp(m *models.Collection) *CollectionResp {
 		Description:           m.Description,
 		OriginNetwork:         m.OriginNetwork,
 		OriginContractAddress: m.OriginContractAddress,
+		CreatorURL:            m.CreatorURL,
+		TwitterURL:            m.TwitterURL,
+		DiscordURL:            m.DiscordURL,
+		BannerURL:             m.BannerURL,
 		ListingAsset:          NewAssetResp(m.ListingAsset),
 		RandAsset:             NewAssetResp(m.RandAsset),
 	}

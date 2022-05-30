@@ -20,6 +20,10 @@ type Collection struct {
 	ListingAsset          *Asset
 	RandAsset             *Asset
 	ParasCollectionID     string
+	CreatorURL            string
+	TwitterURL            string
+	DiscordURL            string
+	BannerURL             string
 }
 
 type NftyRPTListingCollection struct {
