@@ -294,6 +294,9 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if proposal.End.Before(time.Now()) {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			if proposal.Network != req.Network {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			switch proposal.ChoiceType {
 			case models.ProposalChoiceTypeSingleChoice:
 				{
