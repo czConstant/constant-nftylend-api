@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/czConstant/constant-nftylend-api/daos"
@@ -408,7 +409,7 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 	return proposalVote, nil
 }
 
-func (s *NftLend) ProposalUnVote(ctx context.Context, address string, txHash string, blockNumber int64) error {
+func (s *NftLend) ProposalUnVote(ctx context.Context, address string, txHash string, blockNumber uint64) error {
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
@@ -491,6 +492,35 @@ func (s *NftLend) ProposalUnVote(ctx context.Context, address string, txHash str
 		return errs.NewError(err)
 	}
 	return nil
+}
+
+func (s *NftLend) JobProposalUnVote(ctx context.Context) error {
+	var retErr error
+	pwpToken, err := s.GetCurrencyBySymbol(ctx, models.SymbolPWPToken, models.NetworkAURORA)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	transferLogs, err := s.bcs.Aurora.Erc20TransferLogs(
+		[]string{pwpToken.ContractAddress},
+		300,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	for _, transferLog := range transferLogs {
+		if strings.EqualFold(transferLog.Address, pwpToken.ContractAddress) {
+			err = s.ProposalUnVote(
+				ctx,
+				transferLog.From,
+				transferLog.Hash,
+				transferLog.BlockNumber,
+			)
+			if err != nil {
+				retErr = errs.MergeError(retErr, err)
+			}
+		}
+	}
+	return retErr
 }
 
 func (s *NftLend) JobProposalStatus(ctx context.Context) error {
