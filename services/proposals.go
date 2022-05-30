@@ -185,7 +185,7 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 				Body:              msg.Payload.Body,
 				IpfsHash:          ipfsHash,
 				ProposalThreshold: pwpToken.ProposalThreshold,
-				Status:            models.ProposalStatusCreated,
+				Status:            models.ProposalStatusPending,
 			}
 			err = s.pd.Create(
 				tx,
@@ -277,7 +277,7 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if proposal == nil {
 				return errs.NewError(errs.ErrBadRequest)
 			}
-			if proposal.Status != models.ProposalStatusActived {
+			if proposal.Status != models.ProposalStatusCreated {
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			if proposal.End.Before(time.Now()) {
@@ -430,7 +430,7 @@ func (s *NftLend) ProposalUnVote(ctx context.Context, address string, txHash str
 						from proposals
 						where proposal_votes.proposal_id = proposals.id
 						  and proposals.status = ?
-					)`: []interface{}{models.ProposalStatusActived},
+					)`: []interface{}{models.ProposalStatusCreated},
 				},
 				map[string][]interface{}{},
 				[]string{},
@@ -460,7 +460,7 @@ func (s *NftLend) ProposalUnVote(ctx context.Context, address string, txHash str
 					if err != nil {
 						return errs.NewError(err)
 					}
-					if proposal.Status == models.ProposalStatusCreated {
+					if proposal.Status == models.ProposalStatusPending {
 						proposalVote.CancelledHash = txHash
 						proposalVote.Status = models.ProposalVoteStatusCancelled
 						err = s.pvd.Save(
@@ -541,7 +541,7 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 	proposals, err := s.pd.Find(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
-			"status = ?": []interface{}{models.ProposalStatusCreated},
+			"status = ?": []interface{}{models.ProposalStatusPending},
 			"start <= ?": []interface{}{time.Now()},
 		},
 		map[string][]interface{}{},
@@ -553,7 +553,7 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 		return errs.NewError(err)
 	}
 	for _, proposal := range proposals {
-		err = s.ProposalStatusActived(ctx, proposal.ID)
+		err = s.ProposalStatusCreated(ctx, proposal.ID)
 		if err != nil {
 			retErr = errs.MergeError(retErr, err)
 		}
@@ -561,7 +561,7 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 	proposals, err = s.pd.Find(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
-			"status = ?":                       []interface{}{models.ProposalStatusActived},
+			"status = ?":                       []interface{}{models.ProposalStatusCreated},
 			"end <= ?":                         []interface{}{time.Now()},
 			"total_vote >= proposal_threshold": []interface{}{},
 		},
@@ -582,7 +582,7 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 	proposals, err = s.pd.Find(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
-			"status = ?":                      []interface{}{models.ProposalStatusActived},
+			"status = ?":                      []interface{}{models.ProposalStatusCreated},
 			"end <= ?":                        []interface{}{time.Now()},
 			"total_vote < proposal_threshold": []interface{}{},
 		},
@@ -623,7 +623,7 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 	return retErr
 }
 
-func (s *NftLend) ProposalStatusActived(ctx context.Context, proposalID uint) error {
+func (s *NftLend) ProposalStatusCreated(ctx context.Context, proposalID uint) error {
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
@@ -636,13 +636,13 @@ func (s *NftLend) ProposalStatusActived(ctx context.Context, proposalID uint) er
 			if err != nil {
 				return errs.NewError(err)
 			}
-			if proposal.Status != models.ProposalStatusCreated {
+			if proposal.Status != models.ProposalStatusPending {
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			if proposal.Start.After(time.Now()) {
 				return errs.NewError(errs.ErrBadRequest)
 			}
-			proposal.Status = models.ProposalStatusActived
+			proposal.Status = models.ProposalStatusCreated
 			err = s.pd.Save(
 				tx,
 				proposal,
@@ -672,7 +672,7 @@ func (s *NftLend) ProposalStatusSucceeded(ctx context.Context, proposalID uint) 
 			if err != nil {
 				return errs.NewError(err)
 			}
-			if proposal.Status != models.ProposalStatusActived {
+			if proposal.Status != models.ProposalStatusCreated {
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			if proposal.End.After(time.Now()) {
@@ -711,7 +711,7 @@ func (s *NftLend) ProposalStatusDefeated(ctx context.Context, proposalID uint) e
 			if err != nil {
 				return errs.NewError(err)
 			}
-			if proposal.Status != models.ProposalStatusActived {
+			if proposal.Status != models.ProposalStatusCreated {
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			if proposal.End.After(time.Now()) {
