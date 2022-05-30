@@ -280,6 +280,9 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if proposal.Status != models.ProposalStatusActived {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			if proposal.End.Before(time.Now()) {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			proposalVote, err = s.pvd.First(
 				tx,
 				map[string][]interface{}{
@@ -421,7 +424,13 @@ func (s *NftLend) ProposalUnVote(ctx context.Context, address string, txHash str
 				tx,
 				map[string][]interface{}{
 					"address = ?": []interface{}{address},
-					"status = ?":  []interface{}{models.ProposalStatusActived},
+					"status = ?":  []interface{}{models.ProposalVoteStatusCreated},
+					`exists(
+						select 1
+						from proposals
+						where proposal_votes.proposal_id = proposals.id
+						  and proposals.status = ?
+					)`: []interface{}{models.ProposalStatusActived},
 				},
 				map[string][]interface{}{},
 				[]string{},
