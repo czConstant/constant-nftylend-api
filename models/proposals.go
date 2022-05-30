@@ -7,15 +7,17 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+type ProposalStatus string
+
 const (
 	ProposalTypeProposal = "proposal"
 
-	ProposalStatusCreated   = "created"
-	ProposalStatusCancelled = "cancelled"
-	ProposalStatusSucceeded = "succeeded"
-	ProposalStatusDefeated  = "defeated"
-	ProposalStatusQueued    = "queued"
-	ProposalStatusExecuted  = "executed"
+	ProposalStatusCreated   ProposalStatus = "created"
+	ProposalStatusCancelled ProposalStatus = "cancelled"
+	ProposalStatusSucceeded ProposalStatus = "succeeded"
+	ProposalStatusDefeated  ProposalStatus = "defeated"
+	ProposalStatusQueued    ProposalStatus = "queued"
+	ProposalStatusExecuted  ProposalStatus = "executed"
 
 	ProposalChoiceTypeSingleChoice   = "single-choice"
 	ProposalChoiceTypeMultipleChoice = "multiple-choice"
@@ -37,6 +39,6 @@ type Proposal struct {
 	End        *time.Time
 	IpfsHash   string
 	TotalVote  numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
-	Status     string
+	Status     ProposalStatus
 	Choices    []*ProposalChoice
 }

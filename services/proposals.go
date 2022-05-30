@@ -242,6 +242,9 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if proposal == nil {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			if proposal.Status != models.ProposalStatusCreated {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			proposalVote, err = s.pvd.First(
 				tx,
 				map[string][]interface{}{
@@ -295,6 +298,25 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if proposalVote != nil {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			pwpToken, err := s.getLendCurrencyBySymbol(
+				tx,
+				models.SymbolPWPToken,
+				req.Network,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			pwpBalance, err := s.getEvmClientByNetwork(req.Network).Erc20Balance(
+				pwpToken.ContractAddress,
+				req.Address,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if pwpBalance.Cmp(big.NewInt(0)) <= 0 {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			powerVote := models.ConvertWeiToBigFloat(pwpBalance, pwpToken.Decimals)
 			proposalVote = &models.ProposalVote{
 				Network:          req.Network,
 				ProposalID:       proposal.ID,
@@ -302,7 +324,7 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 				Address:          req.Address,
 				Type:             msg.Type,
 				Timestamp:        helpers.TimeFromUnix(msg.Timestamp),
-				PowerVote:        numeric.BigFloat{*big.NewFloat(0)},
+				PowerVote:        numeric.BigFloat{*powerVote},
 				IpfsHash:         ipfsHash,
 				Status:           models.ProposalVoteStatusCreated,
 			}

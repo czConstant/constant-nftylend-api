@@ -23,7 +23,7 @@ type ProposalResp struct {
 	Start      *time.Time            `json:"start"`
 	End        *time.Time            `json:"end"`
 	IpfsHash   string                `json:"ipfs_hash"`
-	Status     string                `json:"status"`
+	Status     models.ProposalStatus `json:"status"`
 	Choices    []*ProposalChoiceResp `json:"choices"`
 }
 
