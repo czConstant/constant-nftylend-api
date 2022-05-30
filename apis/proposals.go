@@ -27,7 +27,9 @@ func (s *Server) GetProposalVotes(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	proposalVotes, count, err := s.nls.GetProposalVotes(ctx, proposalID, page, limit)
+	address := s.stringFromContextQuery(c, "address")
+	statuses := s.stringArrayFromContextQuery(c, "status")
+	proposalVotes, count, err := s.nls.GetProposalVotes(ctx, proposalID, address, statuses, page, limit)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

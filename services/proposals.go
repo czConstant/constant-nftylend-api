@@ -32,12 +32,19 @@ func (s *NftLend) GetProposals(ctx context.Context, page int, limit int) ([]*mod
 	return proposals, count, nil
 }
 
-func (s *NftLend) GetProposalVotes(ctx context.Context, proposalID uint, page int, limit int) ([]*models.ProposalVote, uint, error) {
+func (s *NftLend) GetProposalVotes(ctx context.Context, proposalID uint, address string, statuses []string, page int, limit int) ([]*models.ProposalVote, uint, error) {
+	filters := map[string][]interface{}{
+		"proposal_id = ?": []interface{}{proposalID},
+	}
+	if address != "" {
+		filters["address = ?"] = []interface{}{address}
+	}
+	if len(statuses) > 0 {
+		filters["status in (?)"] = []interface{}{statuses}
+	}
 	proposalVotes, count, err := s.pvd.Find4Page(
 		daos.GetDBMainCtx(ctx),
-		map[string][]interface{}{
-			"proposal_id = ?": []interface{}{proposalID},
-		},
+		filters,
 		map[string][]interface{}{
 			"Proposal":       []interface{}{},
 			"ProposalChoice": []interface{}{},
