@@ -76,7 +76,11 @@ func (s *Server) CreateProposalVote(c *gin.Context) {
 func (s *Server) JobProposalStatus(c *gin.Context) {
 	ctx := s.requestContext(c)
 	var retErr error
-	err := s.nls.JobProposalStatus(ctx)
+	err := s.nls.JobProposalUnVote(ctx)
+	if err != nil {
+		retErr = errs.MergeError(retErr, err)
+	}
+	err = s.nls.JobProposalStatus(ctx)
 	if err != nil {
 		retErr = errs.MergeError(retErr, err)
 	}
