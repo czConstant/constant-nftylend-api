@@ -272,7 +272,7 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if proposal == nil {
 				return errs.NewError(errs.ErrBadRequest)
 			}
-			if proposal.Status != models.ProposalStatusCreated {
+			if proposal.Status != models.ProposalStatusActived {
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			proposalVote, err = s.pvd.First(
@@ -406,4 +406,270 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 		return nil, errs.NewError(err)
 	}
 	return proposalVote, nil
+}
+
+func (s *NftLend) ProposalUnVote(ctx context.Context, address string, txHash string, blockNumber int64) error {
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			proposalVotes, err := s.pvd.Find(
+				tx,
+				map[string][]interface{}{
+					"address = ?": []interface{}{address},
+					"status = ?":  []interface{}{models.ProposalStatusActived},
+				},
+				map[string][]interface{}{},
+				[]string{},
+				1,
+				999999,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			for _, proposalVote := range proposalVotes {
+				proposalVote, err = s.pvd.FirstByID(
+					tx,
+					proposalVote.ID,
+					map[string][]interface{}{},
+					true,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if proposalVote.Status == models.ProposalVoteStatusCreated {
+					proposal, err := s.pd.FirstByID(
+						tx,
+						proposalVote.ProposalID,
+						map[string][]interface{}{},
+						true,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if proposal.Status == models.ProposalStatusCreated {
+						proposalVote.CancelledHash = txHash
+						proposalVote.Status = models.ProposalVoteStatusCancelled
+						err = s.pvd.Save(
+							tx,
+							proposalVote,
+						)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						proposalChoice, err := s.pcd.FirstByID(
+							tx,
+							proposalVote.ProposalChoiceID,
+							map[string][]interface{}{},
+							true,
+						)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						proposalChoice.PowerVote = numeric.BigFloat{*models.SubBigFloats(&proposalChoice.PowerVote.Float, &proposalVote.PowerVote.Float)}
+						err = s.pcd.Save(
+							tx,
+							proposalChoice,
+						)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						proposal.TotalVote = numeric.BigFloat{*models.SubBigFloats(&proposal.TotalVote.Float, &proposalVote.PowerVote.Float)}
+						err = s.pd.Save(
+							tx,
+							proposal,
+						)
+						if err != nil {
+							return errs.NewError(err)
+						}
+					}
+				}
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *NftLend) JobProposalStatus(ctx context.Context) error {
+	var retErr error
+	proposals, err := s.pd.Find(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"status = ?": []interface{}{models.ProposalStatusCreated},
+			"start <= ?": []interface{}{time.Now()},
+		},
+		map[string][]interface{}{},
+		[]string{},
+		1,
+		9999,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	for _, proposal := range proposals {
+		err = s.ProposalStatusActived(ctx, proposal.ID)
+		if err != nil {
+			retErr = errs.MergeError(retErr, err)
+		}
+	}
+	proposals, err = s.pd.Find(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"status = ?":                       []interface{}{models.ProposalStatusActived},
+			"end <= ?":                         []interface{}{time.Now()},
+			"total_vote >= proposal_threshold": []interface{}{nil},
+		},
+		map[string][]interface{}{},
+		[]string{},
+		1,
+		9999,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	for _, proposal := range proposals {
+		err = s.ProposalStatusSucceeded(ctx, proposal.ID)
+		if err != nil {
+			retErr = errs.MergeError(retErr, err)
+		}
+	}
+	proposals, err = s.pd.Find(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"status = ?":                      []interface{}{models.ProposalStatusActived},
+			"end <= ?":                        []interface{}{time.Now()},
+			"total_vote < proposal_threshold": []interface{}{nil},
+		},
+		map[string][]interface{}{},
+		[]string{},
+		1,
+		9999,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	for _, proposal := range proposals {
+		err = s.ProposalStatusDefeated(ctx, proposal.ID)
+		if err != nil {
+			retErr = errs.MergeError(retErr, err)
+		}
+	}
+	return retErr
+}
+
+func (s *NftLend) ProposalStatusActived(ctx context.Context, proposalID uint) error {
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			proposal, err := s.pd.FirstByID(
+				tx,
+				proposalID,
+				map[string][]interface{}{},
+				true,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if proposal.Status != models.ProposalStatusCreated {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			if proposal.Start.After(time.Now()) {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			proposal.Status = models.ProposalStatusActived
+			err = s.pd.Save(
+				tx,
+				proposal,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *NftLend) ProposalStatusSucceeded(ctx context.Context, proposalID uint) error {
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			proposal, err := s.pd.FirstByID(
+				tx,
+				proposalID,
+				map[string][]interface{}{},
+				true,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if proposal.Status != models.ProposalStatusActived {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			if proposal.End.After(time.Now()) {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			if proposal.TotalVote.Float.Cmp(&proposal.ProposalThreshold.Float) < 0 {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			proposal.Status = models.ProposalStatusSucceeded
+			err = s.pd.Save(
+				tx,
+				proposal,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *NftLend) ProposalStatusDefeated(ctx context.Context, proposalID uint) error {
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			proposal, err := s.pd.FirstByID(
+				tx,
+				proposalID,
+				map[string][]interface{}{},
+				true,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if proposal.Status != models.ProposalStatusActived {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			if proposal.End.After(time.Now()) {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			if proposal.TotalVote.Float.Cmp(&proposal.ProposalThreshold.Float) >= 0 {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			proposal.Status = models.ProposalStatusDefeated
+			err = s.pd.Save(
+				tx,
+				proposal,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
 }

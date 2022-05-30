@@ -13,6 +13,7 @@ const (
 	ProposalTypeProposal = "proposal"
 
 	ProposalStatusCreated   ProposalStatus = "created"
+	ProposalStatusActived   ProposalStatus = "actived"
 	ProposalStatusCancelled ProposalStatus = "cancelled"
 	ProposalStatusSucceeded ProposalStatus = "succeeded"
 	ProposalStatusDefeated  ProposalStatus = "defeated"

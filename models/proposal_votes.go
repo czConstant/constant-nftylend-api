@@ -28,5 +28,6 @@ type ProposalVote struct {
 	PowerVote        numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	Timestamp        *time.Time
 	IpfsHash         string
+	CancelledHash    string
 	Status           ProposalVoteStatus
 }
