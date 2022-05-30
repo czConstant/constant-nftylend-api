@@ -108,7 +108,7 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 			if msg.Payload.Start < time.Now().Add(-60*time.Second).Unix() {
 				return errs.NewError(errs.ErrBadRequest)
 			}
-			if msg.Payload.End < time.Now().Add(-60*time.Second).Unix() {
+			if msg.Payload.End < time.Now().Unix() {
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			if msg.Payload.Start >= msg.Payload.End {
