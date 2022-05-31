@@ -40,7 +40,7 @@ type Asset struct {
 	ParasCrawAt               *time.Time
 	NftbankCrawAt             *time.Time
 	FloorPriceAt              *time.Time
-	FloorPrice                numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	FloorPrice                numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
 }
 
 func (m *Asset) GetContractAddress() string {

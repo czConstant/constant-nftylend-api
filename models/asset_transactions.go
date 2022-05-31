@@ -23,7 +23,7 @@ type AssetTransaction struct {
 	Seller        string
 	Buyer         string
 	TransactionAt *time.Time
-	Amount        numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	Amount        numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
 	CurrencyID    uint
 	Currency      *Currency
 	TransactionID string

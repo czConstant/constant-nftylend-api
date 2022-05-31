@@ -25,6 +25,7 @@ type Collection struct {
 	DiscordURL            string
 	CoverURL              string
 	ImageURL              string
+	VolumeUsd             numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
 }
 
 type NftyRPTListingCollection struct {
