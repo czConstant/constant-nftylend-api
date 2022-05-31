@@ -65,10 +65,12 @@ func (s *Server) GetListingLoans(c *gin.Context) {
 			sort = []string{"principal_amount desc"}
 		}
 	}
+	collectionSeoUrl := s.stringFromContextQuery(c, "collection_seo_url")
 	loans, count, err := s.nls.GetListingLoans(
 		ctx,
 		models.Network(network),
 		collectionId,
+		collectionSeoUrl,
 		minPrice,
 		maxPrice,
 		minDuration,
