@@ -36,3 +36,18 @@ func (s *NftLend) CreateNotification(ctx context.Context, notiType models.Notifi
 	}
 	return nil
 }
+
+func (s *NftLend) GetNotifications(ctx context.Context, address string, page int, limit int) ([]*models.Notification, uint, error) {
+	notifications, count, err := s.nd.Find4Page(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{},
+		map[string][]interface{}{},
+		[]string{"id desc"},
+		page,
+		limit,
+	)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	return notifications, count, nil
+}
