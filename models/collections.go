@@ -23,7 +23,7 @@ type Collection struct {
 	CreatorURL            string
 	TwitterURL            string
 	DiscordURL            string
-	BannerURL             string
+	CoverURL              string
 }
 
 type NftyRPTListingCollection struct {

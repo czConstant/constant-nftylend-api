@@ -28,3 +28,27 @@ func (s *NftLend) CreateCollectionSubmitted(ctx context.Context, req *serializer
 	}
 	return nil
 }
+
+func (s *NftLend) JobVolumeCollections(ctx context.Context) error {
+	var retErr error
+	return retErr
+}
+
+func (s *NftLend) UpdateVolumeCollection(ctx context.Context, collectionID uint) error {
+	collection, err := s.cld.FirstByID(
+		daos.GetDBMainCtx(ctx),
+		collectionID,
+		map[string][]interface{}{},
+		false,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	if collection == nil {
+		return errs.NewError(errs.ErrBadRequest)
+	}
+	if collection.ParasCollectionID != "" {
+		
+	}
+	return nil
+}
