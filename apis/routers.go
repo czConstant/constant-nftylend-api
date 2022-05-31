@@ -97,4 +97,8 @@ func (s *Server) Routers() {
 		userNftAPI.GET("/settings", s.UserGetSettings)
 		userNftAPI.POST("/settings", s.UserUpdateSetting)
 	}
+	notiAPI := nftAPI.Group("/notifications")
+	{
+		notiAPI.GET("/list", s.GetNotifications)
+	}
 }
