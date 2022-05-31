@@ -320,7 +320,7 @@ func (s *NftLend) GetCollections(ctx context.Context, page int, limit int) ([]*m
 			"network in (?)": []interface{}{s.getSupportedNetworks()},
 		},
 		map[string][]interface{}{
-			"ParasCurrency": []interface{}{},
+			"Currency": []interface{}{},
 			"ListingAsset": []interface{}{
 				`id in (
 					select asset_id
@@ -361,7 +361,7 @@ func (s *NftLend) GetCollectionDetail(ctx context.Context, seoURL string) (*mode
 			"network in (?)": []interface{}{s.getSupportedNetworks()},
 		},
 		map[string][]interface{}{
-			"ParasCurrency": []interface{}{},
+			"Currency": []interface{}{},
 			"RandAsset": []interface{}{
 				func(db *gorm.DB) *gorm.DB {
 					return db.Order(`rand()`)

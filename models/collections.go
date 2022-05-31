@@ -25,10 +25,10 @@ type Collection struct {
 	DiscordURL            string
 	CoverURL              string
 	ImageURL              string
-	ParasVolumeUsd        numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
-	ParasFloorPrice       numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
-	ParasCurrencyID       uint
-	ParasCurrency         *Currency
+	VolumeUsd             numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
+	FloorPrice            numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
+	CurrencyID            uint
+	Currency              *Currency
 }
 
 type NftyRPTListingCollection struct {
