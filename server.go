@@ -106,6 +106,8 @@ func main() {
 		lod  = &daos.LoanOffer{}
 		ltd  = &daos.LoanTransaction{}
 		id   = &daos.Instruction{}
+		ntd  = &daos.NotificationTemplate{}
+		nd   = &daos.Notification{}
 
 		stc = &saletrack.Client{
 			NftbankKey: conf.SaleTrack.NftbankKey,
@@ -129,6 +131,8 @@ func main() {
 			lod,
 			ltd,
 			id,
+			ntd,
+			nd,
 		)
 	)
 
