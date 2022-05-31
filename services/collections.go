@@ -166,7 +166,7 @@ func (s *NftLend) UpdateStatsCollection(ctx context.Context, collectionID uint) 
 					if err != nil {
 						return errs.NewError(err)
 					}
-					collection.VolumeUsd = parasStats.VolumeUsd
+					collection.ParasVolumeUsd = parasStats.VolumeUsd
 					saleCurrency, err := s.getLendCurrencyBySymbol(tx, "NEAR", models.NetworkNEAR)
 					if err != nil {
 						return errs.NewError(err)
