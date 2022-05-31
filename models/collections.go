@@ -21,9 +21,10 @@ type Collection struct {
 	RandAsset             *Asset
 	ParasCollectionID     string
 	CreatorURL            string
-	TwitterURL            string
+	TwitterID             string
 	DiscordURL            string
 	CoverURL              string
+	ImageURL              string
 }
 
 type NftyRPTListingCollection struct {
