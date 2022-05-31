@@ -111,6 +111,8 @@ func main() {
 		pd   = &daos.Proposal{}
 		pcd  = &daos.ProposalChoice{}
 		pvd  = &daos.ProposalVote{}
+		ntd  = &daos.NotificationTemplate{}
+		nd   = &daos.Notification{}
 
 		stc = &saletrack.Client{
 			NftbankKey: conf.SaleTrack.NftbankKey,
@@ -143,6 +145,8 @@ func main() {
 			pd,
 			pcd,
 			pvd,
+			ntd,
+			nd,
 		)
 	)
 

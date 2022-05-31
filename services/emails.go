@@ -260,6 +260,15 @@ func (s *NftLend) getLoanOfferMap(ctx context.Context, m *models.LoanOffer) map[
 }
 
 func (s *NftLend) sendEmailToUser(ctx context.Context, address string, network models.Network, emailType string, reqMap map[string]interface{}) error {
+	err := s.CreateNotification(
+		ctx,
+		models.NotificationType(emailType),
+		address,
+		reqMap,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
 	user, err := s.GetUser(ctx, address, network)
 	if err != nil {
 		return errs.NewError(err)

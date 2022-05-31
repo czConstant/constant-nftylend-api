@@ -45,6 +45,8 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.Proposal)(nil),
 		(*models.ProposalChoice)(nil),
 		(*models.ProposalVote)(nil),
+		(*models.NotificationTemplate)(nil),
+		(*models.Notification)(nil),
 	}
 	if err := db.AutoMigrate(allTables...).Error; err != nil {
 		fmt.Println(err)
