@@ -28,6 +28,9 @@ type CollectionResp struct {
 	DiscordURL            string           `json:"discord_url"`
 	CoverURL              string           `json:"cover_url"`
 	VolumeUsd             numeric.BigFloat `json:"volume_usd"`
+	FloorPrice            numeric.BigFloat `json:"floor_price"`
+	FloorPriceCurrencyID  uint             `json:"floor_price_currency_id"`
+	FloorPriceCurrency    *CurrencyResp    `json:"floor_price_currency"`
 	RandAsset             *AssetResp       `json:"rand_asset"`
 }
 
