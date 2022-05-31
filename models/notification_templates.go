@@ -18,7 +18,7 @@ type NotificationTemplate struct {
 	Enabled     bool   `gorm:"default:0"`
 }
 
-func (m *NotificationTemplate) Execute(address string, data map[string]interface{}) (*Notification, error) {
+func (m *NotificationTemplate) Execute(network Network, address string, data map[string]interface{}) (*Notification, error) {
 	title, err := helpers.GenerateTemplateContent(m.Title, data)
 	if err != nil {
 		return nil, errs.NewError(err)
@@ -36,6 +36,7 @@ func (m *NotificationTemplate) Execute(address string, data map[string]interface
 		return nil, errs.NewError(err)
 	}
 	return &Notification{
+		Network:     network,
 		Type:        m.Type,
 		Address:     address,
 		Title:       title,

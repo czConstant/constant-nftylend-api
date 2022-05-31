@@ -8,7 +8,7 @@ import (
 	"github.com/czConstant/constant-nftylend-api/models"
 )
 
-func (s *NftLend) CreateNotification(ctx context.Context, notiType models.NotificationType, address string, reqMap map[string]interface{}) error {
+func (s *NftLend) CreateNotification(ctx context.Context, network models.Network, notiType models.NotificationType, address string, reqMap map[string]interface{}) error {
 	notiTpl, err := s.ntd.First(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
@@ -22,7 +22,7 @@ func (s *NftLend) CreateNotification(ctx context.Context, notiType models.Notifi
 		return errs.NewError(err)
 	}
 	if notiTpl != nil {
-		noti, err := notiTpl.Execute(address, reqMap)
+		noti, err := notiTpl.Execute(network, address, reqMap)
 		if err != nil {
 			return errs.NewError(err)
 		}
@@ -37,10 +37,13 @@ func (s *NftLend) CreateNotification(ctx context.Context, notiType models.Notifi
 	return nil
 }
 
-func (s *NftLend) GetNotifications(ctx context.Context, address string, page int, limit int) ([]*models.Notification, uint, error) {
+func (s *NftLend) GetNotifications(ctx context.Context, network models.Network, address string, page int, limit int) ([]*models.Notification, uint, error) {
 	notifications, count, err := s.nd.Find4Page(
 		daos.GetDBMainCtx(ctx),
-		map[string][]interface{}{},
+		map[string][]interface{}{
+			"network = ?": []interface{}{network},
+			"address = ?": []interface{}{address},
+		},
 		map[string][]interface{}{},
 		[]string{"id desc"},
 		page,

@@ -6,6 +6,7 @@ import (
 
 type Notification struct {
 	gorm.Model
+	Network     Network
 	Type        NotificationType
 	Address     string
 	Title       string `gorm:"type:text"`

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/czConstant/constant-nftylend-api/errs"
+	"github.com/czConstant/constant-nftylend-api/models"
 	"github.com/czConstant/constant-nftylend-api/serializers"
 	"github.com/gin-gonic/gin"
 )
@@ -11,7 +12,7 @@ import (
 func (s *Server) GetNotifications(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)
-	notifications, count, err := s.nls.GetNotifications(ctx, s.stringFromContextQuery(c, "address"), page, limit)
+	notifications, count, err := s.nls.GetNotifications(ctx, models.Network(s.stringFromContextQuery(c, "network")), s.stringFromContextQuery(c, "address"), page, limit)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
