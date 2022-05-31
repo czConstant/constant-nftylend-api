@@ -72,6 +72,7 @@ func (s *Server) Routers() {
 	loannftAPI := nftAPI.Group("/loans")
 	{
 		loannftAPI.GET("/borrower-stats/:address", s.GetBorrowerStats)
+		loannftAPI.GET("/platfrom-stats", s.GetPlatformStats)
 		loannftAPI.GET("/listing", s.GetListingLoans)
 		loannftAPI.GET("/list", s.GetLoans)
 		loannftAPI.GET("/offers", s.GetLoanOffers)

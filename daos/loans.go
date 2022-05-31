@@ -134,3 +134,61 @@ func (d *Loan) GetBorrowerStats(tx *gorm.DB, borrower string) (*models.BorrowerS
 	}
 	return &rs, nil
 }
+
+func (d *Loan) GetPlatformStats(tx *gorm.DB) (*models.PlatformStats, error) {
+	var rs models.PlatformStats
+	err := tx.Raw(`
+	select ifnull(
+		sum(
+				case
+					when loans.status in (
+										  'created',
+										  'done',
+										  'liquidated',
+										  'expired'
+						) then 1
+					else 0 end
+			), 0
+			) total_loans,
+		ifnull(
+				sum(
+						case
+							when loans.status in (
+												'done',
+												'liquidated',
+												'expired'
+								) then 1
+							else 0 end
+					), 0
+			) total_done_loans,
+		ifnull(
+				sum(
+						case
+							when loans.status in (
+												'liquidated',
+												'expired'
+								) then 1
+							else 0 end
+					), 0
+			) total_defaulted_loans,
+		ifnull(
+				sum(
+						case
+							when loans.status in (
+												'created',
+												'done',
+												'liquidated',
+												'expired'
+								) then loans.offer_principal_amount * currencies.price
+							else 0 end
+					), 0
+			) total_volume
+		from loans
+		join currencies on loans.currency_id = currencies.id;
+	`,
+	).Find(&rs).Error
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return &rs, nil
+}

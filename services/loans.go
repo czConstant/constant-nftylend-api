@@ -229,6 +229,19 @@ func (s *NftLend) GetRPTCollectionLoan(ctx context.Context, collectionID uint) (
 	return m, nil
 }
 
+func (s *NftLend) GetPlatformStats(ctx context.Context) (*models.PlatformStats, error) {
+	m, err := s.ld.GetPlatformStats(
+		daos.GetDBMainCtx(ctx),
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	if m == nil {
+		return nil, errs.NewError(errs.ErrBadRequest)
+	}
+	return m, nil
+}
+
 func (s *NftLend) GetBorrowerStats(ctx context.Context, borrower string) (*models.BorrowerStats, error) {
 	m, err := s.ld.GetBorrowerStats(
 		daos.GetDBMainCtx(ctx),
