@@ -20,6 +20,7 @@ func (s *NftLend) GetListingLoans(
 	ctx context.Context,
 	network models.Network,
 	collectionId uint,
+	collectionSeoUrl string,
 	minPrice float64,
 	maxPrice float64,
 	minDuration uint,
@@ -51,6 +52,27 @@ func (s *NftLend) GetListingLoans(
 			  and assets.collection_id = ?
 		)
 		`] = []interface{}{collectionId}
+	}
+	if collectionSeoUrl != "" {
+		collection, err := s.cld.First(
+			daos.GetDBMainCtx(ctx),
+			map[string][]interface{}{
+				"seo_url = ?": []interface{}{collectionSeoUrl},
+			},
+			map[string][]interface{}{},
+			[]string{"id desc"},
+		)
+		if err != nil {
+			return nil, 0, errs.NewError(err)
+		}
+		filters[`
+		exists(
+			select 1
+			from assets
+			where asset_id = assets.id
+			  and assets.collection_id = ?
+		)
+		`] = []interface{}{collection.ID}
 	}
 	if minPrice > 0 {
 		filters["principal_amount >= ?"] = []interface{}{minPrice}

@@ -27,6 +27,7 @@ type CollectionResp struct {
 	TwitterID             string           `json:"twitter_id"`
 	DiscordURL            string           `json:"discord_url"`
 	CoverURL              string           `json:"cover_url"`
+	VolumeUsd             numeric.BigFloat `json:"volume_usd"`
 	RandAsset             *AssetResp       `json:"rand_asset"`
 }
 
@@ -49,6 +50,7 @@ func NewCollectionResp(m *models.Collection) *CollectionResp {
 		TwitterID:             m.TwitterID,
 		DiscordURL:            m.DiscordURL,
 		CoverURL:              m.CoverURL,
+		VolumeUsd:             m.VolumeUsd,
 		ListingAsset:          NewAssetResp(m.ListingAsset),
 		RandAsset:             NewAssetResp(m.RandAsset),
 	}
