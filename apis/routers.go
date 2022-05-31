@@ -100,6 +100,6 @@ func (s *Server) Routers() {
 	notiAPI := nftAPI.Group("/notifications")
 	{
 		notiAPI.GET("/list", s.GetNotifications)
-		userNftAPI.POST("/seen", s.SeenNotification)
+		notiAPI.POST("/seen", s.SeenNotification)
 	}
 }
