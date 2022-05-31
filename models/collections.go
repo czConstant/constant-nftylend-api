@@ -26,9 +26,9 @@ type Collection struct {
 	CoverURL              string
 	ImageURL              string
 	VolumeUsd             numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
-	FloorPrice            numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
-	FloorPriceCurrencyID  uint
-	FloorPriceCurrency    *Currency
+	ParasFloorPrice       numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
+	ParasCurrencyID       uint
+	ParasCurrency         *Currency
 }
 
 type NftyRPTListingCollection struct {
