@@ -27,7 +27,7 @@ type CollectionResp struct {
 	TwitterID             string           `json:"twitter_id"`
 	DiscordURL            string           `json:"discord_url"`
 	CoverURL              string           `json:"cover_url"`
-	ParasVolumeUsd        numeric.BigFloat `json:"volume_usd"`
+	ParasVolumeUsd        numeric.BigFloat `json:"paras_volume_usd"`
 	ParasFloorPrice       numeric.BigFloat `json:"paras_floor_price"`
 	ParasCurrencyID       uint             `json:"paras_currency_id"`
 	ParasCurrency         *CurrencyResp    `json:"paras_currency"`
