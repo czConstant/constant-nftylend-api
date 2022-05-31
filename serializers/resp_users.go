@@ -15,6 +15,7 @@ type UserResp struct {
 	Email           string         `json:"email"`
 	NewsNotiEnabled bool           `json:"news_noti_enabled"`
 	LoanNotiEnabled bool           `json:"loan_noti_enabled"`
+	SeenNotiID      uint           `json:"seen_noti_id"`
 }
 
 func NewUserResp(m *models.User) *UserResp {
