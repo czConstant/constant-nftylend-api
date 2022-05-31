@@ -26,7 +26,7 @@ type CollectionResp struct {
 	CreatorURL            string           `json:"creator_url"`
 	TwitterURL            string           `json:"twitter_url"`
 	DiscordURL            string           `json:"discord_url"`
-	BannerURL             string           `json:"banner_url"`
+	CoverURL              string           `json:"cover_url"`
 	RandAsset             *AssetResp       `json:"rand_asset"`
 }
 
@@ -48,7 +48,7 @@ func NewCollectionResp(m *models.Collection) *CollectionResp {
 		CreatorURL:            m.CreatorURL,
 		TwitterURL:            m.TwitterURL,
 		DiscordURL:            m.DiscordURL,
-		BannerURL:             m.BannerURL,
+		CoverURL:              m.CoverURL,
 		ListingAsset:          NewAssetResp(m.ListingAsset),
 		RandAsset:             NewAssetResp(m.RandAsset),
 	}
