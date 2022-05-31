@@ -27,10 +27,10 @@ type CollectionResp struct {
 	TwitterID             string           `json:"twitter_id"`
 	DiscordURL            string           `json:"discord_url"`
 	CoverURL              string           `json:"cover_url"`
-	VolumeUsd             numeric.BigFloat `json:"paras_volume_usd"`
-	FloorPrice            numeric.BigFloat `json:"paras_floor_price"`
-	CurrencyID            uint             `json:"paras_currency_id"`
-	Currency              *CurrencyResp    `json:"paras_currency"`
+	VolumeUsd             numeric.BigFloat `json:"volume_usd"`
+	FloorPrice            numeric.BigFloat `json:"floor_price"`
+	CurrencyID            uint             `json:"currency_id"`
+	Currency              *CurrencyResp    `json:"currency"`
 	RandAsset             *AssetResp       `json:"rand_asset"`
 }
 
