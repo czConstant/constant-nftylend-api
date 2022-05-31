@@ -600,9 +600,6 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 					if err != nil {
 						return errs.NewError(err)
 					}
-					if len(parasProfiles) > 0 {
-						isVerified = parasProfiles[0].IsCreator
-					}
 					collection = &models.Collection{
 						Network:           models.NetworkNEAR,
 						SeoURL:            seoURL,
@@ -613,6 +610,12 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 						Verified:          isVerified,
 						ParasCollectionID: parasCollectionID,
 						Creator:           creator,
+					}
+					if len(parasProfiles) > 0 {
+						collection.Verified = parasProfiles[0].IsCreator
+						collection.CoverURL = parasProfiles[0].CoverURL
+						collection.CreatorURL = parasProfiles[0].Website
+						collection.TwitterID = parasProfiles[0].TwitterId
 					}
 					err = s.cld.Create(
 						tx,

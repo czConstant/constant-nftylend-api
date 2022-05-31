@@ -24,7 +24,7 @@ type CollectionResp struct {
 	OriginNetwork         models.Network   `json:"origin_network"`
 	OriginContractAddress string           `json:"origin_contract_address"`
 	CreatorURL            string           `json:"creator_url"`
-	TwitterURL            string           `json:"twitter_url"`
+	TwitterID             string           `json:"twitter_id"`
 	DiscordURL            string           `json:"discord_url"`
 	CoverURL              string           `json:"cover_url"`
 	RandAsset             *AssetResp       `json:"rand_asset"`
@@ -46,7 +46,7 @@ func NewCollectionResp(m *models.Collection) *CollectionResp {
 		OriginNetwork:         m.OriginNetwork,
 		OriginContractAddress: m.OriginContractAddress,
 		CreatorURL:            m.CreatorURL,
-		TwitterURL:            m.TwitterURL,
+		TwitterID:             m.TwitterID,
 		DiscordURL:            m.DiscordURL,
 		CoverURL:              m.CoverURL,
 		ListingAsset:          NewAssetResp(m.ListingAsset),

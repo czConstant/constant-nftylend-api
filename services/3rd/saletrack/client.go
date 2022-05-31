@@ -422,9 +422,15 @@ func (c *Client) GetParasSaleHistories(contractID string, tokenID string) ([]*Pa
 }
 
 type ParasProfileResp struct {
-	ID        string `json:"_id"`
-	AccountID string `json:"accountId"`
-	IsCreator bool   `json:"isCreator"`
+	ID          string `json:"_id"`
+	AccountID   string `json:"accountId"`
+	IsCreator   bool   `json:"isCreator"`
+	Bio         string `json:"bio"`
+	CoverURL    string `json:"coverUrl"`
+	ImgURL      string `json:"imgUrl"`
+	InstagramId string `json:"instagramId"`
+	TwitterId   string `json:"twitterId"`
+	Website     string `json:"website"`
 }
 
 func (c *Client) GetParasProfile(contractID string) ([]*ParasProfileResp, error) {
