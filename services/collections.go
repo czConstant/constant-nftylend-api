@@ -166,14 +166,14 @@ func (s *NftLend) UpdateStatsCollection(ctx context.Context, collectionID uint) 
 					if err != nil {
 						return errs.NewError(err)
 					}
-					collection.ParasVolumeUsd = parasStats.VolumeUsd
+					collection.VolumeUsd = parasStats.VolumeUsd
 					saleCurrency, err := s.getLendCurrencyBySymbol(tx, "NEAR", models.NetworkNEAR)
 					if err != nil {
 						return errs.NewError(err)
 					}
 					floorPrice := models.ConvertWeiToBigFloat(&parasStats.FloorPrice.Int, saleCurrency.Decimals)
-					collection.ParasFloorPrice = numeric.BigFloat{*floorPrice}
-					collection.ParasCurrencyID = saleCurrency.ID
+					collection.FloorPrice = numeric.BigFloat{*floorPrice}
+					collection.CurrencyID = saleCurrency.ID
 					err = s.cld.Save(
 						tx,
 						collection,
