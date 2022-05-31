@@ -7,6 +7,7 @@ import (
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/models"
 	"github.com/czConstant/constant-nftylend-api/serializers"
+	"github.com/czConstant/constant-nftylend-api/types/numeric"
 	"github.com/jinzhu/gorm"
 )
 
@@ -166,6 +167,13 @@ func (s *NftLend) UpdateStatsCollection(ctx context.Context, collectionID uint) 
 						return errs.NewError(err)
 					}
 					collection.VolumeUsd = parasStats.VolumeUsd
+					saleCurrency, err := s.getLendCurrencyBySymbol(tx, "NEAR", models.NetworkNEAR)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					floorPrice := models.ConvertWeiToBigFloat(&parasStats.FloorPrice.Int, saleCurrency.Decimals)
+					collection.ParasFloorPrice = numeric.BigFloat{*floorPrice}
+					collection.ParasCurrencyID = saleCurrency.ID
 					err = s.cld.Save(
 						tx,
 						collection,
