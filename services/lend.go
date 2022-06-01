@@ -45,6 +45,13 @@ type NftLend struct {
 	pvd  *daos.ProposalVote
 	ntd  *daos.NotificationTemplate
 	nd   *daos.Notification
+
+	// for incentive
+	ubd  *daos.UserBalance
+	ubhd *daos.UserBalanceHistory
+	ipd  *daos.IncentiveProgram
+	ipdd *daos.IncentiveProgramDetail
+	itd  *daos.IncentiveTransaction
 }
 
 func NewNftLend(
@@ -69,6 +76,13 @@ func NewNftLend(
 	ntd *daos.NotificationTemplate,
 	nd *daos.Notification,
 
+	// for incentive
+	ubd *daos.UserBalance,
+	ubhd *daos.UserBalanceHistory,
+	ipd *daos.IncentiveProgram,
+	ipdd *daos.IncentiveProgramDetail,
+	itd *daos.IncentiveTransaction,
+
 ) *NftLend {
 	s := &NftLend{
 		conf: conf,
@@ -91,6 +105,13 @@ func NewNftLend(
 		pvd:  pvd,
 		ntd:  ntd,
 		nd:   nd,
+
+		// for incentive
+		ubd:  ubd,
+		ubhd: ubhd,
+		ipd:  ipd,
+		ipdd: ipdd,
+		itd:  itd,
 	}
 	if s.conf.Contract.ProgramID != "" {
 		go stc.StartWssSolsea(s.solseaMsgReceived)

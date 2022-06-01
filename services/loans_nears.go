@@ -375,6 +375,60 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 			if err != nil {
 				return errs.NewError(err)
 			}
+			switch loan.Status {
+			case models.LoanStatusNew:
+				{
+					err = s.IncentiveForLoan(
+						tx,
+						models.IncentiveTransactionTypeBorrowerLoanDelisted,
+						loan.ID,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
+			case models.LoanStatusCreated,
+				models.LoanStatusDone,
+				models.LoanStatusLiquidated,
+				models.LoanStatusExpired:
+				{
+					err = s.IncentiveForLoan(
+						tx,
+						models.IncentiveTransactionTypeBorrowerLoanListed,
+						loan.ID,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					err = s.IncentiveForLoan(
+						tx,
+						models.IncentiveTransactionTypeLenderLoanMatched,
+						loan.ID,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
+			case models.LoanStatusCancelled:
+				{
+					err = s.IncentiveForLoan(
+						tx,
+						models.IncentiveTransactionTypeBorrowerLoanListed,
+						loan.ID,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					err = s.IncentiveForLoan(
+						tx,
+						models.IncentiveTransactionTypeBorrowerLoanDelisted,
+						loan.ID,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
+			}
 			return nil
 		},
 	)
