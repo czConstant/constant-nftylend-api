@@ -380,7 +380,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				{
 					err = s.IncentiveForLoan(
 						tx,
-						models.IncentiveTransactionTypeBorrowerLoanDelisted,
+						models.IncentiveTransactionTypeBorrowerLoanListed,
 						loan.ID,
 					)
 					if err != nil {
