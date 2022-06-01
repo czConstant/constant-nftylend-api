@@ -7,6 +7,7 @@ import (
 
 	"github.com/czConstant/constant-nftylend-api/daos"
 	"github.com/czConstant/constant-nftylend-api/errs"
+	"github.com/czConstant/constant-nftylend-api/helpers"
 	"github.com/czConstant/constant-nftylend-api/models"
 	"github.com/jinzhu/gorm"
 )
@@ -132,7 +133,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 						CurrencyID:         ipdM.IncentiveProgram.CurrencyID,
 						LoanID:             loanID,
 						Amount:             ipdM.Amount,
-						LockUntilAt:        loan.ValidAt,
+						LockUntilAt:        helpers.TimeAdd(*checkIncentiveTime, time.Duration(ipM.LockDuration)*time.Second),
 						UnlockedAt:         nil,
 						Status:             txStatus,
 					}
