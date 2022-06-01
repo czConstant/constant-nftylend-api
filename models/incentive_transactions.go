@@ -11,7 +11,7 @@ type IncentiveTransactionStatus string
 
 const (
 	IncentiveTransactionStatusLocked   IncentiveTransactionStatus = "locked"
-	IncentiveTransactionStatusReleased IncentiveTransactionStatus = "released"
+	IncentiveTransactionStatusUnlocked IncentiveTransactionStatus = "unlocked"
 	IncentiveTransactionStatusRevoked  IncentiveTransactionStatus = "revoked"
 	IncentiveTransactionStatusDone     IncentiveTransactionStatus = "done"
 )

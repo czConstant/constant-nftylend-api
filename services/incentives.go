@@ -231,7 +231,7 @@ func (s *NftLend) IncentiveForUnlock(ctx context.Context, transactionID uint) er
 			if itM.LockUntilAt.After(time.Now()) {
 				return errs.NewError(errs.ErrBadRequest)
 			}
-			itM.Status = models.IncentiveTransactionStatusLocked
+			itM.Status = models.IncentiveTransactionStatusUnlocked
 			err = s.itd.Save(
 				tx,
 				itM,
