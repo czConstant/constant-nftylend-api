@@ -24,4 +24,5 @@ type IncentiveProgram struct {
 	Description       string `gorm:"type:text"`
 	Status            string
 	LoanValidDuration uint `gorm:"default:0"`
+	LockDuration      uint `gorm:"default:0"`
 }

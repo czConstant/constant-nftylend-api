@@ -133,7 +133,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 						CurrencyID:         ipdM.IncentiveProgram.CurrencyID,
 						LoanID:             loanID,
 						Amount:             ipdM.Amount,
-						LockUntilAt:        helpers.TimeAdd(*checkIncentiveTime, time.Duration(loan.OfferDuration)*time.Second),
+						LockUntilAt:        helpers.TimeAdd(*checkIncentiveTime, time.Duration(ipM.LockDuration)*time.Second),
 						UnlockedAt:         nil,
 						Status:             txStatus,
 					}
