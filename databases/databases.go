@@ -42,6 +42,12 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.Instruction)(nil),
 		(*models.NotificationTemplate)(nil),
 		(*models.Notification)(nil),
+
+		(*models.UserBalance)(nil),
+		(*models.UserBalanceHistory)(nil),
+		(*models.IncentiveProgram)(nil),
+		(*models.IncentiveProgramDetail)(nil),
+		(*models.IncentiveTransaction)(nil),
 	}
 	if err := db.AutoMigrate(allTables...).Error; err != nil {
 		return err
