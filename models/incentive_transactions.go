@@ -13,6 +13,7 @@ const (
 	IncentiveTransactionStatusLocked   IncentiveTransactionStatus = "locked"
 	IncentiveTransactionStatusReleased IncentiveTransactionStatus = "released"
 	IncentiveTransactionStatusRevoked  IncentiveTransactionStatus = "revoked"
+	IncentiveTransactionStatusDone     IncentiveTransactionStatus = "done"
 )
 
 type IncentiveTransaction struct {
