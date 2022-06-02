@@ -27,7 +27,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 		return nil, false, errs.NewError(errs.ErrBadRequest)
 	}
 	req.ContractAddress = strings.ToLower(req.ContractAddress)
-	asset, err := s.NearSynAsset(ctx, req.ContractAddress, req.TokenID)
+	asset, err := s.CreateNearAsset(ctx, req.ContractAddress, req.TokenID)
 	if err != nil {
 		return nil, false, errs.NewError(err)
 	}
@@ -544,7 +544,7 @@ func (s *NftLend) NearCreateLoanOffer(ctx context.Context, loanID uint, req *ser
 	return offer, nil
 }
 
-func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, tokenID string) (*models.Asset, error) {
+func (s *NftLend) CreateNearAsset(ctx context.Context, contractAddress string, tokenID string) (*models.Asset, error) {
 	var asset *models.Asset
 	var err error
 	err = daos.WithTransaction(
