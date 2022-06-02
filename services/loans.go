@@ -81,7 +81,7 @@ func (s *NftLend) GetListingLoans(
 		values := []interface{}{}
 		for _, s := range searchs {
 			conditions = append(conditions, "and assets.search_text like ?")
-			values = append(values, fmt.Sprintf("%%%s%%", s))
+			values = append(values, fmt.Sprintf("%%%s%%", strings.ToLower(s)))
 		}
 		filters[fmt.Sprintf(`
 			exists(
