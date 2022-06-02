@@ -545,7 +545,12 @@ func (s *NftLend) NearCreateLoanOffer(ctx context.Context, loanID uint, req *ser
 }
 
 func (s *NftLend) CreateNearAsset(ctx context.Context, contractAddress string, tokenID string) (*models.Asset, error) {
-	contractAddress = strings.ToLower(contractAddress)
+	if contractAddress != strings.TrimSpace(strings.ToLower(contractAddress)) {
+		return nil, errs.NewError(errs.ErrBadRequest)
+	}
+	if tokenID != strings.TrimSpace(strings.ToLower(tokenID)) {
+		return nil, errs.NewError(errs.ErrBadRequest)
+	}
 	var asset *models.Asset
 	var err error
 	err = daos.WithTransaction(
