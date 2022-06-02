@@ -233,7 +233,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 									OriginContractAddress: collection.OriginContractAddress,
 									OriginTokenID:         tokenId,
 								}
-								asset.SearchText = strings.TrimSpace(strings.ToLower(fmt.Sprintf("%s %s", asset.Name, asset.Description)))
+								asset.SearchText = strings.TrimSpace(strings.ToLower(fmt.Sprintf("%s %s %s %s %s", collection.Name, collection.Description, asset.ContractAddress, asset.Name, asset.Description)))
 								err = s.ad.Create(
 									tx,
 									asset,
