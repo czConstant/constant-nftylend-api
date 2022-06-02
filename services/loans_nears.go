@@ -627,7 +627,7 @@ func (s *NftLend) CreateNearAsset(ctx context.Context, contractAddress string, t
 							if parasCollectionID == "" {
 								return errs.NewError(errs.ErrBadRequest)
 							}
-							collectionName = seriesMetaData.Collection
+							collectionName = seriesMetaData.CollectionName
 							description = seriesMetaData.Description
 							sellerFeeRate, _ = models.ConvertWeiToBigFloat(big.NewInt(seriesData.RoyaltyRate), 4).Float64()
 							seoURL = helpers.MakeSeoURL(fmt.Sprintf("%s-%s-%s", models.NetworkNEAR, contractAddress, parasCollectionID))
