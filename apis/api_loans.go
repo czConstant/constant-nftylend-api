@@ -65,6 +65,7 @@ func (s *Server) GetListingLoans(c *gin.Context) {
 			sort = []string{"principal_amount desc"}
 		}
 	}
+	search := s.stringFromContextQuery(c, "search")
 	collectionSeoUrl := s.stringFromContextQuery(c, "collection_seo_url")
 	loans, count, err := s.nls.GetListingLoans(
 		ctx,
@@ -77,6 +78,7 @@ func (s *Server) GetListingLoans(c *gin.Context) {
 		maxDuration,
 		minInterestRate,
 		maxInterestRate,
+		search,
 		excludeIds,
 		sort,
 		page,
