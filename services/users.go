@@ -219,7 +219,19 @@ func (s *NftLend) getUserBalance(tx *gorm.DB, network models.Network, address st
 		return nil, errs.NewError(err)
 	}
 	if userBalance == nil {
+		user, err := s.getUser(
+			tx,
+			address,
+			network,
+		)
+		if err != nil {
+			return nil, errs.NewError(err)
+		}
+		if user == nil {
+			return nil, errs.NewError(errs.ErrBadRequest)
+		}
 		userBalance = &models.UserBalance{
+			UserID:         user.ID,
 			Network:        network,
 			Address:        address,
 			AddressChecked: strings.ToLower(strings.TrimSpace(address)),
