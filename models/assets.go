@@ -22,6 +22,7 @@ type Asset struct {
 	Name                      string
 	Symbol                    string
 	Description               string `gorm:"type:text"`
+	SearchText                string `gorm:"type:text collate utf8mb4_unicode_ci"`
 	MimeType                  string
 	SellerFeeRate             float64 `gorm:"type:decimal(6,4);default:0"`
 	Attributes                string  `gorm:"type:text"`
