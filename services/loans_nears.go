@@ -592,7 +592,7 @@ func (s *NftLend) CreateNearAsset(ctx context.Context, contractAddress string, t
 				var tokenMetaData *saletrack.EvmNftMetaResp
 				var sellerFeeRate float64
 				seoURL := helpers.MakeSeoURL(fmt.Sprintf("%s-%s", models.NetworkNEAR, contractAddress))
-				creator := tokenData.OwnerID
+				creator := contractAddress
 				if tokenData.Metadata.Reference != "" {
 					tokenURL = helpers.MergeMetaInfoURL(collectionData.BaseUri, tokenData.Metadata.Reference)
 					tokenMetaData, err = s.stc.GetEvmNftMetaResp(helpers.ConvertImageDataURL(tokenURL))
