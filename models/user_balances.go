@@ -7,6 +7,7 @@ import (
 
 type UserBalance struct {
 	gorm.Model
+	UserID         uint
 	Network        Network
 	Address        string
 	AddressChecked string

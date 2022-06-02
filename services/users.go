@@ -37,7 +37,7 @@ func (s *NftLend) GetUser(ctx context.Context, address string, network models.Ne
 	err = daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			user, err = s.getUser(tx, address, network)
+			user, err = s.getUser(tx, network, address)
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -50,7 +50,7 @@ func (s *NftLend) GetUser(ctx context.Context, address string, network models.Ne
 	return user, nil
 }
 
-func (s *NftLend) getUser(tx *gorm.DB, address string, network models.Network) (*models.User, error) {
+func (s *NftLend) getUser(tx *gorm.DB, network models.Network, address string) (*models.User, error) {
 	if address == "" {
 		return nil, errs.NewError(errs.ErrBadRequest)
 	}
@@ -124,7 +124,7 @@ func (s *NftLend) UserGetSettings(ctx context.Context, address string, network m
 	err = daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			user, err = s.getUser(tx, address, network)
+			user, err = s.getUser(tx, network, address)
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -164,7 +164,7 @@ func (s *NftLend) UserUpdateSetting(ctx context.Context, req *serializers.Update
 	err = daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			user, err = s.getUser(tx, req.Address, req.Network)
+			user, err = s.getUser(tx, req.Network, req.Address)
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -219,7 +219,19 @@ func (s *NftLend) getUserBalance(tx *gorm.DB, network models.Network, address st
 		return nil, errs.NewError(err)
 	}
 	if userBalance == nil {
+		user, err := s.getUser(
+			tx,
+			network,
+			address,
+		)
+		if err != nil {
+			return nil, errs.NewError(err)
+		}
+		if user == nil {
+			return nil, errs.NewError(errs.ErrBadRequest)
+		}
 		userBalance = &models.UserBalance{
+			UserID:         user.ID,
 			Network:        network,
 			Address:        address,
 			AddressChecked: strings.ToLower(strings.TrimSpace(address)),
