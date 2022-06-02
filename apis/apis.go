@@ -77,7 +77,12 @@ func (s *Server) GetAssetDetailInfo(c *gin.Context) {
 
 func (s *Server) GetCollectionAssetVerified(c *gin.Context) {
 	ctx := s.requestContext(c)
-	m, err := s.nls.GetCollectionVerified(ctx, s.stringFromContextQuery(c, "mint"))
+	m, err := s.nls.GetCollectionVerified(
+		ctx,
+		models.Network(s.stringFromContextQuery(c, "network")),
+		s.stringFromContextQuery(c, "contract_address"),
+		s.stringFromContextQuery(c, "token_id"),
+	)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

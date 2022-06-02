@@ -149,7 +149,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 								if err != nil {
 									return errs.NewError(err)
 								}
-								collection, tokenId, err := s.getCollectionVerified(
+								collection, tokenId, err := s.getSolanaCollectionVerified(
 									tx,
 									req.NftCollateralContract,
 									meta,
