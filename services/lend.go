@@ -456,16 +456,22 @@ func (s *NftLend) GetCollectionVerified(ctx context.Context, network models.Netw
 			if err != nil {
 				return nil, errs.NewError(err)
 			}
-			// csM, err := s.clsd.First(
-			// 	daos.GetDBMainCtx(ctx),
-			// 	map[string][]interface{}{
-			// 		"network = ?": []interface{}{m.Network},
-			// 		"creator = ?": []interface{}{m.Creator},
-			// 		"status = ?":  []interface{}{models.CollectionSubmittedStatusApproved},
-			// 	},
-			// 	map[string][]interface{}{},
-			// 	[]string{},
-			// )
+			csM, err := s.clsd.First(
+				daos.GetDBMainCtx(ctx),
+				map[string][]interface{}{
+					"network = ?": []interface{}{m.Network},
+					"creator = ?": []interface{}{m.Creator},
+					"status = ?":  []interface{}{models.CollectionSubmittedStatusApproved},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+			if csM == nil {
+				m = nil
+			}
 		}
 	}
 	return m, nil
