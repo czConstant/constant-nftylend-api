@@ -4,6 +4,10 @@ import "github.com/jinzhu/gorm"
 
 type CollectionSubmittedStatus string
 
+const (
+	CollectionSubmittedStatusApproved CollectionSubmittedStatus = "approved"
+)
+
 type CollectionSubmitted struct {
 	gorm.Model
 	Network         Network
