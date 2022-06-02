@@ -668,6 +668,7 @@ func (s *NftLend) CreateNearAsset(ctx context.Context, contractAddress string, t
 					if len(parasProfiles) > 0 {
 						collection.Verified = parasProfiles[0].IsCreator
 						collection.CoverURL = parasProfiles[0].CoverURL
+						collection.ImageURL = parasProfiles[0].ImgURL
 						collection.CreatorURL = parasProfiles[0].Website
 						collection.TwitterID = parasProfiles[0].TwitterId
 					}
