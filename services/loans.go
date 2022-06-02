@@ -638,6 +638,7 @@ func (s *NftLend) EvmSynAsset(ctx context.Context, network models.Network, contr
 					OriginContractAddress: "",
 					OriginTokenID:         "",
 				}
+				asset.SearchText = strings.ToLower(fmt.Sprintf("%s %s", asset.Name, asset.Description))
 				err = s.ad.Create(
 					tx,
 					asset,
