@@ -13,7 +13,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func (s *NftLend) GetUser(ctx context.Context, address string, network models.Network) (*models.User, error) {
+func (s *NftLend) GetUser(ctx context.Context, network models.Network, address string) (*models.User, error) {
 	var user *models.User
 	var err error
 	if address == "" {

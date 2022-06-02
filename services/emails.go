@@ -263,14 +263,14 @@ func (s *NftLend) sendEmailToUser(ctx context.Context, address string, network m
 	err := s.CreateNotification(
 		ctx,
 		network,
-		models.NotificationType(emailType),
 		address,
+		models.NotificationType(emailType),
 		reqMap,
 	)
 	if err != nil {
 		return errs.NewError(err)
 	}
-	user, err := s.GetUser(ctx, address, network)
+	user, err := s.GetUser(ctx, network, address)
 	if err != nil {
 		return errs.NewError(err)
 	}
