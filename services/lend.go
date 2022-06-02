@@ -453,6 +453,9 @@ func (s *NftLend) GetCollectionVerified(ctx context.Context, network models.Netw
 				map[string][]interface{}{},
 				false,
 			)
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
 			// csM, err := s.clsd.First(
 			// 	daos.GetDBMainCtx(ctx),
 			// 	map[string][]interface{}{
