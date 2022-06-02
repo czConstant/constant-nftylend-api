@@ -27,6 +27,7 @@ func (s *NftLend) GetListingLoans(
 	maxDuration uint,
 	minInterestRate float64,
 	maxInterestRate float64,
+	search string,
 	excludeIds []uint,
 	sort []string,
 	page int,
@@ -73,6 +74,23 @@ func (s *NftLend) GetListingLoans(
 			  and assets.collection_id = ?
 		)
 		`] = []interface{}{collection.ID}
+	}
+	if search != "" {
+		searchs := strings.Split(search, " ")
+		conditions := []string{}
+		values := []interface{}{}
+		for _, s := range searchs {
+			conditions = append(conditions, "and assets.search_text like ?")
+			values = append(values, fmt.Sprintf("%%%s%%", s))
+		}
+		filters[fmt.Sprintf(`
+			exists(
+				select 1
+				from assets
+				where asset_id = assets.id
+				  %s
+			)
+			`, strings.Join(conditions, " "))] = values
 	}
 	if minPrice > 0 {
 		filters["principal_amount >= ?"] = []interface{}{minPrice}
