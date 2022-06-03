@@ -304,7 +304,7 @@ func (s *NftLend) GetLoanTransactions(ctx context.Context, assetID uint, page in
 		exists(
 			select 1
 			from loans
-			where loan_id = loans.id
+			where loan_transactions.loan_id = loans.id
 			  and loans.asset_id = ?
 		)
 		`] = []interface{}{assetID}
