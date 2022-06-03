@@ -28,7 +28,8 @@ const (
 type Proposal struct {
 	gorm.Model
 	Network           Network
-	Address           string
+	UserID            uint
+	User              *User
 	Type              string
 	ChoiceType        ProposalChoiceType
 	Msg               string `gorm:"type:text"`
