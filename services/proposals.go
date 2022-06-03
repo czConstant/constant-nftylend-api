@@ -24,6 +24,7 @@ func (s *NftLend) GetProposals(ctx context.Context, statuses []string, page int,
 		daos.GetDBMainCtx(ctx),
 		filters,
 		map[string][]interface{}{
+			"User":    []interface{}{},
 			"Choices": []interface{}{},
 		},
 		[]string{"id desc"},
@@ -47,6 +48,7 @@ func (s *NftLend) GetProposalVotes(ctx context.Context, proposalID uint, statuse
 		daos.GetDBMainCtx(ctx),
 		filters,
 		map[string][]interface{}{
+			"User":           []interface{}{},
 			"Proposal":       []interface{}{},
 			"ProposalChoice": []interface{}{},
 		},
