@@ -11,6 +11,8 @@ type NotificationResp struct {
 	CreatedAt   time.Time               `json:"created_at"`
 	UpdatedAt   time.Time               `json:"updated_at"`
 	Network     models.Network          `json:"network"`
+	UserID      uint                    `json:"user_id"`
+	User        *UserResp               `json:"user"`
 	Type        models.NotificationType `json:"type"`
 	Title       string                  `json:"title"`
 	Content     string                  `json:"content"`
@@ -27,6 +29,8 @@ func NewNotificationResp(m *models.Notification) *NotificationResp {
 		CreatedAt:   m.CreatedAt,
 		UpdatedAt:   m.UpdatedAt,
 		Network:     m.Network,
+		UserID:      m.UserID,
+		User:        NewUserResp(m.User),
 		Type:        m.Type,
 		Title:       m.Title,
 		Content:     m.Content,

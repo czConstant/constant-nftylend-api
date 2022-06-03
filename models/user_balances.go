@@ -7,8 +7,9 @@ import (
 
 type UserBalance struct {
 	gorm.Model
-	UserID        uint
 	Network       Network
+	UserID        uint
+	User          *User
 	CurrencyID    uint
 	Currency      *Currency
 	Balance       numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
