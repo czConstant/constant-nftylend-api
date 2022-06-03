@@ -31,7 +31,7 @@ func (s *NftLend) CreateNotification(ctx context.Context, network models.Network
 				return errs.NewError(err)
 			}
 			if notiTpl != nil {
-				noti, err := notiTpl.Execute(network, address, user.ID, reqMap)
+				noti, err := notiTpl.Execute(network, user.ID, reqMap)
 				if err != nil {
 					return errs.NewError(err)
 				}

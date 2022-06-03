@@ -6,10 +6,9 @@ import (
 
 type Notification struct {
 	gorm.Model
-	UserID      uint
 	Network     Network
+	UserID      uint
 	Type        NotificationType
-	Address     string
 	Title       string `gorm:"type:text"`
 	Content     string `gorm:"type:text"`
 	RedirectURL string `gorm:"type:text"`
