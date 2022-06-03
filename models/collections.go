@@ -21,9 +21,14 @@ type Collection struct {
 	RandAsset             *Asset
 	ParasCollectionID     string
 	CreatorURL            string
-	TwitterURL            string
+	TwitterID             string
 	DiscordURL            string
-	BannerURL             string
+	CoverURL              string
+	ImageURL              string
+	VolumeUsd             numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
+	FloorPrice            numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
+	CurrencyID            uint
+	Currency              *Currency
 }
 
 type NftyRPTListingCollection struct {
@@ -41,4 +46,11 @@ type BorrowerStats struct {
 	TotalLoans     uint
 	TotalDoneLoans uint
 	TotalVolume    numeric.BigFloat
+}
+
+type PlatformStats struct {
+	TotalLoans          uint
+	TotalDoneLoans      uint
+	TotalDefaultedLoans uint
+	TotalVolume         numeric.BigFloat
 }

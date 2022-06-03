@@ -73,6 +73,7 @@ func (s *Server) Routers() {
 	loannftAPI := nftAPI.Group("/loans")
 	{
 		loannftAPI.GET("/borrower-stats/:address", s.GetBorrowerStats)
+		loannftAPI.GET("/platform-stats", s.GetPlatformStats)
 		loannftAPI.GET("/listing", s.GetListingLoans)
 		loannftAPI.GET("/list", s.GetLoans)
 		loannftAPI.GET("/offers", s.GetLoanOffers)
@@ -97,9 +98,11 @@ func (s *Server) Routers() {
 	jobsNftAPI.Use(s.authorizeJobMiddleware())
 	{
 		jobsNftAPI.POST("/evm-filter-logs", s.JobEvmNftypawnFilterLogs)
+		jobsNftAPI.POST("/incentive-unlock", s.JobIncentiveForUnlock)
 		jobsNftAPI.POST("/update-price", s.JobUpdateCurrencyPrice)
 		jobsNftAPI.POST("/email-chedule", s.JobEmailSchedule)
 		jobsNftAPI.POST("/proposal-status", s.JobProposalStatus)
+		jobsNftAPI.POST("/update-stats", s.JobUpdateStats)
 	}
 	userNftAPI := nftAPI.Group("/users")
 	{

@@ -22,6 +22,18 @@ func (s *Server) GetBorrowerStats(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewBorrowerStatsResp(stats)})
 }
 
+func (s *Server) GetPlatformStats(c *gin.Context) {
+	ctx := s.requestContext(c)
+	stats, err := s.nls.GetPlatformStats(
+		ctx,
+	)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewPlatformStatsResp(stats)})
+}
+
 func (s *Server) GetListingLoans(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)
@@ -53,16 +65,20 @@ func (s *Server) GetListingLoans(c *gin.Context) {
 			sort = []string{"principal_amount desc"}
 		}
 	}
+	search := s.stringFromContextQuery(c, "search")
+	collectionSeoUrl := s.stringFromContextQuery(c, "collection_seo_url")
 	loans, count, err := s.nls.GetListingLoans(
 		ctx,
 		models.Network(network),
 		collectionId,
+		collectionSeoUrl,
 		minPrice,
 		maxPrice,
 		minDuration,
 		maxDuration,
 		minInterestRate,
 		maxInterestRate,
+		search,
 		excludeIds,
 		sort,
 		page,

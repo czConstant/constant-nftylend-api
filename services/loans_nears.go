@@ -27,7 +27,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 		return nil, false, errs.NewError(errs.ErrBadRequest)
 	}
 	req.ContractAddress = strings.ToLower(req.ContractAddress)
-	asset, err := s.NearSynAsset(ctx, req.ContractAddress, req.TokenID)
+	asset, err := s.CreateNearAsset(ctx, req.ContractAddress, req.TokenID)
 	if err != nil {
 		return nil, false, errs.NewError(err)
 	}
@@ -375,6 +375,60 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 			if err != nil {
 				return errs.NewError(err)
 			}
+			switch loan.Status {
+			case models.LoanStatusNew:
+				{
+					err = s.IncentiveForLoan(
+						tx,
+						models.IncentiveTransactionTypeBorrowerLoanListed,
+						loan.ID,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
+			case models.LoanStatusCreated,
+				models.LoanStatusDone,
+				models.LoanStatusLiquidated,
+				models.LoanStatusExpired:
+				{
+					err = s.IncentiveForLoan(
+						tx,
+						models.IncentiveTransactionTypeBorrowerLoanListed,
+						loan.ID,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					err = s.IncentiveForLoan(
+						tx,
+						models.IncentiveTransactionTypeLenderLoanMatched,
+						loan.ID,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
+			case models.LoanStatusCancelled:
+				{
+					err = s.IncentiveForLoan(
+						tx,
+						models.IncentiveTransactionTypeBorrowerLoanListed,
+						loan.ID,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					err = s.IncentiveForLoan(
+						tx,
+						models.IncentiveTransactionTypeBorrowerLoanDelisted,
+						loan.ID,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
+			}
 			return nil
 		},
 	)
@@ -490,7 +544,7 @@ func (s *NftLend) NearCreateLoanOffer(ctx context.Context, loanID uint, req *ser
 	return offer, nil
 }
 
-func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, tokenID string) (*models.Asset, error) {
+func (s *NftLend) CreateNearAsset(ctx context.Context, contractAddress string, tokenID string) (*models.Asset, error) {
 	var asset *models.Asset
 	var err error
 	err = daos.WithTransaction(
@@ -538,7 +592,7 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 				var tokenMetaData *saletrack.EvmNftMetaResp
 				var sellerFeeRate float64
 				seoURL := helpers.MakeSeoURL(fmt.Sprintf("%s-%s", models.NetworkNEAR, contractAddress))
-				creator := tokenData.OwnerID
+				creator := contractAddress
 				if tokenData.Metadata.Reference != "" {
 					tokenURL = helpers.MergeMetaInfoURL(collectionData.BaseUri, tokenData.Metadata.Reference)
 					tokenMetaData, err = s.stc.GetEvmNftMetaResp(helpers.ConvertImageDataURL(tokenURL))
@@ -573,7 +627,7 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 							if parasCollectionID == "" {
 								return errs.NewError(errs.ErrBadRequest)
 							}
-							collectionName = seriesMetaData.Collection
+							collectionName = seriesMetaData.CollectionName
 							description = seriesMetaData.Description
 							sellerFeeRate, _ = models.ConvertWeiToBigFloat(big.NewInt(seriesData.RoyaltyRate), 4).Float64()
 							seoURL = helpers.MakeSeoURL(fmt.Sprintf("%s-%s-%s", models.NetworkNEAR, contractAddress, parasCollectionID))
@@ -600,9 +654,6 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 					if err != nil {
 						return errs.NewError(err)
 					}
-					if len(parasProfiles) > 0 {
-						isVerified = parasProfiles[0].IsCreator
-					}
 					collection = &models.Collection{
 						Network:           models.NetworkNEAR,
 						SeoURL:            seoURL,
@@ -613,6 +664,13 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 						Verified:          isVerified,
 						ParasCollectionID: parasCollectionID,
 						Creator:           creator,
+					}
+					if len(parasProfiles) > 0 {
+						collection.Verified = parasProfiles[0].IsCreator
+						collection.CoverURL = parasProfiles[0].CoverURL
+						collection.ImageURL = parasProfiles[0].ImgURL
+						collection.CreatorURL = parasProfiles[0].Website
+						collection.TwitterID = parasProfiles[0].TwitterId
 					}
 					err = s.cld.Create(
 						tx,
@@ -652,6 +710,7 @@ func (s *NftLend) NearSynAsset(ctx context.Context, contractAddress string, toke
 					}
 					asset.MetaJson = string(metaJson)
 				}
+				asset.SearchText = strings.TrimSpace(strings.ToLower(fmt.Sprintf("%s %s %s %s %s", collection.Name, collection.Description, asset.ContractAddress, asset.Name, asset.Description)))
 				err = s.ad.Create(
 					tx,
 					asset,

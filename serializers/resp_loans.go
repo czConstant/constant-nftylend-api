@@ -120,3 +120,23 @@ func NewBorrowerStatsResp(m *models.BorrowerStats) *BorrowerStatsResp {
 	}
 	return resp
 }
+
+type PlatformStatsResp struct {
+	TotalLoans          uint             `json:"total_loans"`
+	TotalDoneLoans      uint             `json:"total_done_loans"`
+	TotalDefaultedLoans uint             `json:"total_defaulted_loans"`
+	TotalVolume         numeric.BigFloat `json:"total_volume"`
+}
+
+func NewPlatformStatsResp(m *models.PlatformStats) *PlatformStatsResp {
+	if m == nil {
+		return nil
+	}
+	resp := &PlatformStatsResp{
+		TotalLoans:          m.TotalLoans,
+		TotalDoneLoans:      m.TotalDoneLoans,
+		TotalDefaultedLoans: m.TotalDefaultedLoans,
+		TotalVolume:         m.TotalVolume,
+	}
+	return resp
+}

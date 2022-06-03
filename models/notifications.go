@@ -6,6 +6,7 @@ import (
 
 type Notification struct {
 	gorm.Model
+	UserID      uint
 	Network     Network
 	Type        NotificationType
 	Address     string

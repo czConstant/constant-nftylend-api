@@ -305,14 +305,15 @@ func (c *Client) PubSolseaMsg(msg string) {
 }
 
 type EvmNftMetaResp struct {
-	Description  string `json:"description"`
-	ExternalUrl  string `json:"external_url"`
-	Image        string `json:"image"`
-	Name         string `json:"name"`
-	Collection   string `json:"collection"`
-	CollectionID string `json:"collection_id"`
-	CreatorID    string `json:"creator_id"`
-	Attributes   []struct {
+	Description    string      `json:"description"`
+	ExternalUrl    string      `json:"external_url"`
+	Image          string      `json:"image"`
+	Name           string      `json:"name"`
+	Collection     interface{} `json:"collection"`
+	CollectionName string      `json:"collection_name"`
+	CollectionID   string      `json:"collection_id"`
+	CreatorID      string      `json:"creator_id"`
+	Attributes     []struct {
 		TraitType string      `json:"trait_type"`
 		Value     interface{} `json:"value"`
 	} `json:"attributes"`
@@ -345,6 +346,14 @@ func (c *Client) GetEvmNftMetaResp(tokenURL string) (*EvmNftMetaResp, error) {
 	err = json.NewDecoder(resp.Body).Decode(&rs)
 	if err != nil {
 		return nil, err
+	}
+	_, ok := rs.Collection.(string)
+	if ok {
+		rs.CollectionName = rs.Collection.(string)
+	}
+	_, ok = rs.Collection.(map[string]interface{})
+	if ok {
+		rs.CollectionName = rs.Collection.(map[string]interface{})["name"].(string)
 	}
 	return &rs, nil
 }
@@ -422,9 +431,15 @@ func (c *Client) GetParasSaleHistories(contractID string, tokenID string) ([]*Pa
 }
 
 type ParasProfileResp struct {
-	ID        string `json:"_id"`
-	AccountID string `json:"accountId"`
-	IsCreator bool   `json:"isCreator"`
+	ID          string `json:"_id"`
+	AccountID   string `json:"accountId"`
+	IsCreator   bool   `json:"isCreator"`
+	Bio         string `json:"bio"`
+	CoverURL    string `json:"coverUrl"`
+	ImgURL      string `json:"imgUrl"`
+	InstagramId string `json:"instagramId"`
+	TwitterId   string `json:"twitterId"`
+	Website     string `json:"website"`
 }
 
 func (c *Client) GetParasProfile(contractID string) ([]*ParasProfileResp, error) {

@@ -7,6 +7,8 @@ import (
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/models"
 	"github.com/czConstant/constant-nftylend-api/serializers"
+	"github.com/czConstant/constant-nftylend-api/types/numeric"
+	"github.com/jinzhu/gorm"
 )
 
 func (s *NftLend) CreateCollectionSubmitted(ctx context.Context, req *serializers.CollectionSubmittedReq) error {
@@ -25,6 +27,167 @@ func (s *NftLend) CreateCollectionSubmitted(ctx context.Context, req *serializer
 	)
 	if err != nil {
 		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *NftLend) JobUpdateProfileCollection(ctx context.Context) error {
+	var retErr error
+	collections, err := s.cld.Find(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"network = ?":   []interface{}{models.NetworkNEAR},
+			"creator != ''": []interface{}{},
+		},
+		map[string][]interface{}{},
+		[]string{},
+		0,
+		999999,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	for _, collection := range collections {
+		err = s.UpdateProfileCollection(ctx, collection.ID)
+		if err != nil {
+			retErr = errs.MergeError(retErr, err)
+		}
+	}
+	return retErr
+}
+
+func (s *NftLend) UpdateProfileCollection(ctx context.Context, collectionID uint) error {
+	collection, err := s.cld.FirstByID(
+		daos.GetDBMainCtx(ctx),
+		collectionID,
+		map[string][]interface{}{},
+		false,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	if collection == nil {
+		return errs.NewError(errs.ErrBadRequest)
+	}
+	if collection.Creator != "" {
+		parasProfiles, err := s.stc.GetParasProfile(collection.Creator)
+		if err != nil {
+			return errs.NewError(err)
+		}
+		if len(parasProfiles) > 0 {
+			err = daos.WithTransaction(
+				daos.GetDBMainCtx(ctx),
+				func(tx *gorm.DB) error {
+					collection, err = s.cld.FirstByID(
+						tx,
+						collection.ID,
+						map[string][]interface{}{},
+						true,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					collection.Verified = parasProfiles[0].IsCreator
+					collection.CoverURL = parasProfiles[0].CoverURL
+					collection.ImageURL = parasProfiles[0].ImgURL
+					collection.CreatorURL = parasProfiles[0].Website
+					collection.TwitterID = parasProfiles[0].TwitterId
+					err = s.cld.Save(
+						tx,
+						collection,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					return nil
+				},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+		}
+	}
+	return nil
+}
+
+func (s *NftLend) JobUpdateStatsCollection(ctx context.Context) error {
+	var retErr error
+	collections, err := s.cld.Find(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"network = ?":               []interface{}{models.NetworkNEAR},
+			"paras_collection_id != ''": []interface{}{},
+		},
+		map[string][]interface{}{},
+		[]string{},
+		0,
+		999999,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	for _, collection := range collections {
+		err = s.UpdateStatsCollection(ctx, collection.ID)
+		if err != nil {
+			retErr = errs.MergeError(retErr, err)
+		}
+	}
+	return retErr
+}
+
+func (s *NftLend) UpdateStatsCollection(ctx context.Context, collectionID uint) error {
+	collection, err := s.cld.FirstByID(
+		daos.GetDBMainCtx(ctx),
+		collectionID,
+		map[string][]interface{}{},
+		false,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	if collection == nil {
+		return errs.NewError(errs.ErrBadRequest)
+	}
+	if collection.ParasCollectionID != "" {
+		parasStats, err := s.stc.GetParasCollectionStats(collection.ParasCollectionID)
+		if err != nil {
+			return errs.NewError(err)
+		}
+		if parasStats.ID != "" {
+			err = daos.WithTransaction(
+				daos.GetDBMainCtx(ctx),
+				func(tx *gorm.DB) error {
+					collection, err = s.cld.FirstByID(
+						tx,
+						collection.ID,
+						map[string][]interface{}{},
+						true,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					collection.VolumeUsd = parasStats.VolumeUsd
+					saleCurrency, err := s.getLendCurrencyBySymbol(tx, "NEAR", models.NetworkNEAR)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					floorPrice := models.ConvertWeiToBigFloat(&parasStats.FloorPrice.Int, saleCurrency.Decimals)
+					collection.FloorPrice = numeric.BigFloat{*floorPrice}
+					collection.CurrencyID = saleCurrency.ID
+					err = s.cld.Save(
+						tx,
+						collection,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					return nil
+				},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+		}
 	}
 	return nil
 }

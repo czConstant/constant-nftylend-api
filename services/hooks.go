@@ -149,7 +149,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 								if err != nil {
 									return errs.NewError(err)
 								}
-								collection, tokenId, err := s.getCollectionVerified(
+								collection, tokenId, err := s.getSolanaCollectionVerified(
 									tx,
 									req.NftCollateralContract,
 									meta,
@@ -233,6 +233,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 									OriginContractAddress: collection.OriginContractAddress,
 									OriginTokenID:         tokenId,
 								}
+								asset.SearchText = strings.TrimSpace(strings.ToLower(fmt.Sprintf("%s %s %s %s %s", collection.Name, collection.Description, asset.ContractAddress, asset.Name, asset.Description)))
 								err = s.ad.Create(
 									tx,
 									asset,

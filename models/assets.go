@@ -22,6 +22,7 @@ type Asset struct {
 	Name                      string
 	Symbol                    string
 	Description               string `gorm:"type:text"`
+	SearchText                string `gorm:"type:text collate utf8mb4_unicode_ci"`
 	MimeType                  string
 	SellerFeeRate             float64 `gorm:"type:decimal(6,4);default:0"`
 	Attributes                string  `gorm:"type:text"`
@@ -40,7 +41,7 @@ type Asset struct {
 	ParasCrawAt               *time.Time
 	NftbankCrawAt             *time.Time
 	FloorPriceAt              *time.Time
-	FloorPrice                numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	FloorPrice                numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
 }
 
 func (m *Asset) GetContractAddress() string {

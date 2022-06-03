@@ -45,6 +45,13 @@ type NftLend struct {
 	pvd  *daos.ProposalVote
 	ntd  *daos.NotificationTemplate
 	nd   *daos.Notification
+
+	// for incentive
+	ubd  *daos.UserBalance
+	ubhd *daos.UserBalanceHistory
+	ipd  *daos.IncentiveProgram
+	ipdd *daos.IncentiveProgramDetail
+	itd  *daos.IncentiveTransaction
 }
 
 func NewNftLend(
@@ -69,6 +76,13 @@ func NewNftLend(
 	ntd *daos.NotificationTemplate,
 	nd *daos.Notification,
 
+	// for incentive
+	ubd *daos.UserBalance,
+	ubhd *daos.UserBalanceHistory,
+	ipd *daos.IncentiveProgram,
+	ipdd *daos.IncentiveProgramDetail,
+	itd *daos.IncentiveTransaction,
+
 ) *NftLend {
 	s := &NftLend{
 		conf: conf,
@@ -91,6 +105,13 @@ func NewNftLend(
 		pvd:  pvd,
 		ntd:  ntd,
 		nd:   nd,
+
+		// for incentive
+		ubd:  ubd,
+		ubhd: ubhd,
+		ipd:  ipd,
+		ipdd: ipdd,
+		itd:  itd,
 	}
 	if s.conf.Contract.ProgramID != "" {
 		go stc.StartWssSolsea(s.solseaMsgReceived)
@@ -337,6 +358,7 @@ func (s *NftLend) GetCollections(ctx context.Context, page int, limit int) ([]*m
 			"network in (?)": []interface{}{s.getSupportedNetworks()},
 		},
 		map[string][]interface{}{
+			"Currency": []interface{}{},
 			"ListingAsset": []interface{}{
 				`id in (
 					select asset_id
@@ -377,6 +399,7 @@ func (s *NftLend) GetCollectionDetail(ctx context.Context, seoURL string) (*mode
 			"network in (?)": []interface{}{s.getSupportedNetworks()},
 		},
 		map[string][]interface{}{
+			"Currency": []interface{}{},
 			"RandAsset": []interface{}{
 				func(db *gorm.DB) *gorm.DB {
 					return db.Order(`rand()`)
@@ -435,20 +458,59 @@ func (s *NftLend) GetRPTListingCollection(ctx context.Context) ([]*models.NftyRP
 	return ms, nil
 }
 
-func (s *NftLend) GetCollectionVerified(ctx context.Context, mintAddress string) (*models.Collection, error) {
-	m, _, err := s.getCollectionVerified(
-		daos.GetDBMainCtx(ctx),
-		mintAddress,
-		nil,
-		nil,
-	)
-	if err != nil {
-		return nil, errs.NewError(err)
+func (s *NftLend) GetCollectionVerified(ctx context.Context, network models.Network, contractAddress string, tokenID string) (*models.Collection, error) {
+	var m *models.Collection
+	var err error
+	switch network {
+	case models.NetworkSOL:
+		{
+			m, _, err = s.getSolanaCollectionVerified(
+				daos.GetDBMainCtx(ctx),
+				contractAddress,
+				nil,
+				nil,
+			)
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+		}
+	case models.NetworkNEAR:
+		{
+			asset, err := s.CreateNearAsset(ctx, contractAddress, tokenID)
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+			m, err = s.cld.FirstByID(
+				daos.GetDBMainCtx(ctx),
+				asset.CollectionID,
+				map[string][]interface{}{},
+				false,
+			)
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+			csM, err := s.clsd.First(
+				daos.GetDBMainCtx(ctx),
+				map[string][]interface{}{
+					"network = ?": []interface{}{m.Network},
+					"creator = ?": []interface{}{m.Creator},
+					"status = ?":  []interface{}{models.CollectionSubmittedStatusApproved},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+			if csM == nil {
+				m = nil
+			}
+		}
 	}
 	return m, nil
 }
 
-func (s *NftLend) getCollectionVerified(tx *gorm.DB, mintAddress string, meta *solana.MetadataResp, metaInfo *solana.MetadataInfoResp) (*models.Collection, string, error) {
+func (s *NftLend) getSolanaCollectionVerified(tx *gorm.DB, mintAddress string, meta *solana.MetadataResp, metaInfo *solana.MetadataInfoResp) (*models.Collection, string, error) {
 	vrs, err := s.bcs.SolanaNftVerifier.GetNftVerifier(mintAddress)
 	if err != nil {
 		return nil, "", errs.NewError(err)

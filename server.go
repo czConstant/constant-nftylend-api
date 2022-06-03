@@ -114,6 +114,12 @@ func main() {
 		ntd  = &daos.NotificationTemplate{}
 		nd   = &daos.Notification{}
 
+		ubd  = &daos.UserBalance{}
+		ubhd = &daos.UserBalanceHistory{}
+		ipd  = &daos.IncentiveProgram{}
+		ipdd = &daos.IncentiveProgramDetail{}
+		itd  = &daos.IncentiveTransaction{}
+
 		stc = &saletrack.Client{
 			NftbankKey: conf.SaleTrack.NftbankKey,
 		}
@@ -147,6 +153,12 @@ func main() {
 			pvd,
 			ntd,
 			nd,
+
+			ubd,
+			ubhd,
+			ipd,
+			ipdd,
+			itd,
 		)
 	)
 

@@ -32,7 +32,7 @@ type LoanOffer struct {
 	Duration            uint
 	ExpiredAt           *time.Time
 	FinishedAt          *time.Time
-	PrincipalAmount     numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	PrincipalAmount     numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
 	InterestRate        float64          `gorm:"type:decimal(6,4);default:0"`
 	ValidAt             *time.Time
 	NonceHex            string
@@ -41,7 +41,7 @@ type LoanOffer struct {
 	DataOfferAddress    string
 	DataCurrencyAddress string
 	RepaidAt            *time.Time
-	RepaidAmount        numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	RepaidAmount        numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
 	MakeTxHash          string
 	AcceptTxHash        string
 	CancelTxHash        string
