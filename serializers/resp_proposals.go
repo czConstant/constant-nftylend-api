@@ -12,7 +12,8 @@ type ProposalResp struct {
 	CreatedAt         time.Time                 `json:"created_at"`
 	UpdatedAt         time.Time                 `json:"updated_at"`
 	Network           models.Network            `json:"network"`
-	Address           string                    `json:"address"`
+	UserID            uint                      `json:"user_id"`
+	User              *UserResp                 `json:"user"`
 	Type              string                    `json:"type"`
 	ChoiceType        models.ProposalChoiceType `json:"choice_type"`
 	Msg               string                    `json:"msg"`
@@ -38,7 +39,8 @@ func NewProposalResp(m *models.Proposal) *ProposalResp {
 		CreatedAt:         m.CreatedAt,
 		UpdatedAt:         m.UpdatedAt,
 		Network:           m.Network,
-		Address:           m.Address,
+		UserID:            m.UserID,
+		User:              NewUserResp(m.User),
 		Type:              m.Type,
 		ChoiceType:        m.ChoiceType,
 		Msg:               m.Msg,

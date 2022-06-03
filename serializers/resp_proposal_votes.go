@@ -12,11 +12,12 @@ type ProposalVoteResp struct {
 	CreatedAt        time.Time                 `json:"created_at"`
 	UpdatedAt        time.Time                 `json:"updated_at"`
 	Network          models.Network            `json:"network"`
+	UserID           uint                      `json:"user_id"`
+	User             *UserResp                 `json:"user"`
 	ProposalID       uint                      `json:"proposal_id"`
 	Proposal         *ProposalResp             `json:"proposal"`
 	ProposalChoiceID uint                      `json:"proposal_choice_id"`
 	ProposalChoice   *ProposalChoiceResp       `json:"proposal_choice"`
-	Address          string                    `json:"address"`
 	PowerVote        numeric.BigFloat          `json:"power_vote"`
 	Timestamp        *time.Time                `json:"timestamp"`
 	IpfsHash         string                    `json:"ipfs_hash"`
@@ -32,11 +33,12 @@ func NewProposalVoteResp(m *models.ProposalVote) *ProposalVoteResp {
 		CreatedAt:        m.CreatedAt,
 		UpdatedAt:        m.UpdatedAt,
 		Network:          m.Network,
+		UserID:           m.UserID,
+		User:             NewUserResp(m.User),
 		ProposalID:       m.ProposalID,
 		Proposal:         NewProposalResp(m.Proposal),
 		ProposalChoiceID: m.ProposalChoiceID,
 		ProposalChoice:   NewProposalChoiceResp(m.ProposalChoice),
-		Address:          m.Address,
 		PowerVote:        m.PowerVote,
 		Timestamp:        m.Timestamp,
 		IpfsHash:         m.IpfsHash,

@@ -17,12 +17,13 @@ const (
 type ProposalVote struct {
 	gorm.Model
 	Network          Network
+	UserID           uint
+	User             *User
 	Type             string
 	ProposalID       uint
 	Proposal         *Proposal
 	ProposalChoiceID uint
 	ProposalChoice   *ProposalChoice
-	Address          string
 	Msg              string `gorm:"type:text"`
 	Sig              string
 	PowerVote        numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`

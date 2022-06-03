@@ -179,9 +179,17 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 			if proposal != nil {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			user, err := s.getUser(
+				tx,
+				req.Network,
+				req.Address,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
 			var proposal = &models.Proposal{
-				Network:           req.Network,
-				Address:           req.Address,
+				Network:           user.Network,
+				UserID:            user.ID,
 				Type:              msg.Type,
 				Timestamp:         helpers.TimeFromUnix(msg.Timestamp),
 				ChoiceType:        choiceType,
@@ -387,12 +395,20 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if proposalVote != nil {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			user, err := s.getUser(
+				tx,
+				req.Network,
+				req.Address,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
 			for _, proposalChoice := range proposalChoices {
 				proposalVote = &models.ProposalVote{
-					Network:          req.Network,
+					Network:          user.Network,
+					UserID:           user.ID,
 					ProposalID:       proposal.ID,
 					ProposalChoiceID: proposalChoice.ID,
-					Address:          req.Address,
 					Type:             msg.Type,
 					Timestamp:        helpers.TimeFromUnix(msg.Timestamp),
 					PowerVote:        numeric.BigFloat{*powerVote},
