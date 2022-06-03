@@ -18,11 +18,10 @@ const (
 
 type IncentiveTransaction struct {
 	gorm.Model
-	UserID             uint
 	Network            Network
 	IncentiveProgramID uint
 	Type               IncentiveTransactionType
-	Address            string
+	UserID             uint
 	CurrencyID         uint
 	LoanID             uint
 	Amount             numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
