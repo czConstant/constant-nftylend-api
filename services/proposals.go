@@ -36,12 +36,9 @@ func (s *NftLend) GetProposals(ctx context.Context, statuses []string, page int,
 	return proposals, count, nil
 }
 
-func (s *NftLend) GetProposalVotes(ctx context.Context, proposalID uint, address string, statuses []string, page int, limit int) ([]*models.ProposalVote, uint, error) {
+func (s *NftLend) GetProposalVotes(ctx context.Context, proposalID uint, statuses []string, page int, limit int) ([]*models.ProposalVote, uint, error) {
 	filters := map[string][]interface{}{
 		"proposal_id = ?": []interface{}{proposalID},
-	}
-	if address != "" {
-		filters["address = ?"] = []interface{}{address}
 	}
 	if len(statuses) > 0 {
 		filters["status in (?)"] = []interface{}{statuses}
