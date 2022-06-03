@@ -11,6 +11,7 @@ type NotificationResp struct {
 	CreatedAt   time.Time               `json:"created_at"`
 	UpdatedAt   time.Time               `json:"updated_at"`
 	Network     models.Network          `json:"network"`
+	UserID      uint                    `json:"user_id"`
 	Type        models.NotificationType `json:"type"`
 	Title       string                  `json:"title"`
 	Content     string                  `json:"content"`
