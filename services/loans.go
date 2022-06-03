@@ -440,7 +440,7 @@ func (s *NftLend) CreateLoan(ctx context.Context, req *serializers.CreateLoanReq
 			err = s.ltd.Create(
 				tx,
 				&models.LoanTransaction{
-					Network:         req.Network,
+					Network:         loan.Network,
 					Type:            models.LoanTransactionTypeListed,
 					LoanID:          loan.ID,
 					Borrower:        loan.Owner,

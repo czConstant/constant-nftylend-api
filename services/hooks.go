@@ -269,7 +269,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							err = s.ltd.Create(
 								tx,
 								&models.LoanTransaction{
-									Network:         models.NetworkSOL,
+									Network:         loan.Network,
 									Type:            models.LoanTransactionTypeListed,
 									LoanID:          loan.ID,
 									Borrower:        loan.Owner,
@@ -462,7 +462,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							err = s.ltd.Create(
 								tx,
 								&models.LoanTransaction{
-									Network:         models.NetworkSOL,
+									Network:         loan.Network,
 									Type:            models.LoanTransactionTypeOffered,
 									LoanID:          loan.ID,
 									Borrower:        loan.Owner,
@@ -543,7 +543,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							err = s.ltd.Create(
 								tx,
 								&models.LoanTransaction{
-									Network:         models.NetworkSOL,
+									Network:         loan.Network,
 									Type:            models.LoanTransactionTypeCancelled,
 									LoanID:          loan.ID,
 									Borrower:        loan.Owner,
@@ -674,7 +674,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							err = s.ltd.Create(
 								tx,
 								&models.LoanTransaction{
-									Network:         models.NetworkSOL,
+									Network:         loan.Network,
 									Type:            models.LoanTransactionTypeRepaid,
 									LoanID:          loan.ID,
 									Borrower:        loan.Owner,
@@ -753,7 +753,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							err = s.ltd.Create(
 								tx,
 								&models.LoanTransaction{
-									Network:         models.NetworkSOL,
+									Network:         loan.Network,
 									Type:            models.LoanTransactionTypeLiquidated,
 									LoanID:          loan.ID,
 									Borrower:        loan.Owner,
@@ -892,7 +892,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							err = s.ltd.Create(
 								tx,
 								&models.LoanTransaction{
-									Network:         models.NetworkSOL,
+									Network:         loan.Network,
 									Type:            models.LoanTransactionTypeOffered,
 									LoanID:          loan.ID,
 									Borrower:        loan.Owner,
@@ -1023,7 +1023,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							err = s.ltd.Create(
 								tx,
 								&models.LoanTransaction{
-									Network:         models.NetworkSOL,
+									Network:         loan.Network,
 									Type:            models.LoanTransactionTypeOffered,
 									LoanID:          loan.ID,
 									Borrower:        loan.Owner,
@@ -1210,7 +1210,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							err = s.ltd.Create(
 								tx,
 								&models.LoanTransaction{
-									Network:         models.NetworkSOL,
+									Network:         loan.Network,
 									Type:            models.LoanTransactionTypeRepaid,
 									LoanID:          loan.ID,
 									Borrower:        loan.Owner,
@@ -1311,7 +1311,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 							err = s.ltd.Create(
 								tx,
 								&models.LoanTransaction{
-									Network:         models.NetworkSOL,
+									Network:         loan.Network,
 									Type:            models.LoanTransactionTypeLiquidated,
 									LoanID:          loan.ID,
 									Borrower:        loan.Owner,
