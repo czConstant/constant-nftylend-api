@@ -12,6 +12,7 @@ type UserBalanceResp struct {
 	CreatedAt     time.Time        `json:"created_at"`
 	UpdatedAt     time.Time        `json:"updated_at"`
 	UserID        uint             `json:"user_id"`
+	User          *UserResp        `json:"user"`
 	Network       models.Network   `json:"network"`
 	CurrencyID    uint             `json:"currency_id"`
 	Currency      *CurrencyResp    `json:"currency"`
@@ -29,6 +30,7 @@ func NewUserBalanceResp(m *models.UserBalance) *UserBalanceResp {
 		UpdatedAt:     m.UpdatedAt,
 		Network:       m.Network,
 		UserID:        m.UserID,
+		User:          NewUserResp(m.User),
 		CurrencyID:    m.CurrencyID,
 		Currency:      NewCurrencyResp(m.Currency),
 		Balance:       m.Balance,
