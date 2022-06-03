@@ -296,17 +296,18 @@ func (s *NftLend) GetBorrowerStats(ctx context.Context, borrower string) (*model
 	return m, nil
 }
 
-func (s *NftLend) GetLoanTransactions(ctx context.Context, assetId uint, page int, limit int) ([]*models.LoanTransaction, uint, error) {
+func (s *NftLend) GetLoanTransactions(ctx context.Context, assetID uint, page int, limit int) ([]*models.LoanTransaction, uint, error) {
 	filters := map[string][]interface{}{}
-	if assetId > 0 {
+	filters["network in (?)"] = []interface{}{s.getSupportedNetworks()}
+	if assetID > 0 {
 		filters[`
 		exists(
 			select 1
 			from loans
-			where loan_id = loans.id
+			where loan_transactions.loan_id = loans.id
 			  and loans.asset_id = ?
 		)
-		`] = []interface{}{assetId}
+		`] = []interface{}{assetID}
 	}
 	txns, count, err := s.ltd.Find4Page(
 		daos.GetDBMainCtx(ctx),

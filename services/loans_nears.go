@@ -235,7 +235,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 							err = s.ltd.Create(
 								tx,
 								&models.LoanTransaction{
-									Network:         models.NetworkSOL,
+									Network:         loan.Network,
 									Type:            models.LoanTransactionTypeOffered,
 									LoanID:          loan.ID,
 									Borrower:        loan.Owner,
@@ -267,7 +267,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 							err = s.ltd.Create(
 								tx,
 								&models.LoanTransaction{
-									Network:         models.NetworkSOL,
+									Network:         loan.Network,
 									Type:            models.LoanTransactionTypeRepaid,
 									LoanID:          loan.ID,
 									Borrower:        loan.Owner,
@@ -299,7 +299,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 							err = s.ltd.Create(
 								tx,
 								&models.LoanTransaction{
-									Network:         models.NetworkSOL,
+									Network:         loan.Network,
 									Type:            models.LoanTransactionTypeLiquidated,
 									LoanID:          loan.ID,
 									Borrower:        loan.Owner,
@@ -326,7 +326,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						err = s.ltd.Create(
 							tx,
 							&models.LoanTransaction{
-								Network:         models.NetworkSOL,
+								Network:         loan.Network,
 								Type:            models.LoanTransactionTypeCancelled,
 								LoanID:          loan.ID,
 								Borrower:        loan.Owner,
