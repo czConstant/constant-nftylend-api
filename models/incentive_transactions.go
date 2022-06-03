@@ -18,6 +18,7 @@ const (
 
 type IncentiveTransaction struct {
 	gorm.Model
+	UserID             uint
 	Network            Network
 	IncentiveProgramID uint
 	Type               IncentiveTransactionType

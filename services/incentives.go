@@ -125,7 +125,12 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 					}
 				}
 				if isOk {
+					user, err := s.getUser(tx, ipM.Network, address)
+					if err != nil {
+						return errs.NewError(err)
+					}
 					itM = &models.IncentiveTransaction{
+						UserID:             user.ID,
 						Network:            ipM.Network,
 						IncentiveProgramID: ipM.ID,
 						Type:               ipdM.Type,
