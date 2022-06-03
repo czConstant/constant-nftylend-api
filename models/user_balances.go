@@ -7,12 +7,11 @@ import (
 
 type UserBalance struct {
 	gorm.Model
-	UserID         uint
-	Network        Network
-	Address        string
-	AddressChecked string
-	CurrencyID     uint
-	Currency       *Currency
-	Balance        numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
-	LockedBalance  numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
+	Network       Network
+	UserID        uint
+	User          *User
+	CurrencyID    uint
+	Currency      *Currency
+	Balance       numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
+	LockedBalance numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
 }

@@ -21,8 +21,10 @@ type IncentiveTransaction struct {
 	Network            Network
 	IncentiveProgramID uint
 	Type               IncentiveTransactionType
-	Address            string
+	UserID             uint
+	User               *User
 	CurrencyID         uint
+	Currency           *Currency
 	LoanID             uint
 	Amount             numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
 	LockUntilAt        *time.Time

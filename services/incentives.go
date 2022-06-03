@@ -125,11 +125,15 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 					}
 				}
 				if isOk {
+					user, err := s.getUser(tx, ipM.Network, address)
+					if err != nil {
+						return errs.NewError(err)
+					}
 					itM = &models.IncentiveTransaction{
 						Network:            ipM.Network,
 						IncentiveProgramID: ipM.ID,
 						Type:               ipdM.Type,
-						Address:            address,
+						UserID:             user.ID,
 						CurrencyID:         ipdM.IncentiveProgram.CurrencyID,
 						LoanID:             loanID,
 						Amount:             ipdM.Amount,
@@ -154,7 +158,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 					err = s.transactionUserBalance(
 						tx,
 						ipM.Network,
-						itM.Address,
+						itM.UserID,
 						itM.CurrencyID,
 						itM.Amount,
 						true,
@@ -242,8 +246,7 @@ func (s *NftLend) IncentiveForUnlock(ctx context.Context, transactionID uint) er
 			}
 			err = s.unlockUserBalance(
 				tx,
-				itM.Network,
-				itM.Address,
+				itM.UserID,
 				itM.CurrencyID,
 				itM.Amount,
 				fmt.Sprintf("it_%d_unlocked", itM.ID),

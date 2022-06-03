@@ -187,30 +187,12 @@ func (s *NftLend) UserUpdateSetting(ctx context.Context, req *serializers.Update
 	return user, nil
 }
 
-func (s *NftLend) getUserBalance(tx *gorm.DB, network models.Network, address string, currencyID uint, forUpdate bool) (*models.UserBalance, error) {
-	if address == "" {
-		return nil, errs.NewError(errs.ErrBadRequest)
-	}
-	switch network {
-	case models.NetworkSOL,
-		models.NetworkAVAX,
-		models.NetworkBOBA,
-		models.NetworkBSC,
-		models.NetworkETH,
-		models.NetworkMATIC,
-		models.NetworkNEAR:
-		{
-		}
-	default:
-		{
-			return nil, errs.NewError(errs.ErrBadRequest)
-		}
-	}
+func (s *NftLend) getUserBalance(tx *gorm.DB, userID uint, currencyID uint, forUpdate bool) (*models.UserBalance, error) {
 	userBalance, err := s.ubd.First(
 		tx,
 		map[string][]interface{}{
-			"network = ?":         []interface{}{network},
-			"address_checked = ?": []interface{}{strings.ToLower(strings.TrimSpace(address))},
+			"user_id = ?":     []interface{}{userID},
+			"currency_id = ?": []interface{}{currencyID},
 		},
 		map[string][]interface{}{},
 		[]string{},
@@ -219,25 +201,21 @@ func (s *NftLend) getUserBalance(tx *gorm.DB, network models.Network, address st
 		return nil, errs.NewError(err)
 	}
 	if userBalance == nil {
-		user, err := s.getUser(
+		user, err := s.ud.FirstByID(
 			tx,
-			network,
-			address,
+			userID,
+			map[string][]interface{}{},
+			false,
 		)
 		if err != nil {
 			return nil, errs.NewError(err)
 		}
-		if user == nil {
-			return nil, errs.NewError(errs.ErrBadRequest)
-		}
 		userBalance = &models.UserBalance{
-			UserID:         user.ID,
-			Network:        network,
-			Address:        address,
-			AddressChecked: strings.ToLower(strings.TrimSpace(address)),
-			CurrencyID:     currencyID,
-			Balance:        numeric.BigFloat{*big.NewFloat(0)},
-			LockedBalance:  numeric.BigFloat{*big.NewFloat(0)},
+			Network:       user.Network,
+			UserID:        user.ID,
+			CurrencyID:    currencyID,
+			Balance:       numeric.BigFloat{*big.NewFloat(0)},
+			LockedBalance: numeric.BigFloat{*big.NewFloat(0)},
 		}
 		err = s.ubd.Create(
 			tx,
@@ -261,11 +239,10 @@ func (s *NftLend) getUserBalance(tx *gorm.DB, network models.Network, address st
 	return userBalance, nil
 }
 
-func (s *NftLend) transactionUserBalance(tx *gorm.DB, network models.Network, address string, currencyID uint, amount numeric.BigFloat, isLocked bool, reference string) error {
+func (s *NftLend) transactionUserBalance(tx *gorm.DB, network models.Network, userID uint, currencyID uint, amount numeric.BigFloat, isLocked bool, reference string) error {
 	userBalance, err := s.getUserBalance(
 		tx,
-		network,
-		address,
+		userID,
 		currencyID,
 		true,
 	)
@@ -316,11 +293,10 @@ func (s *NftLend) transactionUserBalance(tx *gorm.DB, network models.Network, ad
 	return nil
 }
 
-func (s *NftLend) unlockUserBalance(tx *gorm.DB, network models.Network, address string, currencyID uint, amount numeric.BigFloat, reference string) error {
+func (s *NftLend) unlockUserBalance(tx *gorm.DB, userID uint, currencyID uint, amount numeric.BigFloat, reference string) error {
 	userBalance, err := s.getUserBalance(
 		tx,
-		network,
-		address,
+		userID,
 		currencyID,
 		true,
 	)
