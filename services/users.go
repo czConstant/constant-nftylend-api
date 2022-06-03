@@ -209,26 +209,36 @@ func (s *NftLend) GetUserBalances(ctx context.Context, network models.Network, a
 }
 
 func (s *NftLend) GetUserPWPTokenBalance(ctx context.Context, network models.Network, address string) (*models.UserBalance, error) {
-	user, err := s.GetUser(ctx, network, address)
-	if err != nil {
-		return nil, errs.NewError(err)
-	}
-	pwpToken, err := s.getLendCurrencyBySymbol(
+	var userBalance *models.UserBalance
+	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
-		"PWP",
-		models.NetworkNEAR,
-	)
-	if err != nil {
-		return nil, errs.NewError(err)
-	}
-	userBalance, err := s.ubd.First(
-		daos.GetDBMainCtx(ctx),
-		map[string][]interface{}{
-			"user_id = ?":     []interface{}{user.ID},
-			"currency_id = ?": []interface{}{pwpToken.ID},
+		func(tx *gorm.DB) error {
+			user, err := s.GetUser(ctx, network, address)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			pwpToken, err := s.getLendCurrencyBySymbol(
+				daos.GetDBMainCtx(ctx),
+				"PWP",
+				models.NetworkNEAR,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if pwpToken == nil {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			userBalance, err = s.getUserBalance(
+				tx,
+				user.ID,
+				pwpToken.ID,
+				false,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
 		},
-		map[string][]interface{}{},
-		[]string{"id desc"},
 	)
 	if err != nil {
 		return nil, errs.NewError(err)
