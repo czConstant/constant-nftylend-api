@@ -12,7 +12,6 @@ type NotificationResp struct {
 	UpdatedAt   time.Time               `json:"updated_at"`
 	Network     models.Network          `json:"network"`
 	Type        models.NotificationType `json:"type"`
-	Address     string                  `json:"address"`
 	Title       string                  `json:"title"`
 	Content     string                  `json:"content"`
 	RedirectURL string                  `json:"redirect_url"`
@@ -29,7 +28,6 @@ func NewNotificationResp(m *models.Notification) *NotificationResp {
 		UpdatedAt:   m.UpdatedAt,
 		Network:     m.Network,
 		Type:        m.Type,
-		Address:     m.Address,
 		Title:       m.Title,
 		Content:     m.Content,
 		RedirectURL: m.RedirectURL,
