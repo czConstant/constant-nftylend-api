@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"math/big"
-	"strings"
 	"time"
 
 	"github.com/czConstant/constant-nftylend-api/daos"
@@ -66,7 +65,7 @@ func (s *NftLend) GetProposalVotes(ctx context.Context, proposalID uint, address
 
 func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreateProposalReq) (*models.Proposal, error) {
 	switch req.Network {
-	case models.NetworkAURORA:
+	case models.NetworkNEAR:
 		{
 		}
 	default:
@@ -74,7 +73,7 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 			return nil, errs.NewError(errs.ErrBadRequest)
 		}
 	}
-	err := s.bcs.Aurora.ValidateMessageSignature(
+	err := s.bcs.Near.ValidateMessageSignature(
 		req.Msg,
 		req.Sig,
 		req.Address,
@@ -144,7 +143,7 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 			if err != nil {
 				return errs.NewError(err)
 			}
-			pwpBalance, err := s.getEvmClientByNetwork(req.Network).Erc20Balance(
+			pwpBalance, err := s.bcs.Near.FtBalance(
 				pwpToken.ContractAddress,
 				req.Address,
 			)
@@ -232,7 +231,7 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 
 func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.CreateProposalVoteReq) (*models.ProposalVote, error) {
 	switch req.Network {
-	case models.NetworkAURORA:
+	case models.NetworkNEAR:
 		{
 		}
 	default:
@@ -240,7 +239,7 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			return nil, errs.NewError(errs.ErrBadRequest)
 		}
 	}
-	err := s.bcs.Aurora.ValidateMessageSignature(
+	err := s.bcs.Near.ValidateMessageSignature(
 		req.Msg,
 		req.Sig,
 		req.Address,
@@ -354,7 +353,7 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if err != nil {
 				return errs.NewError(err)
 			}
-			pwpBalance, err := s.getEvmClientByNetwork(req.Network).Erc20Balance(
+			pwpBalance, err := s.bcs.Near.FtBalance(
 				pwpToken.ContractAddress,
 				req.Address,
 			)
@@ -543,35 +542,35 @@ func (s *NftLend) ProposalUnVote(ctx context.Context, network models.Network, ad
 	return nil
 }
 
-func (s *NftLend) JobProposalUnVote(ctx context.Context) error {
-	var retErr error
-	pwpToken, err := s.GetCurrencyBySymbol(ctx, models.SymbolPWPToken, models.NetworkAURORA)
-	if err != nil {
-		return errs.NewError(err)
-	}
-	transferLogs, err := s.bcs.Aurora.Erc20TransferLogs(
-		[]string{pwpToken.ContractAddress},
-		300,
-	)
-	if err != nil {
-		return errs.NewError(err)
-	}
-	for _, transferLog := range transferLogs {
-		if strings.EqualFold(transferLog.Address, pwpToken.ContractAddress) {
-			err = s.ProposalUnVote(
-				ctx,
-				models.NetworkAURORA,
-				transferLog.From,
-				transferLog.Hash,
-				transferLog.BlockNumber,
-			)
-			if err != nil {
-				retErr = errs.MergeError(retErr, err)
-			}
-		}
-	}
-	return retErr
-}
+// func (s *NftLend) JobProposalUnVote(ctx context.Context) error {
+// 	var retErr error
+// 	pwpToken, err := s.GetCurrencyBySymbol(ctx, models.SymbolPWPToken, models.NetworkNEAR)
+// 	if err != nil {
+// 		return errs.NewError(err)
+// 	}
+// 	transferLogs, err := s.bcs.Near.Erc20TransferLogs(
+// 		[]string{pwpToken.ContractAddress},
+// 		300,
+// 	)
+// 	if err != nil {
+// 		return errs.NewError(err)
+// 	}
+// 	for _, transferLog := range transferLogs {
+// 		if strings.EqualFold(transferLog.Address, pwpToken.ContractAddress) {
+// 			err = s.ProposalUnVote(
+// 				ctx,
+// 				models.NetworkNEAR,
+// 				transferLog.From,
+// 				transferLog.Hash,
+// 				transferLog.BlockNumber,
+// 			)
+// 			if err != nil {
+// 				retErr = errs.MergeError(retErr, err)
+// 			}
+// 		}
+// 	}
+// 	return retErr
+// }
 
 func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 	var retErr error
