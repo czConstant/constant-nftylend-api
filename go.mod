@@ -6,11 +6,10 @@ require (
 	github.com/DaRealFreak/cloudflare-bp-go v1.0.4
 	github.com/Microsoft/go-winio v0.5.0 // indirect
 	github.com/certifi/gocertifi v0.0.0-20210507211836-431795d63e8d // indirect
-	github.com/czConstant/blockchain-api v0.0.0-20220606070808-77e0841af16a
+	github.com/czConstant/blockchain-api v0.0.0-20220606102803-80c06249d7ff
 	github.com/getsentry/raven-go v0.2.1-0.20190619092523-5c24d5110e0e
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.7.2
-	github.com/go-playground/locales v0.13.0
 	github.com/go-playground/validator/v10 v10.6.1 // indirect
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang/protobuf v1.5.2 // indirect
