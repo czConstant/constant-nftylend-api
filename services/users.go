@@ -223,7 +223,10 @@ func (s *NftLend) GetUserBalanceTransactions(ctx context.Context, network models
 	userBalanceTxns, count, err := s.ubtd.Find4Page(
 		daos.GetDBMainCtx(ctx),
 		filters,
-		map[string][]interface{}{},
+		map[string][]interface{}{
+			"User":     []interface{}{},
+			"Currency": []interface{}{},
+		},
 		[]string{"id desc"},
 		page,
 		limit,
