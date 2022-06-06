@@ -108,6 +108,74 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				}
 				isUpdated = true
 			}
+			// check existsed loan
+			{
+				loanCheck, err := s.ld.First(
+					tx,
+					map[string][]interface{}{
+						"id != ?":      []interface{}{loan.ID},
+						"network = ?":  []interface{}{loan.Network},
+						"asset_id = ?": []interface{}{loan.AssetID},
+						"status = ?":   []interface{}{models.LoanStatusCreated},
+					},
+					map[string][]interface{}{},
+					[]string{},
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if loanCheck != nil {
+					return errs.NewError(errs.ErrBadRequest)
+				}
+			}
+			// cancel old pending loan
+			{
+				loans, err := s.ld.Find(
+					tx,
+					map[string][]interface{}{
+						"id != ?":      []interface{}{loan.ID},
+						"network = ?":  []interface{}{loan.Network},
+						"asset_id = ?": []interface{}{loan.AssetID},
+						"status = ?":   []interface{}{models.LoanStatusNew},
+					},
+					map[string][]interface{}{},
+					[]string{},
+					0,
+					999999,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				for _, l := range loans {
+					l, err = s.ld.FirstByID(
+						tx,
+						l.ID,
+						map[string][]interface{}{},
+						true,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if l.Status != models.LoanStatusNew {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					l.Status = models.LoanStatusCancelled
+					err = s.ld.Save(
+						tx,
+						l,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					err = s.updateIncentiveForLoan(
+						tx,
+						loan,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
+			}
 			loan, err = s.ld.FirstByID(
 				tx,
 				loan.ID,
@@ -235,7 +303,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 							err = s.ltd.Create(
 								tx,
 								&models.LoanTransaction{
-									Network:         models.NetworkSOL,
+									Network:         loan.Network,
 									Type:            models.LoanTransactionTypeOffered,
 									LoanID:          loan.ID,
 									Borrower:        loan.Owner,
@@ -267,7 +335,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 							err = s.ltd.Create(
 								tx,
 								&models.LoanTransaction{
-									Network:         models.NetworkSOL,
+									Network:         loan.Network,
 									Type:            models.LoanTransactionTypeRepaid,
 									LoanID:          loan.ID,
 									Borrower:        loan.Owner,
@@ -299,7 +367,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 							err = s.ltd.Create(
 								tx,
 								&models.LoanTransaction{
-									Network:         models.NetworkSOL,
+									Network:         loan.Network,
 									Type:            models.LoanTransactionTypeLiquidated,
 									LoanID:          loan.ID,
 									Borrower:        loan.Owner,
@@ -326,7 +394,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						err = s.ltd.Create(
 							tx,
 							&models.LoanTransaction{
-								Network:         models.NetworkSOL,
+								Network:         loan.Network,
 								Type:            models.LoanTransactionTypeCancelled,
 								LoanID:          loan.ID,
 								Borrower:        loan.Owner,
@@ -375,59 +443,12 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 			if err != nil {
 				return errs.NewError(err)
 			}
-			switch loan.Status {
-			case models.LoanStatusNew:
-				{
-					err = s.IncentiveForLoan(
-						tx,
-						models.IncentiveTransactionTypeBorrowerLoanListed,
-						loan.ID,
-					)
-					if err != nil {
-						return errs.NewError(err)
-					}
-				}
-			case models.LoanStatusCreated,
-				models.LoanStatusDone,
-				models.LoanStatusLiquidated,
-				models.LoanStatusExpired:
-				{
-					err = s.IncentiveForLoan(
-						tx,
-						models.IncentiveTransactionTypeBorrowerLoanListed,
-						loan.ID,
-					)
-					if err != nil {
-						return errs.NewError(err)
-					}
-					err = s.IncentiveForLoan(
-						tx,
-						models.IncentiveTransactionTypeLenderLoanMatched,
-						loan.ID,
-					)
-					if err != nil {
-						return errs.NewError(err)
-					}
-				}
-			case models.LoanStatusCancelled:
-				{
-					err = s.IncentiveForLoan(
-						tx,
-						models.IncentiveTransactionTypeBorrowerLoanListed,
-						loan.ID,
-					)
-					if err != nil {
-						return errs.NewError(err)
-					}
-					err = s.IncentiveForLoan(
-						tx,
-						models.IncentiveTransactionTypeBorrowerLoanDelisted,
-						loan.ID,
-					)
-					if err != nil {
-						return errs.NewError(err)
-					}
-				}
+			err = s.updateIncentiveForLoan(
+				tx,
+				loan,
+			)
+			if err != nil {
+				return errs.NewError(err)
 			}
 			return nil
 		},
@@ -439,6 +460,65 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 		s.EmailForReference(ctx, emailQueue)
 	}
 	return loan, isUpdated, nil
+}
+
+func (s *NftLend) updateIncentiveForLoan(tx *gorm.DB, loan *models.Loan) error {
+	var err error
+	switch loan.Status {
+	case models.LoanStatusNew:
+		{
+			err = s.IncentiveForLoan(
+				tx,
+				models.IncentiveTransactionTypeBorrowerLoanListed,
+				loan.ID,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+		}
+	case models.LoanStatusCreated,
+		models.LoanStatusDone,
+		models.LoanStatusLiquidated,
+		models.LoanStatusExpired:
+		{
+			err = s.IncentiveForLoan(
+				tx,
+				models.IncentiveTransactionTypeBorrowerLoanListed,
+				loan.ID,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			err = s.IncentiveForLoan(
+				tx,
+				models.IncentiveTransactionTypeLenderLoanMatched,
+				loan.ID,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+		}
+	case models.LoanStatusCancelled:
+		{
+			err = s.IncentiveForLoan(
+				tx,
+				models.IncentiveTransactionTypeBorrowerLoanListed,
+				loan.ID,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			err = s.IncentiveForLoan(
+				tx,
+				models.IncentiveTransactionTypeBorrowerLoanDelisted,
+				loan.ID,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+		}
+	}
+	return nil
 }
 
 func (s *NftLend) NearCreateLoanOffer(ctx context.Context, loanID uint, req *serializers.CreateLoanOfferReq) (*models.LoanOffer, error) {

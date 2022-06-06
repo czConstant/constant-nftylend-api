@@ -8,16 +8,17 @@ import (
 )
 
 type UserBalanceResp struct {
-	ID            uint             `json:"id"`
-	CreatedAt     time.Time        `json:"created_at"`
-	UpdatedAt     time.Time        `json:"updated_at"`
-	UserID        uint             `json:"user_id"`
-	User          *UserResp        `json:"user"`
-	Network       models.Network   `json:"network"`
-	CurrencyID    uint             `json:"currency_id"`
-	Currency      *CurrencyResp    `json:"currency"`
-	Balance       numeric.BigFloat `json:"balance"`
-	LockedBalance numeric.BigFloat `json:"locked_balance"`
+	ID             uint             `json:"id"`
+	CreatedAt      time.Time        `json:"created_at"`
+	UpdatedAt      time.Time        `json:"updated_at"`
+	UserID         uint             `json:"user_id"`
+	User           *UserResp        `json:"user"`
+	Network        models.Network   `json:"network"`
+	CurrencyID     uint             `json:"currency_id"`
+	Currency       *CurrencyResp    `json:"currency"`
+	Balance        numeric.BigFloat `json:"balance"`
+	LockedBalance  numeric.BigFloat `json:"locked_balance"`
+	ClaimedBalance numeric.BigFloat `json:"claimed_balance"`
 }
 
 func NewUserBalanceResp(m *models.UserBalance) *UserBalanceResp {
@@ -25,16 +26,17 @@ func NewUserBalanceResp(m *models.UserBalance) *UserBalanceResp {
 		return nil
 	}
 	resp := &UserBalanceResp{
-		ID:            m.ID,
-		CreatedAt:     m.CreatedAt,
-		UpdatedAt:     m.UpdatedAt,
-		Network:       m.Network,
-		UserID:        m.UserID,
-		User:          NewUserResp(m.User),
-		CurrencyID:    m.CurrencyID,
-		Currency:      NewCurrencyResp(m.Currency),
-		Balance:       m.Balance,
-		LockedBalance: m.LockedBalance,
+		ID:             m.ID,
+		CreatedAt:      m.CreatedAt,
+		UpdatedAt:      m.UpdatedAt,
+		Network:        m.Network,
+		UserID:         m.UserID,
+		User:           NewUserResp(m.User),
+		CurrencyID:     m.CurrencyID,
+		Currency:       NewCurrencyResp(m.Currency),
+		Balance:        m.Balance,
+		LockedBalance:  m.LockedBalance,
+		ClaimedBalance: m.ClaimedBalance,
 	}
 	return resp
 }
