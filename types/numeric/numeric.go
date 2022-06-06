@@ -142,6 +142,10 @@ func (n BigFloat) Value() (driver.Value, error) {
 	return BigFloat2Text(&n.Float), nil
 }
 
+func (n BigFloat) ToString() string {
+	return BigFloat2Text(&n.Float)
+}
+
 // BigFloat
 
 type BigInt struct {
