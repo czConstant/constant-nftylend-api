@@ -21,7 +21,9 @@ type UserBalanceTransaction struct {
 	gorm.Model
 	Network                Network
 	UserID                 uint
+	User                   *User
 	UserBalanceID          uint
+	UserBalance            *UserBalance
 	Type                   UserBalanceTransactionType
 	CurrencyID             uint
 	Currency               *Currency

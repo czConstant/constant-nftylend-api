@@ -223,7 +223,11 @@ func (s *NftLend) GetUserBalanceTransactions(ctx context.Context, network models
 	userBalanceTxns, count, err := s.ubtd.Find4Page(
 		daos.GetDBMainCtx(ctx),
 		filters,
-		map[string][]interface{}{},
+		map[string][]interface{}{
+			"User":                 []interface{}{},
+			"Currency":             []interface{}{},
+			"IncentiveTransaction": []interface{}{},
+		},
 		[]string{"id desc"},
 		page,
 		limit,
@@ -516,7 +520,7 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 				numeric.BigFloat{*models.NegativeBigFloat(&userBalanceTransaction.Amount.Float)},
 				false,
 				true,
-				fmt.Sprintf("ubt_%d_withdraw", userBalanceTransaction.ID),
+				fmt.Sprintf("ubt_%d_claim", userBalanceTransaction.ID),
 			)
 			if err != nil {
 				return errs.NewError(err)
@@ -538,7 +542,6 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 			if err != nil {
 				return errs.NewError(err)
 			}
-
 			return nil
 		},
 	)

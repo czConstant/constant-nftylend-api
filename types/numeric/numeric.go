@@ -10,6 +10,15 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+func BigFloat2Text(n *big.Float) string {
+	v := n.Text('f', 64)
+	if strings.Contains(v, ".") {
+		v = strings.TrimRight(v, "0")
+		v = strings.TrimRight(v, ".")
+	}
+	return v
+}
+
 type Decimal struct {
 	decimal.Decimal
 }
@@ -102,7 +111,7 @@ func (n *BigFloat) MarshalJSON() ([]byte, error) {
 	if n == nil {
 		return []byte("null"), nil
 	}
-	return []byte(n.BigFloat().Text('f', 10)), nil
+	return []byte(fmt.Sprintf(`"%s"`, BigFloat2Text(&n.Float))), nil
 }
 
 func (n *BigFloat) Scan(src interface{}) error {
@@ -130,7 +139,11 @@ func (n *BigFloat) Scan(src interface{}) error {
 }
 
 func (n BigFloat) Value() (driver.Value, error) {
-	return n.BigFloat().Text('f', 10), nil
+	return BigFloat2Text(&n.Float), nil
+}
+
+func (n BigFloat) ToString() string {
+	return BigFloat2Text(&n.Float)
 }
 
 // BigFloat
