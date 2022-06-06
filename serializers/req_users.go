@@ -13,7 +13,7 @@ type UpdateUserSettingReq struct {
 	LoanNotiEnabled bool           `json:"loan_noti_enabled"`
 }
 
-type WithdrawUserBalanceReq struct {
+type ClaimUserBalanceReq struct {
 	UserID     uint             `json:"user_id"`
 	CurrencyID uint             `json:"currency_id"`
 	ToAddress  string           `json:"to_address"`

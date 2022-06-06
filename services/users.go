@@ -311,7 +311,7 @@ func (s *NftLend) getUserBalance(tx *gorm.DB, userID uint, currencyID uint, forU
 	return userBalance, nil
 }
 
-func (s *NftLend) transactionUserBalance(tx *gorm.DB, network models.Network, userID uint, currencyID uint, amount numeric.BigFloat, isLocked bool, reference string) error {
+func (s *NftLend) transactionUserBalance(tx *gorm.DB, network models.Network, userID uint, currencyID uint, amount numeric.BigFloat, isLocked bool, isClaimed bool, reference string) error {
 	userBalance, err := s.getUserBalance(
 		tx,
 		userID,
@@ -354,6 +354,24 @@ func (s *NftLend) transactionUserBalance(tx *gorm.DB, network models.Network, us
 		}
 		newLockedBalance := models.AddBigFloats(&userBalance.LockedBalance.Float, &amount.Float)
 		userBalance.LockedBalance = numeric.BigFloat{*newLockedBalance}
+	}
+	if isClaimed {
+		err = s.ubhd.Create(
+			tx,
+			&models.UserBalanceHistory{
+				Network:       userBalance.Network,
+				Type:          models.UserBalanceHistoryTypeClaimedBalance,
+				UserBalanceID: userBalance.ID,
+				CurrencyID:    currencyID,
+				Amount:        numeric.BigFloat{*models.NegativeBigFloat(&amount.Float)},
+				Reference:     reference,
+			},
+		)
+		if err != nil {
+			return errs.NewError(err)
+		}
+		newClaimedBalance := models.AddBigFloats(&userBalance.ClaimedBalance.Float, &amount.Float)
+		userBalance.ClaimedBalance = numeric.BigFloat{*newClaimedBalance}
 	}
 	err = s.ubd.Save(
 		tx,
@@ -402,7 +420,7 @@ func (s *NftLend) unlockUserBalance(tx *gorm.DB, userID uint, currencyID uint, a
 	return nil
 }
 
-func (s *NftLend) WithdrawUserBalance(ctx context.Context, req *serializers.WithdrawUserBalanceReq) error {
+func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUserBalanceReq) error {
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
@@ -442,7 +460,7 @@ func (s *NftLend) WithdrawUserBalance(ctx context.Context, req *serializers.With
 			if err != nil {
 				return errs.NewError(err)
 			}
-			if !currency.WithdrawEnabled {
+			if !currency.ClaimEnabled {
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			// validate request by sig
@@ -451,7 +469,7 @@ func (s *NftLend) WithdrawUserBalance(ctx context.Context, req *serializers.With
 				Network:       userBalance.Network,
 				UserBalanceID: userBalance.ID,
 				CurrencyID:    userBalance.CurrencyID,
-				Type:          models.UserBalanceTransactionWithdraw,
+				Type:          models.UserBalanceTransactionClaim,
 				ToAddress:     req.ToAddress,
 				Amount:        req.Amount,
 				Signature:     req.Signature,
@@ -471,6 +489,7 @@ func (s *NftLend) WithdrawUserBalance(ctx context.Context, req *serializers.With
 				userBalance.CurrencyID,
 				numeric.BigFloat{*models.NegativeBigFloat(&userBalanceTransaction.Amount.Float)},
 				false,
+				true,
 				fmt.Sprintf("ubt_%d_withdraw", userBalanceTransaction.ID),
 			)
 			if err != nil {

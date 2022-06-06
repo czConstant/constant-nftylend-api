@@ -44,14 +44,14 @@ func (s *Server) GetUserPWPTokenBalance(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewUserBalanceResp(userBalance)})
 }
 
-func (s *Server) WithdrawUserBalance(c *gin.Context) {
+func (s *Server) ClaimUserBalance(c *gin.Context) {
 	ctx := s.requestContext(c)
-	var req serializers.WithdrawUserBalanceReq
+	var req serializers.ClaimUserBalanceReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	err := s.nls.WithdrawUserBalance(ctx, &req)
+	err := s.nls.ClaimUserBalance(ctx, &req)
 	if err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

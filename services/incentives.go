@@ -195,6 +195,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 						itM.CurrencyID,
 						itM.Amount,
 						true,
+						false,
 						reference,
 					)
 					if err != nil {
