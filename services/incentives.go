@@ -174,6 +174,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 					}
 					userBalanceTransaction := &models.UserBalanceTransaction{
 						Network:                userBalance.Network,
+						UserID:                 userBalance.UserID,
 						UserBalanceID:          userBalance.ID,
 						CurrencyID:             userBalance.CurrencyID,
 						Type:                   models.UserBalanceTransactionIncentive,

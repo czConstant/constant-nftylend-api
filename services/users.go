@@ -492,6 +492,7 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 			//
 			userBalanceTransaction := &models.UserBalanceTransaction{
 				Network:       userBalance.Network,
+				UserID:        userBalance.UserID,
 				UserBalanceID: userBalance.ID,
 				CurrencyID:    userBalance.CurrencyID,
 				Type:          models.UserBalanceTransactionClaim,
