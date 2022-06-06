@@ -173,13 +173,13 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 						return errs.NewError(err)
 					}
 					userBalanceTransaction := &models.UserBalanceTransaction{
-						Network:       userBalance.Network,
-						UserBalanceID: userBalance.ID,
-						CurrencyID:    userBalance.CurrencyID,
-						Type:          models.UserBalanceTransactionIncentive,
-						Amount:        itM.Amount,
-						Status:        models.UserBalanceTransactionStatusDone,
-						RefID:         itM.ID,
+						Network:                userBalance.Network,
+						UserBalanceID:          userBalance.ID,
+						CurrencyID:             userBalance.CurrencyID,
+						Type:                   models.UserBalanceTransactionIncentive,
+						Amount:                 itM.Amount,
+						Status:                 models.UserBalanceTransactionStatusDone,
+						IncentiveTransactionID: itM.ID,
 					}
 					err = s.ubtd.Create(
 						tx,

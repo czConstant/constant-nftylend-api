@@ -87,8 +87,8 @@ func (s *NftLend) getUser(tx *gorm.DB, network models.Network, address string) (
 			Network:         network,
 			Address:         address,
 			AddressChecked:  strings.ToLower(strings.TrimSpace(address)),
-			NewsNotiEnabled: true,
-			LoanNotiEnabled: true,
+			NewsNotiEnabled: false,
+			LoanNotiEnabled: false,
 		}
 		err = s.ud.Create(
 			tx,
@@ -441,6 +441,9 @@ func (s *NftLend) WithdrawUserBalance(ctx context.Context, req *serializers.With
 			)
 			if err != nil {
 				return errs.NewError(err)
+			}
+			if !currency.WithdrawEnabled {
+				return errs.NewError(errs.ErrBadRequest)
 			}
 			// validate request by sig
 			//

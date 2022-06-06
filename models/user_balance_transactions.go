@@ -19,15 +19,16 @@ const (
 
 type UserBalanceTransaction struct {
 	gorm.Model
-	Network       Network
-	UserBalanceID uint
-	Type          UserBalanceTransactionType
-	CurrencyID    uint
-	Currency      *Currency
-	ToAddress     string
-	Amount        numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
-	Signature     string
-	TxHash        string
-	Status        UserBalanceTransactionStatus
-	RefID         uint
+	Network                Network
+	UserBalanceID          uint
+	Type                   UserBalanceTransactionType
+	CurrencyID             uint
+	Currency               *Currency
+	ToAddress              string
+	Amount                 numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
+	Signature              string
+	TxHash                 string
+	Status                 UserBalanceTransactionStatus
+	IncentiveTransactionID uint
+	IncentiveTransaction   *IncentiveTransaction
 }
