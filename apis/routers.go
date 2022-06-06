@@ -108,6 +108,8 @@ func (s *Server) Routers() {
 	{
 		userNftAPI.GET("/settings", s.UserGetSettings)
 		userNftAPI.POST("/settings", s.UserUpdateSetting)
+		userNftAPI.GET("/balances/pwp", s.GetUserPWPTokenBalance)
+		userNftAPI.POST("/balances/withdraw", s.WithdrawUserBalance)
 	}
 	notiAPI := nftAPI.Group("/notifications")
 	{

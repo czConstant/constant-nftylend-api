@@ -214,12 +214,12 @@ func (s *NftLend) GetUserPWPTokenBalance(ctx context.Context, network models.Net
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			user, err := s.GetUser(ctx, network, address)
+			user, err := s.getUser(tx, network, address)
 			if err != nil {
 				return errs.NewError(err)
 			}
 			pwpToken, err := s.getLendCurrencyBySymbol(
-				daos.GetDBMainCtx(ctx),
+				tx,
 				"PWP",
 				models.NetworkNEAR,
 			)
@@ -241,7 +241,10 @@ func (s *NftLend) GetUserPWPTokenBalance(ctx context.Context, network models.Net
 			userBalance, err = s.ubd.FirstByID(
 				tx,
 				userBalance.ID,
-				map[string][]interface{}{},
+				map[string][]interface{}{
+					"User":     []interface{}{},
+					"Currency": []interface{}{},
+				},
 				false,
 			)
 			if err != nil {
@@ -412,8 +415,34 @@ func (s *NftLend) WithdrawUserBalance(ctx context.Context, req *serializers.With
 			if err != nil {
 				return errs.NewError(err)
 			}
+			if userBalance.UpdatedAt.Unix() != req.Timestamp {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			if userBalance.GetAvaiableBalance().Cmp(&req.Amount.Float) < 0 {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			user, err := s.ud.FirstByID(
+				tx,
+				userBalance.UserID,
+				map[string][]interface{}{},
+				false,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if !strings.EqualFold(user.Address, req.ToAddress) {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			currency, err := s.cd.FirstByID(
+				tx,
+				userBalance.CurrencyID,
+				map[string][]interface{}{},
+				false,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
 			// validate request by sig
-
 			//
 			userBalanceTransaction := &models.UserBalanceTransaction{
 				Network:       userBalance.Network,
@@ -444,6 +473,24 @@ func (s *NftLend) WithdrawUserBalance(ctx context.Context, req *serializers.With
 			if err != nil {
 				return errs.NewError(err)
 			}
+			hash, err := s.bcs.Near.FtTransfer(
+				currency.ContractAddress,
+				currency.PoolAddress,
+				userBalanceTransaction.ToAddress,
+				models.ConvertBigFloatToWei(&userBalanceTransaction.Amount.Float, currency.Decimals),
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			userBalanceTransaction.TxHash = hash
+			err = s.ubtd.Save(
+				tx,
+				userBalanceTransaction,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+
 			return nil
 		},
 	)

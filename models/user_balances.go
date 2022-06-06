@@ -1,6 +1,8 @@
 package models
 
 import (
+	"math/big"
+
 	"github.com/czConstant/constant-nftylend-api/types/numeric"
 	"github.com/jinzhu/gorm"
 )
@@ -14,4 +16,8 @@ type UserBalance struct {
 	Currency      *Currency
 	Balance       numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
 	LockedBalance numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
+}
+
+func (m *UserBalance) GetAvaiableBalance() *big.Float {
+	return SubBigFloats(&m.Balance.Float, &m.LockedBalance.Float)
 }
