@@ -520,7 +520,7 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 				numeric.BigFloat{*models.NegativeBigFloat(&userBalanceTransaction.Amount.Float)},
 				false,
 				true,
-				fmt.Sprintf("ubt_%d_withdraw", userBalanceTransaction.ID),
+				fmt.Sprintf("ubt_%d_claim", userBalanceTransaction.ID),
 			)
 			if err != nil {
 				return errs.NewError(err)
