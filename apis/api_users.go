@@ -11,7 +11,7 @@ import (
 
 func (s *Server) UserGetSettings(c *gin.Context) {
 	ctx := s.requestContext(c)
-	user, err := s.nls.UserGetSettings(ctx, s.stringFromContextQuery(c, "address"), models.Network(s.stringFromContextQuery(c, "network")))
+	user, err := s.nls.UserGetSettings(ctx, models.Network(s.stringFromContextQuery(c, "network")), s.stringFromContextQuery(c, "address"))
 	if err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
@@ -27,6 +27,50 @@ func (s *Server) UserUpdateSetting(c *gin.Context) {
 		return
 	}
 	_, err := s.nls.UserUpdateSetting(ctx, &req)
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
+}
+
+func (s *Server) GetUserPWPTokenBalance(c *gin.Context) {
+	ctx := s.requestContext(c)
+	userBalance, err := s.nls.GetUserPWPTokenBalance(ctx, models.Network(s.stringFromContextQuery(c, "network")), s.stringFromContextQuery(c, "address"))
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewUserBalanceResp(userBalance)})
+}
+
+func (s *Server) GetUserBalanceTransactions(c *gin.Context) {
+	ctx := s.requestContext(c)
+	page, limit := s.pagingFromContext(c)
+	currencyID, _ := s.uintFromContextQuery(c, "currency_id")
+	userBalanceTnxs, count, err := s.nls.GetUserBalanceTransactions(
+		ctx,
+		models.Network(s.stringFromContextQuery(c, "network")),
+		s.stringFromContextQuery(c, "address"),
+		currencyID,
+		page,
+		limit,
+	)
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewUserBalanceTransactionRespArr(userBalanceTnxs), Count: &count})
+}
+
+func (s *Server) ClaimUserBalance(c *gin.Context) {
+	ctx := s.requestContext(c)
+	var req serializers.ClaimUserBalanceReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	err := s.nls.ClaimUserBalance(ctx, &req)
 	if err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

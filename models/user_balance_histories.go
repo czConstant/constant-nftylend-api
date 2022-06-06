@@ -8,8 +8,9 @@ import (
 type UserBalanceHistoryType string
 
 const (
-	UserBalanceHistoryTypeBalance       UserBalanceHistoryType = "balance"
-	UserBalanceHistoryTypeLockedBalance UserBalanceHistoryType = "locked_balance"
+	UserBalanceHistoryTypeBalance        UserBalanceHistoryType = "balance"
+	UserBalanceHistoryTypeLockedBalance  UserBalanceHistoryType = "locked_balance"
+	UserBalanceHistoryTypeClaimedBalance UserBalanceHistoryType = "claimed_balance"
 )
 
 type UserBalanceHistory struct {

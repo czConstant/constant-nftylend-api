@@ -70,6 +70,14 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 	if err != nil {
 		return errs.NewError(err)
 	}
+	user, err := s.getUser(
+		tx,
+		loan.Network,
+		address,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
 	for _, ipdM := range ipdMs {
 		ipM := ipdM.IncentiveProgram
 		if uint(loan.ValidAt.Sub(*loan.StartedAt).Seconds()) >= ipM.LoanValidDuration {
@@ -78,7 +86,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 				map[string][]interface{}{
 					"incentive_program_id = ?": []interface{}{ipM.ID},
 					"type = ?":                 []interface{}{ipdM.Type},
-					"address = ?":              []interface{}{address},
+					"user_id = ?":              []interface{}{user.ID},
 					"loan_id = ?":              []interface{}{loan.ID},
 				},
 				map[string][]interface{}{},
@@ -155,6 +163,32 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 							reference = fmt.Sprintf("it_%d_revoked", itM.ID)
 						}
 					}
+					userBalance, err := s.getUserBalance(
+						tx,
+						itM.UserID,
+						itM.CurrencyID,
+						true,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					userBalanceTransaction := &models.UserBalanceTransaction{
+						Network:                userBalance.Network,
+						UserID:                 userBalance.UserID,
+						UserBalanceID:          userBalance.ID,
+						CurrencyID:             userBalance.CurrencyID,
+						Type:                   models.UserBalanceTransactionIncentive,
+						Amount:                 itM.Amount,
+						Status:                 models.UserBalanceTransactionStatusDone,
+						IncentiveTransactionID: itM.ID,
+					}
+					err = s.ubtd.Create(
+						tx,
+						userBalanceTransaction,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
 					err = s.transactionUserBalance(
 						tx,
 						ipM.Network,
@@ -162,6 +196,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 						itM.CurrencyID,
 						itM.Amount,
 						true,
+						false,
 						reference,
 					)
 					if err != nil {

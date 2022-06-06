@@ -43,6 +43,7 @@ type NftLend struct {
 
 	// for incentive
 	ubd  *daos.UserBalance
+	ubtd *daos.UserBalanceTransaction
 	ubhd *daos.UserBalanceHistory
 	ipd  *daos.IncentiveProgram
 	ipdd *daos.IncentiveProgramDetail
@@ -69,6 +70,7 @@ func NewNftLend(
 
 	// for incentive
 	ubd *daos.UserBalance,
+	ubtd *daos.UserBalanceTransaction,
 	ubhd *daos.UserBalanceHistory,
 	ipd *daos.IncentiveProgram,
 	ipdd *daos.IncentiveProgramDetail,
@@ -95,6 +97,7 @@ func NewNftLend(
 
 		// for incentive
 		ubd:  ubd,
+		ubtd: ubtd,
 		ubhd: ubhd,
 		ipd:  ipd,
 		ipdd: ipdd,

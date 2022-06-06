@@ -15,4 +15,6 @@ type Currency struct {
 	AdminFeeAddress string
 	Enabled         float64 `gorm:"default:0"`
 	Price           float64 `gorm:"type:decimal(16,8);default:0"`
+	PoolAddress     string
+	ClaimEnabled    bool `gorm:"default:0"`
 }

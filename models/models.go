@@ -292,6 +292,10 @@ func QuoBigFloats(val1 *big.Float, vals ...*big.Float) *big.Float {
 	return val
 }
 
+func NegativeBigFloat(val *big.Float) *big.Float {
+	return SubBigFloats(big.NewFloat(0), val)
+}
+
 func FormatFloatNumber(f string, amt float64) string {
 	return FormatStringNumber(fmt.Sprintf(f, amt))
 }

@@ -44,6 +44,7 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.Notification)(nil),
 
 		(*models.UserBalance)(nil),
+		(*models.UserBalanceTransaction)(nil),
 		(*models.UserBalanceHistory)(nil),
 		(*models.IncentiveProgram)(nil),
 		(*models.IncentiveProgramDetail)(nil),

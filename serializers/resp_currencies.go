@@ -18,6 +18,7 @@ type CurrencyResp struct {
 	IconURL         string         `json:"icon_url"`
 	AdminFeeAddress string         `json:"admin_fee_address"`
 	Price           float64        `json:"price"`
+	ClaimEnabled    bool           `json:"claim_enabled"`
 }
 
 func NewCurrencyResp(m *models.Currency) *CurrencyResp {
@@ -36,6 +37,7 @@ func NewCurrencyResp(m *models.Currency) *CurrencyResp {
 		IconURL:         m.IconURL,
 		AdminFeeAddress: m.AdminFeeAddress,
 		Price:           m.Price,
+		ClaimEnabled:    m.ClaimEnabled,
 	}
 	return resp
 }
