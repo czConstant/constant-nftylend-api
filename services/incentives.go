@@ -70,6 +70,14 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 	if err != nil {
 		return errs.NewError(err)
 	}
+	user, err := s.getUser(
+		tx,
+		loan.Network,
+		address,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
 	for _, ipdM := range ipdMs {
 		ipM := ipdM.IncentiveProgram
 		if uint(loan.ValidAt.Sub(*loan.StartedAt).Seconds()) >= ipM.LoanValidDuration {
@@ -78,7 +86,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 				map[string][]interface{}{
 					"incentive_program_id = ?": []interface{}{ipM.ID},
 					"type = ?":                 []interface{}{ipdM.Type},
-					"address = ?":              []interface{}{address},
+					"user_id = ?":              []interface{}{user.ID},
 					"loan_id = ?":              []interface{}{loan.ID},
 				},
 				map[string][]interface{}{},
