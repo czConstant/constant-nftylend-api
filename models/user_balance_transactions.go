@@ -10,7 +10,7 @@ type UserBalanceTransactionStatus string
 
 const (
 	UserBalanceTransactionDeposit   UserBalanceTransactionType = "deposit"
-	UserBalanceTransactionWithdraw  UserBalanceTransactionType = "withdraw"
+	UserBalanceTransactionClaim     UserBalanceTransactionType = "claim"
 	UserBalanceTransactionIncentive UserBalanceTransactionType = "incentive"
 
 	UserBalanceTransactionStatusPending UserBalanceTransactionStatus = "pending"

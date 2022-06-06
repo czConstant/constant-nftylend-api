@@ -420,7 +420,7 @@ func (s *NftLend) unlockUserBalance(tx *gorm.DB, userID uint, currencyID uint, a
 	return nil
 }
 
-func (s *NftLend) WithdrawUserBalance(ctx context.Context, req *serializers.WithdrawUserBalanceReq) error {
+func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUserBalanceReq) error {
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
@@ -460,7 +460,7 @@ func (s *NftLend) WithdrawUserBalance(ctx context.Context, req *serializers.With
 			if err != nil {
 				return errs.NewError(err)
 			}
-			if !currency.WithdrawEnabled {
+			if !currency.ClaimEnabled {
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			// validate request by sig
@@ -469,7 +469,7 @@ func (s *NftLend) WithdrawUserBalance(ctx context.Context, req *serializers.With
 				Network:       userBalance.Network,
 				UserBalanceID: userBalance.ID,
 				CurrencyID:    userBalance.CurrencyID,
-				Type:          models.UserBalanceTransactionWithdraw,
+				Type:          models.UserBalanceTransactionClaim,
 				ToAddress:     req.ToAddress,
 				Amount:        req.Amount,
 				Signature:     req.Signature,
