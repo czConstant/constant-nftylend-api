@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"strings"
 
@@ -237,6 +238,15 @@ func (s *NftLend) GetUserPWPTokenBalance(ctx context.Context, network models.Net
 			if err != nil {
 				return errs.NewError(err)
 			}
+			userBalance, err = s.ubd.FirstByID(
+				tx,
+				userBalance.ID,
+				map[string][]interface{}{},
+				false,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
 			return nil
 		},
 	)
@@ -382,6 +392,60 @@ func (s *NftLend) unlockUserBalance(tx *gorm.DB, userID uint, currencyID uint, a
 	err = s.ubd.Save(
 		tx,
 		userBalance,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *NftLend) WithdrawUserBalance(ctx context.Context, req *serializers.WithdrawUserBalanceReq) error {
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			userBalance, err := s.getUserBalance(
+				tx,
+				req.UserID,
+				req.CurrencyID,
+				true,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			// validate request by sig
+
+			//
+			userBalanceTransaction := &models.UserBalanceTransaction{
+				Network:       userBalance.Network,
+				UserBalanceID: userBalance.ID,
+				CurrencyID:    userBalance.CurrencyID,
+				Type:          models.UserBalanceTransactionWithdraw,
+				ToAddress:     req.ToAddress,
+				Amount:        req.Amount,
+				Signature:     req.Signature,
+				Status:        models.UserBalanceTransactionStatusDone,
+			}
+			err = s.ubtd.Create(
+				tx,
+				userBalanceTransaction,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			err = s.transactionUserBalance(
+				tx,
+				userBalance.Network,
+				userBalance.UserID,
+				userBalance.CurrencyID,
+				numeric.BigFloat{*models.NegativeBigFloat(&userBalanceTransaction.Amount.Float)},
+				false,
+				fmt.Sprintf("ubt_%d_withdraw", userBalanceTransaction.ID),
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
 	)
 	if err != nil {
 		return errs.NewError(err)
