@@ -33,3 +33,13 @@ func (s *Server) UserUpdateSetting(c *gin.Context) {
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
 }
+
+func (s *Server) GetUserPWPTokenBalance(c *gin.Context) {
+	ctx := s.requestContext(c)
+	userBalance, err := s.nls.GetUserPWPTokenBalance(ctx, models.Network(s.stringFromContextQuery(c, "network")), s.stringFromContextQuery(c, "address"))
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewUserBalanceResp(userBalance)})
+}
