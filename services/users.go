@@ -87,8 +87,8 @@ func (s *NftLend) getUser(tx *gorm.DB, network models.Network, address string) (
 			Network:         network,
 			Address:         address,
 			AddressChecked:  strings.ToLower(strings.TrimSpace(address)),
-			NewsNotiEnabled: true,
-			LoanNotiEnabled: true,
+			NewsNotiEnabled: false,
+			LoanNotiEnabled: false,
 		}
 		err = s.ud.Create(
 			tx,
