@@ -442,6 +442,9 @@ func (s *NftLend) WithdrawUserBalance(ctx context.Context, req *serializers.With
 			if err != nil {
 				return errs.NewError(err)
 			}
+			if !currency.WithdrawEnabled {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			// validate request by sig
 			//
 			userBalanceTransaction := &models.UserBalanceTransaction{
