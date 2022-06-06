@@ -214,12 +214,12 @@ func (s *NftLend) GetUserPWPTokenBalance(ctx context.Context, network models.Net
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			user, err := s.GetUser(ctx, network, address)
+			user, err := s.getUser(tx, network, address)
 			if err != nil {
 				return errs.NewError(err)
 			}
 			pwpToken, err := s.getLendCurrencyBySymbol(
-				daos.GetDBMainCtx(ctx),
+				tx,
 				"PWP",
 				models.NetworkNEAR,
 			)
@@ -241,7 +241,10 @@ func (s *NftLend) GetUserPWPTokenBalance(ctx context.Context, network models.Net
 			userBalance, err = s.ubd.FirstByID(
 				tx,
 				userBalance.ID,
-				map[string][]interface{}{},
+				map[string][]interface{}{
+					"User":     []interface{}{},
+					"Currency": []interface{}{},
+				},
 				false,
 			)
 			if err != nil {
