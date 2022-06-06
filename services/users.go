@@ -415,8 +415,34 @@ func (s *NftLend) WithdrawUserBalance(ctx context.Context, req *serializers.With
 			if err != nil {
 				return errs.NewError(err)
 			}
+			if userBalance.UpdatedAt.Unix() != req.Timestamp {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			if userBalance.GetAvaiableBalance().Cmp(&req.Amount.Float) < 0 {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			user, err := s.ud.FirstByID(
+				tx,
+				userBalance.UserID,
+				map[string][]interface{}{},
+				false,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if !strings.EqualFold(user.Address, req.ToAddress) {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			currency, err := s.cd.FirstByID(
+				tx,
+				userBalance.CurrencyID,
+				map[string][]interface{}{},
+				false,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
 			// validate request by sig
-
 			//
 			userBalanceTransaction := &models.UserBalanceTransaction{
 				Network:       userBalance.Network,
@@ -447,6 +473,24 @@ func (s *NftLend) WithdrawUserBalance(ctx context.Context, req *serializers.With
 			if err != nil {
 				return errs.NewError(err)
 			}
+			hash, err := s.bcs.Near.FtTransfer(
+				currency.ContractAddress,
+				currency.PoolAddress,
+				userBalanceTransaction.ToAddress,
+				models.ConvertBigFloatToWei(&userBalanceTransaction.Amount.Float, currency.Decimals),
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			userBalanceTransaction.TxHash = hash
+			err = s.ubtd.Save(
+				tx,
+				userBalanceTransaction,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+
 			return nil
 		},
 	)
