@@ -100,6 +100,7 @@ func (s *Server) Routers() {
 		userNftAPI.GET("/settings", s.UserGetSettings)
 		userNftAPI.POST("/settings", s.UserUpdateSetting)
 		userNftAPI.GET("/balances/pwp", s.GetUserPWPTokenBalance)
+		userNftAPI.GET("/balances/transactions", s.GetUserBalanceTransactions)
 		userNftAPI.POST("/balances/claim", s.ClaimUserBalance)
 	}
 	notiAPI := nftAPI.Group("/notifications")

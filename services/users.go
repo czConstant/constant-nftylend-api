@@ -209,6 +209,31 @@ func (s *NftLend) GetUserBalances(ctx context.Context, network models.Network, a
 	return userBalances, nil
 }
 
+func (s *NftLend) GetUserBalanceTransactions(ctx context.Context, network models.Network, address string, currencyID uint, page int, limit int) ([]*models.UserBalanceTransaction, uint, error) {
+	user, err := s.GetUser(ctx, network, address)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	filters := map[string][]interface{}{
+		"user_id = ?": []interface{}{user.ID},
+	}
+	if currencyID > 0 {
+		filters["currency_id = ?"] = []interface{}{currencyID}
+	}
+	userBalanceTxns, count, err := s.ubtd.Find4Page(
+		daos.GetDBMainCtx(ctx),
+		filters,
+		map[string][]interface{}{},
+		[]string{"id desc"},
+		page,
+		limit,
+	)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	return userBalanceTxns, count, nil
+}
+
 func (s *NftLend) GetUserPWPTokenBalance(ctx context.Context, network models.Network, address string) (*models.UserBalance, error) {
 	var userBalance *models.UserBalance
 	err := daos.WithTransaction(
