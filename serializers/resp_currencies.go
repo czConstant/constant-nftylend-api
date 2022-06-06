@@ -19,7 +19,7 @@ type CurrencyResp struct {
 	IconURL           string           `json:"icon_url"`
 	AdminFeeAddress   string           `json:"admin_fee_address"`
 	Price             float64          `json:"price"`
-	ClaimEnabled      bool             `json:"withdraw_enabled"`
+	ClaimEnabled      bool             `json:"claim_enabled"`
 	ProposalThreshold numeric.BigFloat `json:"proposal_threshold"`
 }
 
