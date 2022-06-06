@@ -108,6 +108,74 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				}
 				isUpdated = true
 			}
+			// check existsed loan
+			{
+				loanCheck, err := s.ld.First(
+					tx,
+					map[string][]interface{}{
+						"id != ?":      []interface{}{loan.ID},
+						"network = ?":  []interface{}{loan.Network},
+						"asset_id = ?": []interface{}{loan.AssetID},
+						"status = ?":   []interface{}{models.LoanStatusCreated},
+					},
+					map[string][]interface{}{},
+					[]string{},
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if loanCheck != nil {
+					return errs.NewError(errs.ErrBadRequest)
+				}
+			}
+			// cancel old pending loan
+			{
+				loans, err := s.ld.Find(
+					tx,
+					map[string][]interface{}{
+						"id != ?":      []interface{}{loan.ID},
+						"network = ?":  []interface{}{loan.Network},
+						"asset_id = ?": []interface{}{loan.AssetID},
+						"status = ?":   []interface{}{models.LoanStatusNew},
+					},
+					map[string][]interface{}{},
+					[]string{},
+					0,
+					999999,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				for _, l := range loans {
+					l, err = s.ld.FirstByID(
+						tx,
+						l.ID,
+						map[string][]interface{}{},
+						true,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if l.Status != models.LoanStatusNew {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					l.Status = models.LoanStatusCancelled
+					err = s.ld.Save(
+						tx,
+						l,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					err = s.updateIncentiveForLoan(
+						tx,
+						loan,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
+			}
 			loan, err = s.ld.FirstByID(
 				tx,
 				loan.ID,
@@ -163,54 +231,6 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 			default:
 				{
 					return errs.NewError(errs.ErrBadRequest)
-				}
-			}
-			// cancel old pending loan
-			{
-				loans, err := s.ld.Find(
-					tx,
-					map[string][]interface{}{
-						"id != ?":      []interface{}{loan.ID},
-						"network = ?":  []interface{}{loan.Network},
-						"asset_id = ?": []interface{}{loan.AssetID},
-						"status = ?":   []interface{}{models.LoanStatusNew},
-					},
-					map[string][]interface{}{},
-					[]string{},
-					0,
-					999999,
-				)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				for _, l := range loans {
-					l, err = s.ld.FirstByID(
-						tx,
-						l.ID,
-						map[string][]interface{}{},
-						true,
-					)
-					if err != nil {
-						return errs.NewError(err)
-					}
-					if l.Status != models.LoanStatusNew {
-						return errs.NewError(errs.ErrBadRequest)
-					}
-					l.Status = models.LoanStatusCancelled
-					err = s.ld.Save(
-						tx,
-						l,
-					)
-					if err != nil {
-						return errs.NewError(err)
-					}
-					err = s.updateIncentiveForLoan(
-						tx,
-						loan,
-					)
-					if err != nil {
-						return errs.NewError(err)
-					}
 				}
 			}
 			if loanPrevStatus != loan.Status {
