@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"strings"
 
@@ -100,7 +101,7 @@ func (s *NftLend) getUser(tx *gorm.DB, network models.Network, address string) (
 	return user, nil
 }
 
-func (s *NftLend) UserGetSettings(ctx context.Context, address string, network models.Network) (*models.User, error) {
+func (s *NftLend) UserGetSettings(ctx context.Context, network models.Network, address string) (*models.User, error) {
 	var user *models.User
 	var err error
 	if address == "" {
@@ -185,6 +186,74 @@ func (s *NftLend) UserUpdateSetting(ctx context.Context, req *serializers.Update
 		return nil, errs.NewError(err)
 	}
 	return user, nil
+}
+
+func (s *NftLend) GetUserBalances(ctx context.Context, network models.Network, address string) ([]*models.UserBalance, error) {
+	user, err := s.GetUser(ctx, network, address)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	userBalances, err := s.ubd.Find(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"user_id = ?": []interface{}{user.ID},
+		},
+		map[string][]interface{}{},
+		[]string{"id desc"},
+		0,
+		9999,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return userBalances, nil
+}
+
+func (s *NftLend) GetUserPWPTokenBalance(ctx context.Context, network models.Network, address string) (*models.UserBalance, error) {
+	var userBalance *models.UserBalance
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			user, err := s.GetUser(ctx, network, address)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			pwpToken, err := s.getLendCurrencyBySymbol(
+				daos.GetDBMainCtx(ctx),
+				"PWP",
+				models.NetworkNEAR,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if pwpToken == nil {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			userBalance, err = s.getUserBalance(
+				tx,
+				user.ID,
+				pwpToken.ID,
+				false,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			userBalance, err = s.ubd.FirstByID(
+				tx,
+				userBalance.ID,
+				map[string][]interface{}{},
+				false,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return userBalance, nil
 }
 
 func (s *NftLend) getUserBalance(tx *gorm.DB, userID uint, currencyID uint, forUpdate bool) (*models.UserBalance, error) {
@@ -323,6 +392,60 @@ func (s *NftLend) unlockUserBalance(tx *gorm.DB, userID uint, currencyID uint, a
 	err = s.ubd.Save(
 		tx,
 		userBalance,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *NftLend) WithdrawUserBalance(ctx context.Context, req *serializers.WithdrawUserBalanceReq) error {
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			userBalance, err := s.getUserBalance(
+				tx,
+				req.UserID,
+				req.CurrencyID,
+				true,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			// validate request by sig
+
+			//
+			userBalanceTransaction := &models.UserBalanceTransaction{
+				Network:       userBalance.Network,
+				UserBalanceID: userBalance.ID,
+				CurrencyID:    userBalance.CurrencyID,
+				Type:          models.UserBalanceTransactionWithdraw,
+				ToAddress:     req.ToAddress,
+				Amount:        req.Amount,
+				Signature:     req.Signature,
+				Status:        models.UserBalanceTransactionStatusDone,
+			}
+			err = s.ubtd.Create(
+				tx,
+				userBalanceTransaction,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			err = s.transactionUserBalance(
+				tx,
+				userBalance.Network,
+				userBalance.UserID,
+				userBalance.CurrencyID,
+				numeric.BigFloat{*models.NegativeBigFloat(&userBalanceTransaction.Amount.Float)},
+				false,
+				fmt.Sprintf("ubt_%d_withdraw", userBalanceTransaction.ID),
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
 	)
 	if err != nil {
 		return errs.NewError(err)

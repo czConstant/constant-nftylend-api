@@ -155,6 +155,31 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 							reference = fmt.Sprintf("it_%d_revoked", itM.ID)
 						}
 					}
+					userBalance, err := s.getUserBalance(
+						tx,
+						itM.UserID,
+						itM.CurrencyID,
+						true,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					userBalanceTransaction := &models.UserBalanceTransaction{
+						Network:       userBalance.Network,
+						UserBalanceID: userBalance.ID,
+						CurrencyID:    userBalance.CurrencyID,
+						Type:          models.UserBalanceTransactionIncentive,
+						Amount:        itM.Amount,
+						Status:        models.UserBalanceTransactionStatusDone,
+						RefID:         itM.ID,
+					}
+					err = s.ubtd.Create(
+						tx,
+						userBalanceTransaction,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
 					err = s.transactionUserBalance(
 						tx,
 						ipM.Network,

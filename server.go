@@ -115,6 +115,7 @@ func main() {
 		nd   = &daos.Notification{}
 
 		ubd  = &daos.UserBalance{}
+		ubtd = &daos.UserBalanceTransaction{}
 		ubhd = &daos.UserBalanceHistory{}
 		ipd  = &daos.IncentiveProgram{}
 		ipdd = &daos.IncentiveProgramDetail{}
@@ -155,6 +156,7 @@ func main() {
 			nd,
 
 			ubd,
+			ubtd,
 			ubhd,
 			ipd,
 			ipdd,
