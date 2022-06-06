@@ -224,8 +224,9 @@ func (s *NftLend) GetUserBalanceTransactions(ctx context.Context, network models
 		daos.GetDBMainCtx(ctx),
 		filters,
 		map[string][]interface{}{
-			"User":     []interface{}{},
-			"Currency": []interface{}{},
+			"User":                 []interface{}{},
+			"Currency":             []interface{}{},
+			"IncentiveTransaction": []interface{}{},
 		},
 		[]string{"id desc"},
 		page,
