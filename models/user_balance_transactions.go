@@ -20,6 +20,7 @@ const (
 type UserBalanceTransaction struct {
 	gorm.Model
 	Network                Network
+	UserID                 uint
 	UserBalanceID          uint
 	Type                   UserBalanceTransactionType
 	CurrencyID             uint
