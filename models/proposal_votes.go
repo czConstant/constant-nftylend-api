@@ -24,8 +24,8 @@ type ProposalVote struct {
 	Proposal         *Proposal
 	ProposalChoiceID uint
 	ProposalChoice   *ProposalChoice
-	Msg              string `gorm:"type:text"`
-	Sig              string
+	Message          string `gorm:"type:text"`
+	Signature        string
 	PowerVote        numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	Timestamp        *time.Time
 	IpfsHash         string

@@ -24,6 +24,7 @@ func (s *NftLend) GetProposals(ctx context.Context, statuses []string, page int,
 		daos.GetDBMainCtx(ctx),
 		filters,
 		map[string][]interface{}{
+			"User":    []interface{}{},
 			"Choices": []interface{}{},
 		},
 		[]string{"id desc"},
@@ -47,6 +48,7 @@ func (s *NftLend) GetProposalVotes(ctx context.Context, proposalID uint, statuse
 		daos.GetDBMainCtx(ctx),
 		filters,
 		map[string][]interface{}{
+			"User":           []interface{}{},
 			"Proposal":       []interface{}{},
 			"ProposalChoice": []interface{}{},
 		},
@@ -71,8 +73,8 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 		}
 	}
 	err := s.bcs.Near.ValidateMessageSignature(
-		req.Msg,
-		req.Sig,
+		req.Message,
+		req.Signature,
 		req.Address,
 	)
 	if err != nil {
@@ -95,7 +97,7 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 					Choices  []string `json:"choices"`
 				} `json:"payload"`
 			}
-			err = json.Unmarshal([]byte(req.Msg), &msg)
+			err = json.Unmarshal([]byte(req.Message), &msg)
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -190,8 +192,8 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 				Type:              msg.Type,
 				Timestamp:         helpers.TimeFromUnix(msg.Timestamp),
 				ChoiceType:        choiceType,
-				Msg:               req.Msg,
-				Sig:               req.Sig,
+				Message:           req.Message,
+				Signature:         req.Signature,
 				Start:             helpers.TimeFromUnix(msg.Payload.Start),
 				End:               helpers.TimeFromUnix(msg.Payload.End),
 				Snapshot:          msg.Payload.Snapshot,
@@ -245,8 +247,8 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 		}
 	}
 	err := s.bcs.Near.ValidateMessageSignature(
-		req.Msg,
-		req.Sig,
+		req.Message,
+		req.Signature,
 		req.Address,
 	)
 	if err != nil {
@@ -264,7 +266,7 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 					Choice   []int  `json:"choice"`
 				} `json:"payload"`
 			}
-			err = json.Unmarshal([]byte(req.Msg), &msg)
+			err = json.Unmarshal([]byte(req.Message), &msg)
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -411,6 +413,8 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 					PowerVote:        numeric.BigFloat{*powerVote},
 					IpfsHash:         ipfsHash,
 					Status:           models.ProposalVoteStatusCreated,
+					Message:          req.Message,
+					Signature:        req.Signature,
 				}
 				err = s.pvd.Create(
 					tx,
