@@ -462,6 +462,35 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 	return loan, isUpdated, nil
 }
 
+func (s *NftLend) UpdateIncentiveForLoanID(ctx context.Context, loanID uint) error {
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			loan, err := s.ld.FirstByID(
+				tx,
+				loanID,
+				map[string][]interface{}{},
+				false,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			err = s.updateIncentiveForLoan(
+				tx,
+				loan,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
 func (s *NftLend) updateIncentiveForLoan(tx *gorm.DB, loan *models.Loan) error {
 	var err error
 	switch loan.Status {
