@@ -177,7 +177,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 						UserID:                 userBalance.UserID,
 						UserBalanceID:          userBalance.ID,
 						CurrencyID:             userBalance.CurrencyID,
-						Type:                   models.UserBalanceTransactionIncentive,
+						Type:                   models.UserBalanceTransactionTypeIncentive,
 						Amount:                 itM.Amount,
 						Status:                 models.UserBalanceTransactionStatusDone,
 						IncentiveTransactionID: itM.ID,

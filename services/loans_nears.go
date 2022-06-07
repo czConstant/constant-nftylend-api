@@ -66,9 +66,18 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					return errs.NewError(err)
 				}
 				createdAt := helpers.TimeFromUnix(int64(v.Uint64()))
+				borrower, err := s.getUser(
+					tx,
+					models.NetworkNEAR,
+					saleInfo.OwnerID,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
 				loan = &models.Loan{
 					Network:         models.NetworkNEAR,
 					Owner:           saleInfo.OwnerID,
+					BorrowerUserID:  borrower.ID,
 					PrincipalAmount: numeric.BigFloat{*big.NewFloat(principalAmount)},
 					InterestRate:    interestRate,
 					Duration:        uint(saleInfo.LoanDuration),
@@ -253,10 +262,19 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				if offer == nil {
 					offerPrincipalAmount := models.ConvertWeiToCollateralFloatAmount(&saleOffer.LoanPrincipalAmount.Int, currency.Decimals)
 					offerInterestRate, _ := models.ConvertWeiToBigFloat(big.NewInt(int64(saleOffer.LoanInterestRate)), 4).Float64()
+					lender, err := s.getUser(
+						tx,
+						models.NetworkNEAR,
+						saleInfo.Lender,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
 					offer = &models.LoanOffer{
 						Network:         loan.Network,
 						LoanID:          loan.ID,
 						Lender:          saleInfo.Lender,
+						LenderUserID:    lender.ID,
 						PrincipalAmount: numeric.BigFloat{*big.NewFloat(offerPrincipalAmount)},
 						InterestRate:    offerInterestRate,
 						Duration:        uint(saleOffer.LoanDuration),
@@ -460,6 +478,35 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 		s.EmailForReference(ctx, emailQueue)
 	}
 	return loan, isUpdated, nil
+}
+
+func (s *NftLend) UpdateIncentiveForLoanID(ctx context.Context, loanID uint) error {
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			loan, err := s.ld.FirstByID(
+				tx,
+				loanID,
+				map[string][]interface{}{},
+				false,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			err = s.updateIncentiveForLoan(
+				tx,
+				loan,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
 }
 
 func (s *NftLend) updateIncentiveForLoan(tx *gorm.DB, loan *models.Loan) error {

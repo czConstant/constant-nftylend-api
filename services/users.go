@@ -188,6 +188,59 @@ func (s *NftLend) UserUpdateSetting(ctx context.Context, req *serializers.Update
 	return user, nil
 }
 
+func (s *NftLend) GetUserStats(ctx context.Context, network models.Network, address string) (*models.UserBorrowStats, *models.UserLendStats, error) {
+	var user *models.User
+	var err error
+	if address == "" {
+		return nil, nil, errs.NewError(errs.ErrBadRequest)
+	}
+	var lendStats *models.UserLendStats
+	var borrowStats *models.UserBorrowStats
+	switch network {
+	case models.NetworkSOL,
+		models.NetworkAVAX,
+		models.NetworkBOBA,
+		models.NetworkBSC,
+		models.NetworkETH,
+		models.NetworkMATIC,
+		models.NetworkNEAR:
+		{
+		}
+	default:
+		{
+			return nil, nil, errs.NewError(errs.ErrBadRequest)
+		}
+	}
+	err = daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			user, err = s.getUser(tx, network, address)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			borrowStats, err = s.ud.GetUserBorrowStats(
+				tx,
+				user.ID,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			lendStats, err = s.ud.GetUserLendStats(
+				tx,
+				user.ID,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, nil, errs.NewError(err)
+	}
+	return borrowStats, lendStats, nil
+}
+
 func (s *NftLend) GetUserBalances(ctx context.Context, network models.Network, address string) ([]*models.UserBalance, error) {
 	user, err := s.GetUser(ctx, network, address)
 	if err != nil {
@@ -499,7 +552,7 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 				UserID:        userBalance.UserID,
 				UserBalanceID: userBalance.ID,
 				CurrencyID:    userBalance.CurrencyID,
-				Type:          models.UserBalanceTransactionClaim,
+				Type:          models.UserBalanceTransactionTypeClaim,
 				ToAddress:     req.ToAddress,
 				Amount:        req.Amount,
 				Signature:     req.Signature,
