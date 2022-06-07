@@ -66,9 +66,18 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					return errs.NewError(err)
 				}
 				createdAt := helpers.TimeFromUnix(int64(v.Uint64()))
+				borrower, err := s.getUser(
+					tx,
+					models.NetworkNEAR,
+					saleInfo.OwnerID,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
 				loan = &models.Loan{
 					Network:         models.NetworkNEAR,
 					Owner:           saleInfo.OwnerID,
+					BorrowerUserID:  borrower.ID,
 					PrincipalAmount: numeric.BigFloat{*big.NewFloat(principalAmount)},
 					InterestRate:    interestRate,
 					Duration:        uint(saleInfo.LoanDuration),
@@ -253,10 +262,19 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				if offer == nil {
 					offerPrincipalAmount := models.ConvertWeiToCollateralFloatAmount(&saleOffer.LoanPrincipalAmount.Int, currency.Decimals)
 					offerInterestRate, _ := models.ConvertWeiToBigFloat(big.NewInt(int64(saleOffer.LoanInterestRate)), 4).Float64()
+					lender, err := s.getUser(
+						tx,
+						models.NetworkNEAR,
+						saleInfo.Lender,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
 					offer = &models.LoanOffer{
 						Network:         loan.Network,
 						LoanID:          loan.ID,
 						Lender:          saleInfo.Lender,
+						LenderUserID:    lender.ID,
 						PrincipalAmount: numeric.BigFloat{*big.NewFloat(offerPrincipalAmount)},
 						InterestRate:    offerInterestRate,
 						Duration:        uint(saleOffer.LoanDuration),
