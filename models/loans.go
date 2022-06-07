@@ -33,7 +33,11 @@ type Loan struct {
 	gorm.Model
 	Network              Network
 	Owner                string
+	BorrowerUserID       uint
+	BorrowerUser         *User
 	Lender               string
+	LenderUserID         uint
+	LenderUser           *User
 	AssetID              uint
 	Asset                *Asset
 	CurrencyID           uint `gorm:"default:0"`

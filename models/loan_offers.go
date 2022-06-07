@@ -28,6 +28,8 @@ type LoanOffer struct {
 	LoanID              uint
 	Loan                *Loan
 	Lender              string
+	LenderUserID        uint
+	LenderUser          *User
 	StartedAt           *time.Time
 	Duration            uint
 	ExpiredAt           *time.Time
