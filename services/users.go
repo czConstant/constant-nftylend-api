@@ -499,7 +499,7 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 				UserID:        userBalance.UserID,
 				UserBalanceID: userBalance.ID,
 				CurrencyID:    userBalance.CurrencyID,
-				Type:          models.UserBalanceTransactionClaim,
+				Type:          models.UserBalanceTransactionTypeClaim,
 				ToAddress:     req.ToAddress,
 				Amount:        req.Amount,
 				Signature:     req.Signature,
