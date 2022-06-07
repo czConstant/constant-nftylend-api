@@ -78,8 +78,8 @@ func (d *User) GetRPTListingCollection(tx *gorm.DB) ([]*models.NftyRPTListingCol
 	return rs, nil
 }
 
-func (d *User) GetUserStats(tx *gorm.DB, borrowerID uint) (*models.PlatformStats, error) {
-	var rs models.PlatformStats
+func (d *User) GetUserBorrowStats(tx *gorm.DB, borrowerID uint) (*models.UserBorrowStats, error) {
+	var rs models.UserBorrowStats
 	err := tx.Raw(`
 	select ifnull(sum(1), 0)                                           total_loans,
        ifnull(sum(loans.offer_principal_amount * currencies.price), 0) total_volume
@@ -89,6 +89,24 @@ func (d *User) GetUserStats(tx *gorm.DB, borrowerID uint) (*models.PlatformStats
 	and loans.status not in ('new', 'cancelled')
 	`,
 		borrowerID,
+	).Find(&rs).Error
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return &rs, nil
+}
+
+func (d *User) GetUserLendStats(tx *gorm.DB, lenderID uint) (*models.UserLendStats, error) {
+	var rs models.UserLendStats
+	err := tx.Raw(`
+	select ifnull(sum(1), 0)                                           total_loans,
+       ifnull(sum(loans.offer_principal_amount * currencies.price), 0) total_volume
+	from loans
+			join currencies on loans.currency_id = currencies.id
+	where loans.lender_user_id = ?
+	and loans.status not in ('new', 'cancelled')
+	`,
+		lenderID,
 	).Find(&rs).Error
 	if err != nil {
 		return nil, errs.NewError(err)
