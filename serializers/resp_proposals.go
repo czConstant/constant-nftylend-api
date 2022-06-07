@@ -16,8 +16,8 @@ type ProposalResp struct {
 	User              *UserResp                 `json:"user"`
 	Type              string                    `json:"type"`
 	ChoiceType        models.ProposalChoiceType `json:"choice_type"`
-	Msg               string                    `json:"msg"`
-	Sig               string                    `json:"sig"`
+	Message           string                    `json:"message"`
+	Signature         string                    `json:"signature"`
 	Snapshot          int64                     `json:"snapshot"`
 	Name              string                    `json:"name"`
 	Body              string                    `json:"body"`
@@ -43,8 +43,8 @@ func NewProposalResp(m *models.Proposal) *ProposalResp {
 		User:              NewUserResp(m.User),
 		Type:              m.Type,
 		ChoiceType:        m.ChoiceType,
-		Msg:               m.Msg,
-		Sig:               m.Sig,
+		Message:           m.Message,
+		Signature:         m.Signature,
 		Snapshot:          m.Snapshot,
 		Name:              m.Name,
 		Body:              m.Body,

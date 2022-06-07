@@ -32,8 +32,8 @@ type Proposal struct {
 	User              *User
 	Type              string
 	ChoiceType        ProposalChoiceType
-	Msg               string `gorm:"type:text"`
-	Sig               string
+	Message           string `gorm:"type:text"`
+	Signature         string
 	Snapshot          int64
 	Name              string `gorm:"type:text"`
 	Body              string `gorm:"type:text"`
