@@ -105,9 +105,9 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 						itM, err = s.itd.First(
 							tx,
 							map[string][]interface{}{
+								"user_id = ?":              []interface{}{user.ID},
 								"incentive_program_id = ?": []interface{}{ipdM.IncentiveProgramID},
 								"type = ?":                 []interface{}{models.IncentiveTransactionTypeBorrowerLoanListed},
-								"address = ?":              []interface{}{address},
 								"loan_id = ?":              []interface{}{loan.ID},
 								"status = ?":               []interface{}{models.IncentiveTransactionStatusLocked},
 							},
