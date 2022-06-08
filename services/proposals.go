@@ -186,7 +186,7 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 			if err != nil {
 				return errs.NewError(err)
 			}
-			var proposal = &models.Proposal{
+			proposal = &models.Proposal{
 				Network:           user.Network,
 				UserID:            user.ID,
 				Type:              msg.Type,
