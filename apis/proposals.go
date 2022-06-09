@@ -1,12 +1,25 @@
 package apis
 
 import (
+	"bytes"
 	"net/http"
 
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/serializers"
 	"github.com/gin-gonic/gin"
 )
+
+func (s *Server) GetIpfsInfo(c *gin.Context) {
+	hash := c.Param("hash")
+	fileData, err := s.nls.GetIpfsInfo(hash)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	r := bytes.NewReader(fileData)
+	extraHeaders := map[string]string{}
+	c.DataFromReader(http.StatusOK, r.Size(), http.DetectContentType(fileData), r, extraHeaders)
+}
 
 func (s *Server) GetProposals(c *gin.Context) {
 	ctx := s.requestContext(c)

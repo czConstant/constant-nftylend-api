@@ -15,6 +15,14 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+func (s *NftLend) GetIpfsInfo(hash string) ([]byte, error) {
+	res, err := s.ifc.GetIpfsInfo(hash)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return res, nil
+}
+
 func (s *NftLend) GetProposals(ctx context.Context, statuses []string, page int, limit int) ([]*models.Proposal, uint, error) {
 	filters := map[string][]interface{}{}
 	if len(statuses) > 0 {

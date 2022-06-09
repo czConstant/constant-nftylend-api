@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/czConstant/constant-nftylend-api/configs"
 	"github.com/czConstant/constant-nftylend-api/models"
 	"github.com/czConstant/constant-nftylend-api/types/numeric"
 )
@@ -42,7 +43,7 @@ func NewProposalVoteResp(m *models.ProposalVote) *ProposalVoteResp {
 		ProposalChoice:   NewProposalChoiceResp(m.ProposalChoice),
 		PowerVote:        m.PowerVote,
 		Timestamp:        m.Timestamp,
-		IpfsHash:         fmt.Sprintf("https://gateway.ipfs.io/ipfs/%s", m.IpfsHash),
+		IpfsHash:         fmt.Sprintf("%s/api/ipfs/%s", configs.GetConfig().WebUrl, m.IpfsHash),
 		Status:           m.Status,
 	}
 	return resp

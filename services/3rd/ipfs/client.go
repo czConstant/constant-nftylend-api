@@ -73,6 +73,23 @@ func (c *Client) getJSON(url string, headers map[string]string, result interface
 	return resp.StatusCode, nil
 }
 
+func (c *Client) GetIpfsInfo(hash string) ([]byte, error) {
+	request, err := http.NewRequest("POST", fmt.Sprintf("%s/api/v0/cat?arg=%s", c.URL, hash), nil)
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", c.BasicAuth)
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+	return ioutil.ReadAll(response.Body)
+
+}
+
 func (c *Client) UploadString(msg string) (string, error) {
 	dataBytes := []byte(msg)
 	body := &bytes.Buffer{}
