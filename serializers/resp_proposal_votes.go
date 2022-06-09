@@ -34,7 +34,7 @@ func NewProposalVoteResp(m *models.ProposalVote) *ProposalVoteResp {
 		UpdatedAt:        m.UpdatedAt,
 		Network:          m.Network,
 		UserID:           m.UserID,
-		User:             NewUserResp(m.User),
+		User:             NewMiniUserResp(m.User),
 		ProposalID:       m.ProposalID,
 		Proposal:         NewProposalResp(m.Proposal),
 		ProposalChoiceID: m.ProposalChoiceID,

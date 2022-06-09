@@ -40,7 +40,7 @@ func NewProposalResp(m *models.Proposal) *ProposalResp {
 		UpdatedAt:         m.UpdatedAt,
 		Network:           m.Network,
 		UserID:            m.UserID,
-		User:              NewUserResp(m.User),
+		User:              NewMiniUserResp(m.User),
 		Type:              m.Type,
 		ChoiceType:        m.ChoiceType,
 		Message:           m.Message,
