@@ -471,11 +471,19 @@ func (s *NftLend) ProposalUnVote(ctx context.Context, network models.Network, ad
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
+			user, err := s.getUser(
+				tx,
+				network,
+				address,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
 			proposalVotes, err := s.pvd.Find(
 				tx,
 				map[string][]interface{}{
 					"network = ?": []interface{}{network},
-					"address = ?": []interface{}{address},
+					"user_id = ?": []interface{}{user.ID},
 					"status = ?":  []interface{}{models.ProposalVoteStatusCreated},
 					`exists(
 						select 1
