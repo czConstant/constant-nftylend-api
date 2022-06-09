@@ -10,6 +10,10 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+const (
+	SymbolPWPToken = "PWP"
+)
+
 var MoralisNetworkMap = map[string]map[string]string{
 	"mainnet": map[string]string{
 		string(NetworkMATIC): "matic",

@@ -31,7 +31,7 @@ func NewUserBalanceResp(m *models.UserBalance) *UserBalanceResp {
 		UpdatedAt:      m.UpdatedAt,
 		Network:        m.Network,
 		UserID:         m.UserID,
-		User:           NewUserResp(m.User),
+		User:           NewMiniUserResp(m.User),
 		CurrencyID:     m.CurrencyID,
 		Currency:       NewCurrencyResp(m.Currency),
 		Balance:        m.Balance,

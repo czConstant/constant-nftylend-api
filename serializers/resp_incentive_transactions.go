@@ -37,7 +37,7 @@ func NewIncentiveTransactionResp(m *models.IncentiveTransaction) *IncentiveTrans
 		IncentiveProgramID: m.IncentiveProgramID,
 		Type:               m.Type,
 		UserID:             m.UserID,
-		User:               NewUserResp(m.User),
+		User:               NewMiniUserResp(m.User),
 		CurrencyID:         m.CurrencyID,
 		Currency:           NewCurrencyResp(m.Currency),
 		LoanID:             m.LoanID,

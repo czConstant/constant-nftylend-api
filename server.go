@@ -20,6 +20,7 @@ import (
 	"github.com/czConstant/constant-nftylend-api/databases"
 	"github.com/czConstant/constant-nftylend-api/logger"
 	"github.com/czConstant/constant-nftylend-api/services"
+	"github.com/czConstant/constant-nftylend-api/services/3rd/ipfs"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/mailer"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/moralis"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/saletrack"
@@ -45,12 +46,13 @@ func main() {
 	defer func() {
 		if err := recover(); err != nil {
 			panicErr := errors.Wrap(errors.New("panic start server"), string(debug.Stack()))
-			raven.CaptureErrorAndWait(panicErr, nil)
 			logger.Info(
 				logger.LOGGER_API_APP_PANIC,
 				"panic start server",
 				zap.Error(panicErr),
 			)
+			fmt.Println(err)
+			fmt.Println(panicErr)
 			return
 		}
 	}()
@@ -106,6 +108,9 @@ func main() {
 		lod  = &daos.LoanOffer{}
 		ltd  = &daos.LoanTransaction{}
 		id   = &daos.Instruction{}
+		pd   = &daos.Proposal{}
+		pcd  = &daos.ProposalChoice{}
+		pvd  = &daos.ProposalVote{}
 		ntd  = &daos.NotificationTemplate{}
 		nd   = &daos.Notification{}
 
@@ -123,10 +128,16 @@ func main() {
 			APIKey: conf.Moralis.APIKey,
 		}
 
+		ifc = &ipfs.Client{
+			URL:       conf.Ipfs.URL,
+			BasicAuth: conf.Ipfs.BasicAuth,
+		}
+
 		s = services.NewNftLend(
 			conf,
 			bcs,
 			stc,
+			ifc,
 			mc,
 			ud,
 			cd,
@@ -138,6 +149,9 @@ func main() {
 			lod,
 			ltd,
 			id,
+			pd,
+			pcd,
+			pvd,
 			ntd,
 			nd,
 

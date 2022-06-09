@@ -55,6 +55,7 @@ func (s *Server) Routers() {
 	currencynftAPI := nftAPI.Group("/currencies")
 	{
 		currencynftAPI.GET("/list", s.GetCurrencies)
+		currencynftAPI.GET("/pwp-token", s.GetCurrencyPWPToken)
 	}
 	assetnftAPI := nftAPI.Group("/assets")
 	{
@@ -81,10 +82,18 @@ func (s *Server) Routers() {
 		loannftAPI.POST("/offers/create/:loan_id", s.CreateLoanOffer)
 		loannftAPI.POST("/near/sync", s.NearUpdateLoan)
 	}
+	proposalAPI := nftAPI.Group("/proposals")
+	{
+		proposalAPI.GET("/list", s.GetProposals)
+		proposalAPI.POST("/create", s.CreateProposal)
+		proposalAPI.GET("/votes/list/:proposal_id", s.GetProposalVotes)
+		proposalAPI.POST("/votes/create", s.CreateProposalVote)
+	}
 	hookInternalnftAPI := nftAPI.Group("/hook/internal")
 	{
 		hookInternalnftAPI.POST("/solana-instruction", s.LenInternalHookSolanaInstruction)
 		hookInternalnftAPI.POST("/near-sync", s.NearSync)
+		hookInternalnftAPI.POST("/near-pwp-sync", s.NearPwpSync)
 	}
 	jobsNftAPI := nftAPI.Group("/jobs")
 	jobsNftAPI.Use(s.authorizeJobMiddleware())
@@ -93,6 +102,7 @@ func (s *Server) Routers() {
 		jobsNftAPI.POST("/incentive-unlock", s.JobIncentiveForUnlock)
 		jobsNftAPI.POST("/update-price", s.JobUpdateCurrencyPrice)
 		jobsNftAPI.POST("/email-chedule", s.JobEmailSchedule)
+		jobsNftAPI.POST("/proposal-status", s.JobProposalStatus)
 		jobsNftAPI.POST("/update-stats", s.JobUpdateStats)
 	}
 	userNftAPI := nftAPI.Group("/users")
