@@ -17,6 +17,7 @@ import (
 	"github.com/czConstant/constant-nftylend-api/helpers"
 	"github.com/czConstant/constant-nftylend-api/models"
 	"github.com/czConstant/constant-nftylend-api/serializers"
+	"github.com/czConstant/constant-nftylend-api/services/3rd/ipfs"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/moralis"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/saletrack"
 	"github.com/czConstant/constant-nftylend-api/types/numeric"
@@ -27,6 +28,7 @@ type NftLend struct {
 	conf *configs.Config
 	bcs  *bcclient.Client
 	stc  *saletrack.Client
+	ifc  *ipfs.Client
 	mc   *moralis.Client
 	ud   *daos.User
 	cd   *daos.Currency
@@ -38,6 +40,9 @@ type NftLend struct {
 	lod  *daos.LoanOffer
 	ltd  *daos.LoanTransaction
 	id   *daos.Instruction
+	pd   *daos.Proposal
+	pcd  *daos.ProposalChoice
+	pvd  *daos.ProposalVote
 	ntd  *daos.NotificationTemplate
 	nd   *daos.Notification
 
@@ -54,6 +59,7 @@ func NewNftLend(
 	conf *configs.Config,
 	bcs *bcclient.Client,
 	stc *saletrack.Client,
+	ifc *ipfs.Client,
 	mc *moralis.Client,
 	ud *daos.User,
 	cd *daos.Currency,
@@ -65,6 +71,9 @@ func NewNftLend(
 	lod *daos.LoanOffer,
 	ltd *daos.LoanTransaction,
 	id *daos.Instruction,
+	pd *daos.Proposal,
+	pcd *daos.ProposalChoice,
+	pvd *daos.ProposalVote,
 	ntd *daos.NotificationTemplate,
 	nd *daos.Notification,
 
@@ -81,6 +90,7 @@ func NewNftLend(
 		conf: conf,
 		bcs:  bcs,
 		stc:  stc,
+		ifc:  ifc,
 		mc:   mc,
 		ud:   ud,
 		cd:   cd,
@@ -92,6 +102,9 @@ func NewNftLend(
 		lod:  lod,
 		ltd:  ltd,
 		id:   id,
+		pd:   pd,
+		pcd:  pcd,
+		pvd:  pvd,
 		ntd:  ntd,
 		nd:   nd,
 
@@ -130,6 +143,10 @@ func (s *NftLend) getEvmClientByNetwork(network models.Network) *ethereum.Client
 	case models.NetworkBOBA:
 		{
 			return s.bcs.Boba
+		}
+	case models.NetworkAURORA:
+		{
+			return s.bcs.Aurora
 		}
 	}
 	return nil
@@ -393,6 +410,22 @@ func (s *NftLend) GetCollectionDetail(ctx context.Context, seoURL string) (*mode
 			},
 		},
 		[]string{"id desc"},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return m, nil
+}
+
+func (s *NftLend) GetCurrencyBySymbol(ctx context.Context, symbol string, network models.Network) (*models.Currency, error) {
+	m, err := s.cd.First(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"symbol = ?":  []interface{}{symbol},
+			"network = ?": []interface{}{network},
+		},
+		map[string][]interface{}{},
+		[]string{},
 	)
 	if err != nil {
 		return nil, errs.NewError(err)

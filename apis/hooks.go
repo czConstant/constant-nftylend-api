@@ -161,6 +161,32 @@ func (s *Server) NearSync(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: isUpdated})
 }
 
+func (s *Server) NearPwpSync(c *gin.Context) {
+	ctx := s.requestContext(c)
+	var req struct {
+		Hash        string `json:"hash"`
+		FromAddress string `json:"from_address"`
+		ToAddress   string `json:"to_address"`
+		Amount      string `json:"amount"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	err := s.nls.ProposalUnVote(
+		ctx,
+		models.NetworkNEAR,
+		req.FromAddress,
+		req.Hash,
+		0,
+	)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
+}
+
 func (s *Server) JobUpdateStats(c *gin.Context) {
 	ctx := s.requestContext(c)
 	var retErr error

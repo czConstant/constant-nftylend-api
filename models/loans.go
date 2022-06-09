@@ -20,13 +20,14 @@ const (
 	LoanStatusLiquidated LoanStatus = "liquidated"
 	LoanStatusExpired    LoanStatus = "expired"
 
-	NetworkSOL   Network = "SOL"
-	NetworkMATIC Network = "MATIC"
-	NetworkETH   Network = "ETH"
-	NetworkAVAX  Network = "AVAX"
-	NetworkBSC   Network = "BSC"
-	NetworkBOBA  Network = "BOBA"
-	NetworkNEAR  Network = "NEAR"
+	NetworkSOL    Network = "SOL"
+	NetworkMATIC  Network = "MATIC"
+	NetworkETH    Network = "ETH"
+	NetworkAVAX   Network = "AVAX"
+	NetworkBSC    Network = "BSC"
+	NetworkBOBA   Network = "BOBA"
+	NetworkNEAR   Network = "NEAR"
+	NetworkAURORA Network = "AURORA"
 )
 
 type Loan struct {

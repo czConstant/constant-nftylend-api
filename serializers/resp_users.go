@@ -35,6 +35,20 @@ func NewUserResp(m *models.User) *UserResp {
 	return resp
 }
 
+func NewMiniUserResp(m *models.User) *UserResp {
+	if m == nil {
+		return nil
+	}
+	resp := &UserResp{
+		ID:        m.ID,
+		CreatedAt: m.CreatedAt,
+		UpdatedAt: m.UpdatedAt,
+		Network:   m.Network,
+		Address:   m.Address,
+	}
+	return resp
+}
+
 func NewUserRespArr(arr []*models.User) []*UserResp {
 	resps := []*UserResp{}
 	for _, m := range arr {
