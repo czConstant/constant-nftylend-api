@@ -73,6 +73,7 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 		}
 	}
 	err := s.bcs.Near.ValidateMessageSignature(
+		s.conf.Contract.NearNftypawnAddress,
 		req.Message,
 		req.Signature,
 		req.Address,
@@ -247,6 +248,7 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 		}
 	}
 	err := s.bcs.Near.ValidateMessageSignature(
+		s.conf.Contract.NearNftypawnAddress,
 		req.Message,
 		req.Signature,
 		req.Address,
