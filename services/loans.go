@@ -34,46 +34,21 @@ func (s *NftLend) GetListingLoans(
 	limit int,
 ) ([]*models.Loan, uint, error) {
 	filters := map[string][]interface{}{
-		"status in (?)": []interface{}{
+		"loans.status in (?)": []interface{}{
 			[]models.LoanStatus{
 				models.LoanStatusNew,
 			}},
-		"valid_at is null or valid_at >= ?": []interface{}{time.Now()},
+		"loans.valid_at is null or valid_at >= ?": []interface{}{time.Now()},
 	}
 	if network != "" {
-		filters["network = ?"] = []interface{}{network}
+		filters["loans.network = ?"] = []interface{}{network}
 	}
-	filters["network in (?)"] = []interface{}{s.getSupportedNetworks()}
+	filters["loans.network in (?)"] = []interface{}{s.getSupportedNetworks()}
 	if collectionId > 0 {
-		filters[`
-		exists(
-			select 1
-			from assets
-			where asset_id = assets.id
-			  and assets.collection_id = ?
-		)
-		`] = []interface{}{collectionId}
+		filters["collections.id = ?"] = []interface{}{collectionId}
 	}
 	if collectionSeoUrl != "" {
-		collection, err := s.cld.First(
-			daos.GetDBMainCtx(ctx),
-			map[string][]interface{}{
-				"seo_url = ?": []interface{}{collectionSeoUrl},
-			},
-			map[string][]interface{}{},
-			[]string{"id desc"},
-		)
-		if err != nil {
-			return nil, 0, errs.NewError(err)
-		}
-		filters[`
-		exists(
-			select 1
-			from assets
-			where asset_id = assets.id
-			  and assets.collection_id = ?
-		)
-		`] = []interface{}{collection.ID}
+		filters["collections.seo_url >= ?"] = []interface{}{collectionSeoUrl}
 	}
 	if search != "" {
 		searchs := strings.Split(search, " ")
@@ -83,44 +58,44 @@ func (s *NftLend) GetListingLoans(
 			conditions = append(conditions, "and assets.search_text like ?")
 			values = append(values, fmt.Sprintf("%%%s%%", strings.ToLower(s)))
 		}
-		filters[fmt.Sprintf(`
-			exists(
-				select 1
-				from assets
-				where asset_id = assets.id
-				  %s
-			)
-			`, strings.Join(conditions, " "))] = values
+		filters[fmt.Sprintf("1 = 1 %s", strings.Join(conditions, " "))] = values
 	}
 	if minPrice > 0 {
-		filters["principal_amount >= ?"] = []interface{}{minPrice}
+		filters["loans.principal_amount >= ?"] = []interface{}{minPrice}
 	}
 	if maxPrice > 0 {
-		filters["principal_amount <= ?"] = []interface{}{maxPrice}
+		filters["loans.principal_amount <= ?"] = []interface{}{maxPrice}
 	}
 	if minDuration > 0 {
-		filters["duration >= ?"] = []interface{}{minDuration}
+		filters["loans.duration >= ?"] = []interface{}{minDuration}
 	}
 	if maxDuration > 0 {
-		filters["duration <= ?"] = []interface{}{maxDuration}
+		filters["loans.duration <= ?"] = []interface{}{maxDuration}
 	}
 	if len(excludeIds) > 0 {
-		filters["id not in (?)"] = []interface{}{excludeIds}
+		filters["loans.id not in (?)"] = []interface{}{excludeIds}
 	}
 	if minInterestRate > 0 {
-		filters["interest_rate >= ?"] = []interface{}{minInterestRate}
+		filters["loans.interest_rate >= ?"] = []interface{}{minInterestRate}
 	}
 	if maxInterestRate > 0 {
-		filters["interest_rate <= ?"] = []interface{}{maxInterestRate}
-	}
-	if len(excludeIds) > 0 {
-		filters["id not in (?)"] = []interface{}{excludeIds}
+		filters["loans.interest_rate <= ?"] = []interface{}{maxInterestRate}
 	}
 	if len(sort) == 0 {
 		sort = []string{"id desc"}
 	}
-	loans, count, err := s.ld.Find4Page(
+	filters[`exists(
+		select 1
+		from collection_submitteds
+		where collections.network = collection_submitteds.network
+		  and collections.creator = collection_submitteds.creator
+		  and collection_submitteds.status = ?
+	)`] = []interface{}{models.CollectionSubmittedStatusApproved}
+	loans, count, err := s.ld.FindJoin4Page(
 		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"join assets on loans.asset_id = assets.id join collections on assets.collection_id = collections.id": []interface{}{},
+		},
 		filters,
 		map[string][]interface{}{
 			"Asset":            []interface{}{},

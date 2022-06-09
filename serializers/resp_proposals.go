@@ -1,6 +1,7 @@
 package serializers
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/czConstant/constant-nftylend-api/models"
@@ -51,7 +52,7 @@ func NewProposalResp(m *models.Proposal) *ProposalResp {
 		Timestamp:         m.Timestamp,
 		Start:             m.Start,
 		End:               m.End,
-		IpfsHash:          m.IpfsHash,
+		IpfsHash:          fmt.Sprintf("https://gateway.ipfs.io/ipfs/%s", m.IpfsHash),
 		ProposalThreshold: m.ProposalThreshold,
 		Status:            m.Status,
 		Choices:           NewProposalChoiceRespArr(m.Choices),

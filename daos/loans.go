@@ -54,6 +54,16 @@ func (d *Loan) Find4Page(tx *gorm.DB, filters map[string][]interface{}, preloads
 	}
 	return ms, c, nil
 }
+
+func (d *Loan) FindJoin4Page(tx *gorm.DB, joins map[string][]interface{}, filters map[string][]interface{}, preloads map[string][]interface{}, orders []string, page int, limit int) ([]*models.Loan, uint, error) {
+	var ms []*models.Loan
+	c, err := d.findJoin4Page(tx, &models.Loan{}, &ms, joins, filters, preloads, orders, uint(page), uint(limit), false)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	return ms, c, nil
+}
+
 func (d *Loan) GetRPTCollectionLoan(tx *gorm.DB, collectionId uint) (*models.NftyRPTCollectionLoan, error) {
 	var rs models.NftyRPTCollectionLoan
 	err := tx.Raw(`
