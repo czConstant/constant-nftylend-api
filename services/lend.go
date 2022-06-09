@@ -359,6 +359,13 @@ func (s *NftLend) GetCollections(ctx context.Context, page int, limit int) ([]*m
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
 			"network in (?)": []interface{}{s.getSupportedNetworks()},
+			`exists(
+				select 1
+				from collection_submitteds
+				where collections.network = collection_submitteds.network
+				  and collections.creator = collection_submitteds.creator
+				  and collection_submitteds.status = ?
+			)`: []interface{}{models.CollectionSubmittedStatusApproved},
 		},
 		map[string][]interface{}{
 			"Currency": []interface{}{},
