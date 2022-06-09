@@ -27,8 +27,8 @@ github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5P
 github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
-github.com/czConstant/blockchain-api v0.0.0-20220606102803-80c06249d7ff h1:iaGBpZKpYFe3/WYTbHwgDn5F809efAwjCmwTGywnJxI=
-github.com/czConstant/blockchain-api v0.0.0-20220606102803-80c06249d7ff/go.mod h1:CMEYIr7bYKGtiqGZtXlq5mcvy0bDG2gHR5YzFhCiFDg=
+github.com/czConstant/blockchain-api v0.0.0-20220609034249-c9feea6dcf1e h1:dhTiLW8NJ28CvZI3ws2jBIPgeKXoWHpaMGt8Qpgs7mA=
+github.com/czConstant/blockchain-api v0.0.0-20220609034249-c9feea6dcf1e/go.mod h1:CMEYIr7bYKGtiqGZtXlq5mcvy0bDG2gHR5YzFhCiFDg=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
