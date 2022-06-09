@@ -30,7 +30,7 @@ func NewNotificationResp(m *models.Notification) *NotificationResp {
 		UpdatedAt:   m.UpdatedAt,
 		Network:     m.Network,
 		UserID:      m.UserID,
-		User:        NewUserResp(m.User),
+		User:        NewMiniUserResp(m.User),
 		Type:        m.Type,
 		Title:       m.Title,
 		Content:     m.Content,
