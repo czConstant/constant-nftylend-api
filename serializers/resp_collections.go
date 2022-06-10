@@ -32,6 +32,7 @@ type CollectionResp struct {
 	CurrencyID            uint             `json:"currency_id"`
 	Currency              *CurrencyResp    `json:"currency"`
 	RandAsset             *AssetResp       `json:"rand_asset"`
+	NewLoan               *LoanResp        `json:"new_loan"`
 }
 
 func NewCollectionResp(m *models.Collection) *CollectionResp {
@@ -59,6 +60,7 @@ func NewCollectionResp(m *models.Collection) *CollectionResp {
 		Currency:              NewCurrencyResp(m.Currency),
 		ListingAsset:          NewAssetResp(m.ListingAsset),
 		RandAsset:             NewAssetResp(m.RandAsset),
+		NewLoan:               NewLoanResp(m.NewLoan),
 	}
 	return resp
 }
