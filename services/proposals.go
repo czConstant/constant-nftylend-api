@@ -45,6 +45,22 @@ func (s *NftLend) GetProposals(ctx context.Context, statuses []string, page int,
 	return proposals, count, nil
 }
 
+func (s *NftLend) GetProposalDetail(ctx context.Context, proposalID uint) (*models.Proposal, error) {
+	proposal, err := s.pd.FirstByID(
+		daos.GetDBMainCtx(ctx),
+		proposalID,
+		map[string][]interface{}{
+			"User":    []interface{}{},
+			"Choices": []interface{}{},
+		},
+		false,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return proposal, nil
+}
+
 func (s *NftLend) GetProposalVotes(ctx context.Context, proposalID uint, statuses []string, page int, limit int) ([]*models.ProposalVote, uint, error) {
 	filters := map[string][]interface{}{
 		"proposal_id = ?": []interface{}{proposalID},

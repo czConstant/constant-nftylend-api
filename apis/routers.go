@@ -87,6 +87,7 @@ func (s *Server) Routers() {
 	{
 		proposalAPI.GET("/list", s.GetProposals)
 		proposalAPI.POST("/create", s.CreateProposal)
+		proposalAPI.GET("/detail/:proposal_id", s.GetProposalDetail)
 		proposalAPI.GET("/votes/list/:proposal_id", s.GetProposalVotes)
 		proposalAPI.POST("/votes/create", s.CreateProposalVote)
 	}

@@ -33,6 +33,21 @@ func (s *Server) GetProposals(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewProposalRespArr(proposals), Count: &count})
 }
 
+func (s *Server) GetProposalDetail(c *gin.Context) {
+	ctx := s.requestContext(c)
+	proposalID, err := s.uintFromContextParam(c, "proposal_id")
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	proposal, err := s.nls.GetProposalDetail(ctx, proposalID)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewProposalResp(proposal)})
+}
+
 func (s *Server) GetProposalVotes(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)
