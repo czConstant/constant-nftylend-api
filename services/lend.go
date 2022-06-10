@@ -383,29 +383,30 @@ func (s *NftLend) GetCollections(ctx context.Context, page int, limit int) ([]*m
 			)`: []interface{}{models.CollectionSubmittedStatusApproved},
 		},
 		map[string][]interface{}{
-			"NewLoan":  []interface{}{},
-			"Currency": []interface{}{},
-			"ListingAsset": []interface{}{
-				`id in (
-					select asset_id
-					from loans
-					where asset_id = assets.id
-					  and loans.status in (?)
-				)`,
-				[]models.LoanOfferStatus{
-					models.LoanOfferStatusNew,
-				},
-				func(db *gorm.DB) *gorm.DB {
-					return db.Order(`
-					(
-						select max(loans.created_at)
-						from loans
-						where asset_id = assets.id
-						  and loans.status in ('new')
-					) desc
-					`)
-				},
-			},
+			"NewLoan":       []interface{}{},
+			"NewLoan.Asset": []interface{}{},
+			"Currency":      []interface{}{},
+			// "ListingAsset": []interface{}{
+			// 	`id in (
+			// 		select asset_id
+			// 		from loans
+			// 		where asset_id = assets.id
+			// 		  and loans.status in (?)
+			// 	)`,
+			// 	[]models.LoanOfferStatus{
+			// 		models.LoanOfferStatusNew,
+			// 	},
+			// 	func(db *gorm.DB) *gorm.DB {
+			// 		return db.Order(`
+			// 		(
+			// 			select max(loans.created_at)
+			// 			from loans
+			// 			where asset_id = assets.id
+			// 			  and loans.status in ('new')
+			// 		) desc
+			// 		`)
+			// 	},
+			// },
 		},
 		[]string{"id desc"},
 		page,
