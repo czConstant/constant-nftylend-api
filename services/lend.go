@@ -368,6 +368,7 @@ func (s *NftLend) GetCollections(ctx context.Context, page int, limit int) ([]*m
 			)`: []interface{}{models.CollectionSubmittedStatusApproved},
 		},
 		map[string][]interface{}{
+			"NewLoan":  []interface{}{},
 			"Currency": []interface{}{},
 			"ListingAsset": []interface{}{
 				`id in (
@@ -1124,4 +1125,64 @@ func (s *NftLend) GetAssetFloorPrice(ctx context.Context, assetID uint) (numeric
 		}
 	}
 	return m.FloorPrice, saleCurrency, nil
+}
+
+func (s *NftLend) updateAssetForLoan(tx *gorm.DB, assetID uint) error {
+	loan, err := s.ld.First(
+		tx,
+		map[string][]interface{}{
+			"asset_id": []interface{}{assetID},
+			"status":   []interface{}{models.LoanStatusNew},
+		},
+		map[string][]interface{}{},
+		[]string{"id desc"},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	asset, err := s.ad.FirstByID(
+		tx,
+		assetID,
+		map[string][]interface{}{},
+		true,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	collection, err := s.cld.FirstByID(
+		tx,
+		asset.CollectionID,
+		map[string][]interface{}{},
+		true,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	if collection.NewLoanID > 0 {
+		if loan.Status != models.LoanStatusNew &&
+			collection.NewLoanID == loan.ID {
+			collection.NewLoanID = 0
+		}
+	} else {
+		oldLoan, err := s.ld.FirstByID(
+			tx,
+			collection.NewLoanID,
+			map[string][]interface{}{},
+			false,
+		)
+		if err != nil {
+			return errs.NewError(err)
+		}
+		if loan.CreatedAt.After(oldLoan.CreatedAt) {
+			collection.NewLoanID = loan.ID
+		}
+	}
+	err = s.cld.Save(
+		tx,
+		collection,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
 }

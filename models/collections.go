@@ -29,6 +29,8 @@ type Collection struct {
 	FloorPrice            numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
 	CurrencyID            uint
 	Currency              *Currency
+	NewLoanID             uint
+	NewLoan               *Loan
 }
 
 type NftyRPTListingCollection struct {
