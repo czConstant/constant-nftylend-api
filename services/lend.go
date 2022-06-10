@@ -358,7 +358,8 @@ func (s *NftLend) GetCollections(ctx context.Context, page int, limit int) ([]*m
 	categories, count, err := s.cld.Find4Page(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
-			"network in (?)": []interface{}{s.getSupportedNetworks()},
+			"network in (?)":  []interface{}{s.getSupportedNetworks()},
+			"new_loan_id > ?": []interface{}{0},
 			`exists(
 				select 1
 				from collection_submitteds
@@ -371,27 +372,6 @@ func (s *NftLend) GetCollections(ctx context.Context, page int, limit int) ([]*m
 			"NewLoan":       []interface{}{},
 			"NewLoan.Asset": []interface{}{},
 			"Currency":      []interface{}{},
-			// "ListingAsset": []interface{}{
-			// 	`id in (
-			// 		select asset_id
-			// 		from loans
-			// 		where asset_id = assets.id
-			// 		  and loans.status in (?)
-			// 	)`,
-			// 	[]models.LoanOfferStatus{
-			// 		models.LoanOfferStatusNew,
-			// 	},
-			// 	func(db *gorm.DB) *gorm.DB {
-			// 		return db.Order(`
-			// 		(
-			// 			select max(loans.created_at)
-			// 			from loans
-			// 			where asset_id = assets.id
-			// 			  and loans.status in ('new')
-			// 		) desc
-			// 		`)
-			// 	},
-			// },
 		},
 		[]string{"id desc"},
 		page,
@@ -411,12 +391,9 @@ func (s *NftLend) GetCollectionDetail(ctx context.Context, seoURL string) (*mode
 			"network in (?)": []interface{}{s.getSupportedNetworks()},
 		},
 		map[string][]interface{}{
-			"Currency": []interface{}{},
-			"RandAsset": []interface{}{
-				func(db *gorm.DB) *gorm.DB {
-					return db.Order(`rand()`)
-				},
-			},
+			"Currency":      []interface{}{},
+			"NewLoan":       []interface{}{},
+			"NewLoan.Asset": []interface{}{},
 		},
 		[]string{"id desc"},
 	)
