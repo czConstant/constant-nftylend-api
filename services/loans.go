@@ -105,6 +105,7 @@ func (s *NftLend) GetListingLoans(
 				"status = ?",
 				models.LoanOfferStatusApproved,
 			},
+			"Offers": []interface{}{},
 		},
 		sort,
 		page,
