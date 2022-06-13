@@ -382,7 +382,7 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if err != nil {
 				return errs.NewError(err)
 			}
-			if len(proposalChoices) == len(msg.Payload.Choice) {
+			if len(proposalChoices) != len(msg.Payload.Choice) {
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			// get power vote
