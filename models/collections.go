@@ -17,8 +17,6 @@ type Collection struct {
 	OriginContractAddress string
 	Enabled               bool `gorm:"default:0"`
 	Verified              bool `gorm:"default:0"`
-	ListingAsset          *Asset
-	RandAsset             *Asset
 	ParasCollectionID     string
 	CreatorURL            string
 	TwitterID             string

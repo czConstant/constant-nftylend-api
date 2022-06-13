@@ -369,9 +369,9 @@ func (s *NftLend) GetCollections(ctx context.Context, page int, limit int) ([]*m
 			)`: []interface{}{models.CollectionSubmittedStatusApproved},
 		},
 		map[string][]interface{}{
+			"Currency":      []interface{}{},
 			"NewLoan":       []interface{}{},
 			"NewLoan.Asset": []interface{}{},
-			"Currency":      []interface{}{},
 		},
 		[]string{"id desc"},
 		page,
