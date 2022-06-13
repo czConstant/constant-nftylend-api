@@ -468,9 +468,9 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 			if err != nil {
 				return errs.NewError(err)
 			}
-			err = s.updateAssetForLoan(
+			err = s.updateCollectionForLoan(
 				tx,
-				loan.AssetID,
+				loan.CollectionID,
 			)
 			if err != nil {
 				return errs.NewError(err)
