@@ -16,7 +16,6 @@ type CollectionResp struct {
 	Name                  string           `json:"name"`
 	Description           string           `json:"description"`
 	Verified              bool             `json:"verified"`
-	ListingAsset          *AssetResp       `json:"listing_asset"`
 	ListingTotal          uint             `json:"listing_total"`
 	TotalVolume           numeric.BigFloat `json:"total_volume"`
 	TotalListed           uint             `json:"total_listed"`
@@ -31,7 +30,6 @@ type CollectionResp struct {
 	FloorPrice            numeric.BigFloat `json:"floor_price"`
 	CurrencyID            uint             `json:"currency_id"`
 	Currency              *CurrencyResp    `json:"currency"`
-	RandAsset             *AssetResp       `json:"rand_asset"`
 	NewLoan               *LoanResp        `json:"new_loan"`
 }
 
@@ -58,8 +56,6 @@ func NewCollectionResp(m *models.Collection) *CollectionResp {
 		FloorPrice:            m.FloorPrice,
 		CurrencyID:            m.CurrencyID,
 		Currency:              NewCurrencyResp(m.Currency),
-		ListingAsset:          NewAssetResp(m.ListingAsset),
-		RandAsset:             NewAssetResp(m.RandAsset),
 		NewLoan:               NewLoanResp(m.NewLoan),
 	}
 	return resp
