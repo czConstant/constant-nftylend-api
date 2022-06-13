@@ -344,11 +344,19 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 					return errs.NewError(errs.ErrBadRequest)
 				}
 			}
+			user, err := s.getUser(
+				tx,
+				req.Network,
+				req.Address,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
 			proposalVote, err = s.pvd.First(
 				tx,
 				map[string][]interface{}{
 					"proposal_id = ?": []interface{}{proposal.ID},
-					"address = ?":     []interface{}{req.Address},
+					"user_id = ?":     []interface{}{user.ID},
 					"status = ?":      []interface{}{models.ProposalVoteStatusCreated},
 				},
 				map[string][]interface{}{},
@@ -419,14 +427,6 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			}
 			if proposalVote != nil {
 				return errs.NewError(errs.ErrBadRequest)
-			}
-			user, err := s.getUser(
-				tx,
-				req.Network,
-				req.Address,
-			)
-			if err != nil {
-				return errs.NewError(err)
 			}
 			for _, proposalChoice := range proposalChoices {
 				proposalVote = &models.ProposalVote{
