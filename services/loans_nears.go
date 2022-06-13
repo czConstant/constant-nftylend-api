@@ -87,6 +87,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					Config:          saleInfo.LoanConfig,
 					CurrencyID:      currency.ID,
 					AssetID:         asset.ID,
+					CollectionID:    asset.CollectionID,
 					Status:          models.LoanStatusNew,
 					NonceHex:        saleInfo.CreatedAt,
 					DataLoanAddress: fmt.Sprintf("%d", saleInfo.ApprovalID),
