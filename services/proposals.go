@@ -261,6 +261,41 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 	return proposal, nil
 }
 
+func (s *NftLend) GetUserProposalVote(ctx context.Context, network models.Network, address string, proposalID uint) (*models.ProposalVote, error) {
+	var proposalVote *models.ProposalVote
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			user, err := s.getUser(
+				tx,
+				network,
+				address,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			proposalVote, err = s.pvd.First(
+				tx,
+				map[string][]interface{}{
+					"proposal_id = ?": []interface{}{proposalID},
+					"user_id = ?":     []interface{}{user.ID},
+					"status = ?":      []interface{}{models.ProposalVoteStatusCreated},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return proposalVote, nil
+}
+
 func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.CreateProposalVoteReq) (*models.ProposalVote, error) {
 	switch req.Network {
 	case models.NetworkNEAR:
