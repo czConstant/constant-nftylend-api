@@ -110,8 +110,8 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
 			var msg struct {
-				Timestamp int64  `json:"timestamp"`
-				Type      string `json:"type"`
+				Timestamp int64               `json:"timestamp"`
+				Type      models.ProposalType `json:"type"`
 				Payload   struct {
 					Name     string   `json:"name"`
 					Body     string   `json:"body"`
@@ -134,6 +134,9 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 				msg.Payload.Name == "" ||
 				msg.Payload.Body == "" ||
 				len(msg.Payload.Choices) <= 1 {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			if !msg.Type.Valid() {
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			if msg.Timestamp < time.Now().Add(-60*time.Second).Unix() ||
@@ -214,7 +217,7 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 			proposal = &models.Proposal{
 				Network:           user.Network,
 				UserID:            user.ID,
-				Type:              msg.Type,
+				Type:              models.ProposalType(msg.Type),
 				Timestamp:         helpers.TimeFromUnix(msg.Timestamp),
 				ChoiceType:        choiceType,
 				Message:           req.Message,

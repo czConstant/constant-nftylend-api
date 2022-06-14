@@ -8,10 +8,23 @@ import (
 )
 
 type ProposalStatus string
+type ProposalType string
 type ProposalChoiceType string
 
+func (m *ProposalType) Valid() bool {
+	switch *m {
+	case ProposalTypeProposal,
+		ProposalTypeCommunity:
+		{
+			return true
+		}
+	}
+	return false
+}
+
 const (
-	ProposalTypeProposal = "proposal"
+	ProposalTypeProposal  = "proposal"
+	ProposalTypeCommunity = "community"
 
 	ProposalStatusPending   ProposalStatus = "pending"
 	ProposalStatusCreated   ProposalStatus = "created"
@@ -30,7 +43,7 @@ type Proposal struct {
 	Network           Network
 	UserID            uint
 	User              *User
-	Type              string
+	Type              ProposalType
 	ChoiceType        ProposalChoiceType
 	Message           string `gorm:"type:text"`
 	Signature         string
