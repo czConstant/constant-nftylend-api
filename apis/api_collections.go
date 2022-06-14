@@ -24,9 +24,9 @@ func (s *Server) CreateCollectionSubmitted(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
 }
 
-func (s *Server) GetApproveCreators(c *gin.Context) {
+func (s *Server) GetNearApprovedCreators(c *gin.Context) {
 	ctx := s.requestContext(c)
-	creators, err := s.nls.GetApproveCreators(ctx)
+	creators, err := s.nls.GetNearApprovedCreators(ctx)
 	if err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
