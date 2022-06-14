@@ -38,6 +38,13 @@ func ctxJSON(c *gin.Context, respCode int, resp interface{}) {
 	c.JSON(respCode, resp)
 }
 
+func ctxSTRING(c *gin.Context, respCode int, resp string) {
+	if respCode != http.StatusOK {
+		WrapRespError(c, resp)
+	}
+	c.String(respCode, resp)
+}
+
 func ctxData(c *gin.Context, respCode int, contentType string, resp []byte) {
 	if respCode != http.StatusOK {
 		WrapRespError(c, resp)
