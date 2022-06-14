@@ -546,6 +546,16 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			// validate request by sig
+			message := fmt.Sprintf("%s-%s-%s-%d", strings.ToLower(user.Address), strings.ToLower(currency.ContractAddress), req.Amount.ToString(), req.Timestamp)
+			err = s.bcs.Near.ValidateMessageSignature(
+				s.conf.Contract.NearNftypawnAddress,
+				message,
+				req.Signature,
+				user.Address,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
 			//
 			userBalanceTransaction := &models.UserBalanceTransaction{
 				Network:       userBalance.Network,
@@ -555,6 +565,7 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 				Type:          models.UserBalanceTransactionTypeClaim,
 				ToAddress:     req.ToAddress,
 				Amount:        req.Amount,
+				Message:       message,
 				Signature:     req.Signature,
 				Status:        models.UserBalanceTransactionStatusDone,
 			}

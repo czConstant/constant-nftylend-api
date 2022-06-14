@@ -29,6 +29,7 @@ type UserBalanceTransaction struct {
 	Currency               *Currency
 	ToAddress              string
 	Amount                 numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
+	Message                string           `gorm:"type:text"`
 	Signature              string
 	TxHash                 string
 	Status                 UserBalanceTransactionStatus
