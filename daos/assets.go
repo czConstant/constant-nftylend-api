@@ -60,7 +60,7 @@ func (d *Asset) GetRPTListingCollection(tx *gorm.DB) ([]*models.NftyRPTListingCo
 	err := tx.Raw(`
 	select collection_id, count(distinct asset_id) total
 	from loans
-		where loans.status in ('new')
+		where loans.status in (?)
 	group by collection_id;
 	`,
 		[]models.LoanStatus{
