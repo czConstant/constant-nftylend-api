@@ -581,7 +581,7 @@ func (s *NftLend) ProposalUnVote(ctx context.Context, network models.Network, ad
 					if err != nil {
 						return errs.NewError(err)
 					}
-					if proposal.Status == models.ProposalStatusPending {
+					if proposal.Status == models.ProposalStatusCreated {
 						proposalVote.CancelledHash = txHash
 						proposalVote.Status = models.ProposalVoteStatusCancelled
 						err = s.pvd.Save(
