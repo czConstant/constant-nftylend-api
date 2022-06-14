@@ -17,8 +17,6 @@ type Collection struct {
 	OriginContractAddress string
 	Enabled               bool `gorm:"default:0"`
 	Verified              bool `gorm:"default:0"`
-	ListingAsset          *Asset
-	RandAsset             *Asset
 	ParasCollectionID     string
 	CreatorURL            string
 	TwitterID             string
@@ -29,6 +27,8 @@ type Collection struct {
 	FloorPrice            numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
 	CurrencyID            uint
 	Currency              *Currency
+	NewLoanID             uint
+	NewLoan               *Loan `gorm:"foreignKey:new_loan_id"`
 }
 
 type NftyRPTListingCollection struct {

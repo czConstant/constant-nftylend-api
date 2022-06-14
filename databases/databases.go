@@ -1,8 +1,6 @@
 package databases
 
 import (
-	"fmt"
-
 	"github.com/czConstant/constant-nftylend-api/models"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
@@ -47,7 +45,6 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.ProposalVote)(nil),
 		(*models.NotificationTemplate)(nil),
 		(*models.Notification)(nil),
-
 		(*models.UserBalance)(nil),
 		(*models.UserBalanceTransaction)(nil),
 		(*models.UserBalanceHistory)(nil),
@@ -56,10 +53,11 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.IncentiveTransaction)(nil),
 	}
 	if err := db.AutoMigrate(allTables...).Error; err != nil {
-		fmt.Println(err)
 		return err
 	}
 	db.Model(&models.Collection{}).AddUniqueIndex("collections_main_uindex", "seo_url")
+	db.Model(&models.Collection{}).AddIndex("collections_creator_index", "creator")
+	db.Model(&models.CollectionSubmitted{}).AddIndex("collection_submitteds_creator_index", "creator")
 	db.Model(&models.Asset{}).AddUniqueIndex("assets_main_uindex", "seo_url")
 	db.Model(&models.Asset{}).AddIndex("assets_search_text_index", "search_text")
 	db.Model(&models.User{}).AddUniqueIndex("users_main_uindex", "network", "address_checked")

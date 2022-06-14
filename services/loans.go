@@ -145,6 +145,7 @@ func (s *NftLend) GetLoans(ctx context.Context, network models.Network, owner st
 				"status = ?",
 				models.LoanOfferStatusApproved,
 			},
+			"Offers": []interface{}{},
 		},
 		[]string{"id desc"},
 		page,

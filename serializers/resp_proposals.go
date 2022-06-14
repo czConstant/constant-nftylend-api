@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/czConstant/constant-nftylend-api/configs"
 	"github.com/czConstant/constant-nftylend-api/models"
 	"github.com/czConstant/constant-nftylend-api/types/numeric"
 )
@@ -15,7 +16,7 @@ type ProposalResp struct {
 	Network           models.Network            `json:"network"`
 	UserID            uint                      `json:"user_id"`
 	User              *UserResp                 `json:"user"`
-	Type              string                    `json:"type"`
+	Type              models.ProposalType       `json:"type"`
 	ChoiceType        models.ProposalChoiceType `json:"choice_type"`
 	Message           string                    `json:"message"`
 	Signature         string                    `json:"signature"`
@@ -52,7 +53,7 @@ func NewProposalResp(m *models.Proposal) *ProposalResp {
 		Timestamp:         m.Timestamp,
 		Start:             m.Start,
 		End:               m.End,
-		IpfsHash:          fmt.Sprintf("https://gateway.ipfs.io/ipfs/%s", m.IpfsHash),
+		IpfsHash:          fmt.Sprintf("%s/api/ipfs/%s", configs.GetConfig().WebUrl, m.IpfsHash),
 		ProposalThreshold: m.ProposalThreshold,
 		Status:            m.Status,
 		Choices:           NewProposalChoiceRespArr(m.Choices),
