@@ -31,5 +31,5 @@ func (s *Server) GetApproveCreators(c *gin.Context) {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	ctxSTRING(c, http.StatusOK, strings.Join(creators, "</br>"))
+	ctxSTRING(c, http.StatusOK, strings.Join(creators, "\n"))
 }
