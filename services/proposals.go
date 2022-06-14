@@ -720,6 +720,7 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 	proposals, err = s.pd.Find(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
+			"type = ?":                         []interface{}{models.ProposalTypeProposal},
 			"status = ?":                       []interface{}{models.ProposalStatusCreated},
 			"end <= ?":                         []interface{}{time.Now()},
 			"total_vote >= proposal_threshold": []interface{}{},
@@ -741,6 +742,7 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 	proposals, err = s.pd.Find(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
+			"type = ?":                        []interface{}{models.ProposalTypeProposal},
 			"status = ?":                      []interface{}{models.ProposalStatusCreated},
 			"end <= ?":                        []interface{}{time.Now()},
 			"total_vote < proposal_threshold": []interface{}{},
@@ -762,8 +764,30 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 	proposals, err = s.pd.Find(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
+			"type = ?":   []interface{}{models.ProposalTypeProposal},
 			"status = ?": []interface{}{models.ProposalStatusSucceeded},
 			"end <= ?":   []interface{}{time.Now().Add(-2 * 24 * time.Hour)},
+		},
+		map[string][]interface{}{},
+		[]string{},
+		0,
+		999999,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	for _, proposal := range proposals {
+		err = s.ProposalStatusQueued(ctx, proposal.ID)
+		if err != nil {
+			retErr = errs.MergeError(retErr, err)
+		}
+	}
+	proposals, err = s.pd.Find(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"type = ?":   []interface{}{models.ProposalTypeCommunity},
+			"status = ?": []interface{}{models.ProposalStatusCreated},
+			"end <= ?":   []interface{}{time.Now()},
 		},
 		map[string][]interface{}{},
 		[]string{},
@@ -869,6 +893,18 @@ func (s *NftLend) ProposalStatusSucceeded(ctx context.Context, proposalID uint) 
 			if proposal.End.After(time.Now()) {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			switch proposal.Type {
+			case models.ProposalTypeProposal:
+				{
+					if proposal.Status != models.ProposalStatusSucceeded {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+				}
+			default:
+				{
+					return errs.NewError(errs.ErrBadRequest)
+				}
+			}
 			if proposal.TotalVote.Float.Cmp(&proposal.ProposalThreshold.Float) < 0 {
 				return errs.NewError(errs.ErrBadRequest)
 			}
@@ -963,6 +999,18 @@ func (s *NftLend) ProposalStatusDefeated(ctx context.Context, proposalID uint) e
 			if proposal.End.After(time.Now()) {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			switch proposal.Type {
+			case models.ProposalTypeProposal:
+				{
+					if proposal.Status != models.ProposalStatusSucceeded {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+				}
+			default:
+				{
+					return errs.NewError(errs.ErrBadRequest)
+				}
+			}
 			if proposal.TotalVote.Float.Cmp(&proposal.ProposalThreshold.Float) >= 0 {
 				return errs.NewError(errs.ErrBadRequest)
 			}
@@ -1028,8 +1076,23 @@ func (s *NftLend) ProposalStatusQueued(ctx context.Context, proposalID uint) err
 			if err != nil {
 				return errs.NewError(err)
 			}
-			if proposal.Status != models.ProposalStatusSucceeded {
-				return errs.NewError(errs.ErrBadRequest)
+			switch proposal.Type {
+			case models.ProposalTypeProposal:
+				{
+					if proposal.Status != models.ProposalStatusSucceeded {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+				}
+			case models.ProposalTypeCommunity:
+				{
+					if proposal.Status != models.ProposalStatusCreated {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+				}
+			default:
+				{
+					return errs.NewError(errs.ErrBadRequest)
+				}
 			}
 			proposal.Status = models.ProposalStatusQueued
 			err = s.pd.Save(
@@ -1051,22 +1114,24 @@ func (s *NftLend) ProposalStatusQueued(ctx context.Context, proposalID uint) err
 			if err != nil {
 				return errs.NewError(err)
 			}
-			proposalChoice, err = s.pcd.FirstByID(
-				tx,
-				proposalChoice.ID,
-				map[string][]interface{}{},
-				true,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			proposalChoice.Status = models.ProposalChoiceStatusQueued
-			err = s.pcd.Save(
-				tx,
-				proposalChoice,
-			)
-			if err != nil {
-				return errs.NewError(err)
+			if proposalChoice != nil {
+				proposalChoice, err = s.pcd.FirstByID(
+					tx,
+					proposalChoice.ID,
+					map[string][]interface{}{},
+					true,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				proposalChoice.Status = models.ProposalChoiceStatusQueued
+				err = s.pcd.Save(
+					tx,
+					proposalChoice,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
 			}
 			return nil
 		},
