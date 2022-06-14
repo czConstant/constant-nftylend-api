@@ -441,7 +441,7 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			}
 			// get power vote
 			var powerVote *big.Float
-			switch msg.Type {
+			switch proposal.Type {
 			case models.ProposalTypeGovernment:
 				{
 					pwpToken, err := s.getLendCurrencyBySymbol(
