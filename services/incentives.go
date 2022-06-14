@@ -215,11 +215,35 @@ func (s *NftLend) JobIncentiveForUnlock(ctx context.Context) error {
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
 			"type in (?)": []interface{}{[]models.IncentiveTransactionType{
+				models.IncentiveTransactionTypeUserAirdropReward,
+			}},
+			"status = ?": []interface{}{models.IncentiveTransactionStatusPending},
+		},
+		map[string][]interface{}{},
+		[]string{},
+		0,
+		9999,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	for _, itM := range itMs {
+		err = s.IncentiveForLock(ctx, itM.ID)
+		if err != nil {
+			retErr = errs.MergeError(retErr, err)
+		}
+	}
+	itMs, err = s.itd.Find(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"type in (?)": []interface{}{[]models.IncentiveTransactionType{
 				models.IncentiveTransactionTypeBorrowerLoanListed,
 				models.IncentiveTransactionTypeLenderLoanMatched,
+				models.IncentiveTransactionTypeUserAirdropReward,
 			}},
-			"status = ?":         []interface{}{models.IncentiveTransactionStatusLocked},
-			"lock_until_at <= ?": []interface{}{time.Now()},
+			"status = ?":                []interface{}{models.IncentiveTransactionStatusLocked},
+			"lock_until_at is not null": []interface{}{},
+			"lock_until_at <= ?":        []interface{}{time.Now()},
 		},
 		map[string][]interface{}{},
 		[]string{},
@@ -285,6 +309,100 @@ func (s *NftLend) IncentiveForUnlock(ctx context.Context, transactionID uint) er
 				itM.CurrencyID,
 				itM.Amount,
 				fmt.Sprintf("it_%d_unlocked", itM.ID),
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *NftLend) IncentiveForLock(ctx context.Context, transactionID uint) error {
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(context.Background()),
+		func(tx *gorm.DB) error {
+			itM, err := s.itd.FirstByID(
+				tx,
+				transactionID,
+				map[string][]interface{}{},
+				true,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if itM == nil {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			switch itM.Type {
+			case models.IncentiveTransactionTypeUserAirdropReward:
+				{
+				}
+			default:
+				{
+					return errs.NewError(errs.ErrBadRequest)
+				}
+			}
+			if itM.Status != models.IncentiveTransactionStatusPending {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			user, err := s.getUser(
+				tx,
+				itM.Network,
+				itM.Address,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			itM.UserID = user.ID
+			itM.Status = models.IncentiveTransactionStatusLocked
+			err = s.itd.Save(
+				tx,
+				itM,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			reference := fmt.Sprintf("it_%d_locked", itM.ID)
+			userBalance, err := s.getUserBalance(
+				tx,
+				itM.UserID,
+				itM.CurrencyID,
+				true,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			userBalanceTransaction := &models.UserBalanceTransaction{
+				Network:                userBalance.Network,
+				UserID:                 userBalance.UserID,
+				UserBalanceID:          userBalance.ID,
+				CurrencyID:             userBalance.CurrencyID,
+				Type:                   models.UserBalanceTransactionTypeIncentive,
+				Amount:                 itM.Amount,
+				Status:                 models.UserBalanceTransactionStatusDone,
+				IncentiveTransactionID: itM.ID,
+			}
+			err = s.ubtd.Create(
+				tx,
+				userBalanceTransaction,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			err = s.transactionUserBalance(
+				tx,
+				itM.Network,
+				itM.UserID,
+				itM.CurrencyID,
+				itM.Amount,
+				true,
+				false,
+				reference,
 			)
 			if err != nil {
 				return errs.NewError(err)
