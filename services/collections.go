@@ -31,11 +31,11 @@ func (s *NftLend) CreateCollectionSubmitted(ctx context.Context, req *serializer
 	return nil
 }
 
-func (s *NftLend) GetApproveCreators(ctx context.Context) ([]string, error) {
+func (s *NftLend) GetNearApprovedCreators(ctx context.Context) ([]string, error) {
 	ms, err := s.clsd.Find(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
-			"network in (?)": []interface{}{s.getSupportedNetworks()},
+			"network = ?": []interface{}{models.NetworkNEAR},
 			"status in (?)": []interface{}{[]models.CollectionSubmittedStatus{
 				models.CollectionSubmittedStatusApproved,
 			}},
