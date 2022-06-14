@@ -31,6 +31,30 @@ func (s *NftLend) CreateCollectionSubmitted(ctx context.Context, req *serializer
 	return nil
 }
 
+func (s *NftLend) GetApproveCreators(ctx context.Context) ([]string, error) {
+	ms, err := s.clsd.Find(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"network in (?)": []interface{}{s.getSupportedNetworks()},
+			"status in (?)": []interface{}{[]models.CollectionSubmittedStatus{
+				models.CollectionSubmittedStatusApproved,
+			}},
+		},
+		map[string][]interface{}{},
+		[]string{},
+		0,
+		999999,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	rets := []string{}
+	for _, m := range ms {
+		rets = append(rets, m.Creator)
+	}
+	return rets, nil
+}
+
 func (s *NftLend) JobUpdateProfileCollection(ctx context.Context) error {
 	var retErr error
 	collections, err := s.cld.Find(
