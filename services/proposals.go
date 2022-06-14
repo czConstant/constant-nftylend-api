@@ -180,9 +180,22 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 			if pwpBalance.Cmp(big.NewInt(0)) <= 0 {
 				return errs.NewError(errs.ErrBadRequest)
 			}
-			powerVote := models.ConvertWeiToBigFloat(pwpBalance, pwpToken.Decimals)
-			if powerVote.Cmp(&pwpToken.ProposalThreshold.Float) < 0 {
-				return errs.NewError(errs.ErrBadRequest)
+			var powerVote *big.Float
+			switch msg.Type {
+			case models.ProposalTypeProposal:
+				{
+					powerVote = models.ConvertWeiToBigFloat(pwpBalance, pwpToken.Decimals)
+					if powerVote.Cmp(&pwpToken.ProposalThreshold.Float) < 0 {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+				}
+			case models.ProposalTypeCommunity:
+				{
+				}
+			default:
+				{
+					return errs.NewError(errs.ErrBadRequest)
+				}
 			}
 			ipfsData, err := json.Marshal(&req)
 			if err != nil {
@@ -424,25 +437,39 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			// get power vote
-			pwpToken, err := s.getLendCurrencyBySymbol(
-				tx,
-				models.SymbolPWPToken,
-				req.Network,
-			)
-			if err != nil {
-				return errs.NewError(err)
+			var powerVote *big.Float
+			switch msg.Type {
+			case models.ProposalTypeProposal:
+				{
+					pwpToken, err := s.getLendCurrencyBySymbol(
+						tx,
+						models.SymbolPWPToken,
+						req.Network,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					pwpBalance, err := s.bcs.Near.FtBalance(
+						pwpToken.ContractAddress,
+						req.Address,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if pwpBalance.Cmp(big.NewInt(0)) <= 0 {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					powerVote = models.ConvertWeiToBigFloat(pwpBalance, pwpToken.Decimals)
+				}
+			case models.ProposalTypeCommunity:
+				{
+					powerVote = big.NewFloat(1)
+				}
+			default:
+				{
+					return errs.NewError(errs.ErrBadRequest)
+				}
 			}
-			pwpBalance, err := s.bcs.Near.FtBalance(
-				pwpToken.ContractAddress,
-				req.Address,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			if pwpBalance.Cmp(big.NewInt(0)) <= 0 {
-				return errs.NewError(errs.ErrBadRequest)
-			}
-			powerVote := models.ConvertWeiToBigFloat(pwpBalance, pwpToken.Decimals)
 			// end
 			ipfsData, err := json.Marshal(&req)
 			if err != nil {
@@ -553,8 +580,12 @@ func (s *NftLend) ProposalUnVote(ctx context.Context, network models.Network, ad
 						select 1
 						from proposals
 						where proposal_votes.proposal_id = proposals.id
-						  and proposals.status = ?
-					)`: []interface{}{models.ProposalStatusCreated},
+							and proposals.type = ?
+						  	and proposals.status = ?
+					)`: []interface{}{
+						models.ProposalTypeProposal,
+						models.ProposalStatusCreated,
+					},
 				},
 				map[string][]interface{}{},
 				[]string{},
