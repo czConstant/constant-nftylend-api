@@ -61,6 +61,7 @@ func (d *Asset) GetRPTListingCollection(tx *gorm.DB) ([]*models.NftyRPTListingCo
 	select collection_id, count(distinct asset_id) total
 	from loans
 		where loans.status in (?)
+		and loans.valid_at >= now()
 	group by collection_id;
 	`,
 		[]models.LoanStatus{
