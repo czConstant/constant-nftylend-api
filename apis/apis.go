@@ -26,12 +26,12 @@ func (s *Server) AppConfigs(c *gin.Context) {
 			map[string]interface{}{
 				"key":    models.ProposalTypeGovernment,
 				"name":   "Government",
-				"active": false,
+				"active": true,
 			},
 			map[string]interface{}{
 				"key":    models.ProposalTypeCommunity,
 				"name":   "Community",
-				"active": false,
+				"active": true,
 			},
 		},
 	}})
