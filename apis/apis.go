@@ -22,7 +22,7 @@ func (s *Server) AppConfigs(c *gin.Context) {
 		"boba_nftypawn_admin_fee":  100,
 		"near_nftypawn_address":    s.conf.Contract.NearNftypawnAddress,
 		"near_nftypawn_admin_fee":  100,
-		"proposal": []map[string]interface{}{
+		"proposals": []map[string]interface{}{
 			map[string]interface{}{
 				"key":    models.ProposalTypeGovernment,
 				"name":   "Government",
