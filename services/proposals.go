@@ -23,8 +23,11 @@ func (s *NftLend) GetIpfsInfo(hash string) ([]byte, error) {
 	return res, nil
 }
 
-func (s *NftLend) GetProposals(ctx context.Context, statuses []string, page int, limit int) ([]*models.Proposal, uint, error) {
+func (s *NftLend) GetProposals(ctx context.Context, types []string, statuses []string, page int, limit int) ([]*models.Proposal, uint, error) {
 	filters := map[string][]interface{}{}
+	if len(types) > 0 {
+		filters["type in (?)"] = []interface{}{types}
+	}
 	if len(statuses) > 0 {
 		filters["status in (?)"] = []interface{}{statuses}
 	}

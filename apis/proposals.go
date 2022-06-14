@@ -25,8 +25,9 @@ func (s *Server) GetIpfsInfo(c *gin.Context) {
 func (s *Server) GetProposals(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)
+	types := s.stringArrayFromContextQuery(c, "type")
 	statuses := s.stringArrayFromContextQuery(c, "status")
-	proposals, count, err := s.nls.GetProposals(ctx, statuses, page, limit)
+	proposals, count, err := s.nls.GetProposals(ctx, types, statuses, page, limit)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
