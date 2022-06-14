@@ -185,7 +185,7 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 			}
 			var powerVote *big.Float
 			switch msg.Type {
-			case models.ProposalTypeProposal:
+			case models.ProposalTypeGovernment:
 				{
 					powerVote = models.ConvertWeiToBigFloat(pwpBalance, pwpToken.Decimals)
 					if powerVote.Cmp(&pwpToken.ProposalThreshold.Float) < 0 {
@@ -442,7 +442,7 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			// get power vote
 			var powerVote *big.Float
 			switch msg.Type {
-			case models.ProposalTypeProposal:
+			case models.ProposalTypeGovernment:
 				{
 					pwpToken, err := s.getLendCurrencyBySymbol(
 						tx,
@@ -586,7 +586,7 @@ func (s *NftLend) ProposalUnVote(ctx context.Context, network models.Network, ad
 							and proposals.type = ?
 						  	and proposals.status = ?
 					)`: []interface{}{
-						models.ProposalTypeProposal,
+						models.ProposalTypeGovernment,
 						models.ProposalStatusCreated,
 					},
 				},
@@ -720,7 +720,7 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 	proposals, err = s.pd.Find(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
-			"type = ?":                         []interface{}{models.ProposalTypeProposal},
+			"type = ?":                         []interface{}{models.ProposalTypeGovernment},
 			"status = ?":                       []interface{}{models.ProposalStatusCreated},
 			"end <= ?":                         []interface{}{time.Now()},
 			"total_vote >= proposal_threshold": []interface{}{},
@@ -742,7 +742,7 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 	proposals, err = s.pd.Find(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
-			"type = ?":                        []interface{}{models.ProposalTypeProposal},
+			"type = ?":                        []interface{}{models.ProposalTypeGovernment},
 			"status = ?":                      []interface{}{models.ProposalStatusCreated},
 			"end <= ?":                        []interface{}{time.Now()},
 			"total_vote < proposal_threshold": []interface{}{},
@@ -764,7 +764,7 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 	proposals, err = s.pd.Find(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
-			"type = ?":   []interface{}{models.ProposalTypeProposal},
+			"type = ?":   []interface{}{models.ProposalTypeGovernment},
 			"status = ?": []interface{}{models.ProposalStatusSucceeded},
 			"end <= ?":   []interface{}{time.Now().Add(-2 * 24 * time.Hour)},
 		},
@@ -894,7 +894,7 @@ func (s *NftLend) ProposalStatusSucceeded(ctx context.Context, proposalID uint) 
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			switch proposal.Type {
-			case models.ProposalTypeProposal:
+			case models.ProposalTypeGovernment:
 				{
 					if proposal.Status != models.ProposalStatusSucceeded {
 						return errs.NewError(errs.ErrBadRequest)
@@ -1000,7 +1000,7 @@ func (s *NftLend) ProposalStatusDefeated(ctx context.Context, proposalID uint) e
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			switch proposal.Type {
-			case models.ProposalTypeProposal:
+			case models.ProposalTypeGovernment:
 				{
 					if proposal.Status != models.ProposalStatusSucceeded {
 						return errs.NewError(errs.ErrBadRequest)
@@ -1077,7 +1077,7 @@ func (s *NftLend) ProposalStatusQueued(ctx context.Context, proposalID uint) err
 				return errs.NewError(err)
 			}
 			switch proposal.Type {
-			case models.ProposalTypeProposal:
+			case models.ProposalTypeGovernment:
 				{
 					if proposal.Status != models.ProposalStatusSucceeded {
 						return errs.NewError(errs.ErrBadRequest)

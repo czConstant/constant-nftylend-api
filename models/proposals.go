@@ -13,7 +13,7 @@ type ProposalChoiceType string
 
 func (m *ProposalType) Valid() bool {
 	switch *m {
-	case ProposalTypeProposal,
+	case ProposalTypeGovernment,
 		ProposalTypeCommunity:
 		{
 			return true
@@ -23,8 +23,8 @@ func (m *ProposalType) Valid() bool {
 }
 
 const (
-	ProposalTypeProposal  = "proposal"
-	ProposalTypeCommunity = "community"
+	ProposalTypeGovernment = "government"
+	ProposalTypeCommunity  = "community"
 
 	ProposalStatusPending   ProposalStatus = "pending"
 	ProposalStatusCreated   ProposalStatus = "created"
