@@ -10,6 +10,7 @@ import (
 type IncentiveTransactionStatus string
 
 const (
+	IncentiveTransactionStatusPending  IncentiveTransactionStatus = "pending"
 	IncentiveTransactionStatusLocked   IncentiveTransactionStatus = "locked"
 	IncentiveTransactionStatusUnlocked IncentiveTransactionStatus = "unlocked"
 	IncentiveTransactionStatusRevoked  IncentiveTransactionStatus = "revoked"
@@ -18,6 +19,7 @@ const (
 
 type IncentiveTransaction struct {
 	gorm.Model
+	Address            string
 	Network            Network
 	IncentiveProgramID uint
 	Type               IncentiveTransactionType

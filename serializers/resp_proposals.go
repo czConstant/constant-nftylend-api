@@ -16,7 +16,7 @@ type ProposalResp struct {
 	Network           models.Network            `json:"network"`
 	UserID            uint                      `json:"user_id"`
 	User              *UserResp                 `json:"user"`
-	Type              string                    `json:"type"`
+	Type              models.ProposalType       `json:"type"`
 	ChoiceType        models.ProposalChoiceType `json:"choice_type"`
 	Message           string                    `json:"message"`
 	Signature         string                    `json:"signature"`

@@ -1,8 +1,6 @@
 package databases
 
 import (
-	"fmt"
-
 	"github.com/czConstant/constant-nftylend-api/models"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
@@ -47,7 +45,6 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.ProposalVote)(nil),
 		(*models.NotificationTemplate)(nil),
 		(*models.Notification)(nil),
-
 		(*models.UserBalance)(nil),
 		(*models.UserBalanceTransaction)(nil),
 		(*models.UserBalanceHistory)(nil),
@@ -56,12 +53,19 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.IncentiveTransaction)(nil),
 	}
 	if err := db.AutoMigrate(allTables...).Error; err != nil {
-		fmt.Println(err)
 		return err
 	}
 	db.Model(&models.Collection{}).AddUniqueIndex("collections_main_uindex", "seo_url")
+	db.Model(&models.Collection{}).AddIndex("collections_creator_index", "creator")
+	db.Model(&models.CollectionSubmitted{}).AddIndex("collection_submitteds_creator_index", "creator")
 	db.Model(&models.Asset{}).AddUniqueIndex("assets_main_uindex", "seo_url")
+	db.Model(&models.Asset{}).AddIndex("assets_collection_id_index", "collection_id")
 	db.Model(&models.Asset{}).AddIndex("assets_search_text_index", "search_text")
+	db.Model(&models.AssetTransaction{}).AddIndex("asset_transactions_asset_id_index", "asset_id")
+	db.Model(&models.Loan{}).AddIndex("loans_collection_id_index", "collection_id")
+	db.Model(&models.Loan{}).AddIndex("loans_asset_id_index", "asset_id")
+	db.Model(&models.LoanOffer{}).AddIndex("loan_offers_loan_id_index", "loan_id")
+	db.Model(&models.LoanTransaction{}).AddIndex("loan_transactions_loan_id_index", "loan_id")
 	db.Model(&models.User{}).AddUniqueIndex("users_main_uindex", "network", "address_checked")
 	db.Model(&models.UserBalance{}).AddUniqueIndex("user_balances_main_uindex", "user_id", "currency_id")
 	db.Model(&models.UserBalance{}).AddIndex("user_balances_user_id_uindex", "user_id")

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/czConstant/constant-nftylend-api/errs"
+	"github.com/czConstant/constant-nftylend-api/models"
 	"github.com/czConstant/constant-nftylend-api/serializers"
 	"github.com/gin-gonic/gin"
 )
@@ -24,8 +25,9 @@ func (s *Server) GetIpfsInfo(c *gin.Context) {
 func (s *Server) GetProposals(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)
+	types := s.stringArrayFromContextQuery(c, "type")
 	statuses := s.stringArrayFromContextQuery(c, "status")
-	proposals, count, err := s.nls.GetProposals(ctx, statuses, page, limit)
+	proposals, count, err := s.nls.GetProposals(ctx, types, statuses, page, limit)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
@@ -63,6 +65,21 @@ func (s *Server) GetProposalVotes(c *gin.Context) {
 		return
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewProposalVoteRespArr(proposalVotes), Count: &count})
+}
+
+func (s *Server) GetUserProposalVote(c *gin.Context) {
+	ctx := s.requestContext(c)
+	proposalID, err := s.uintFromContextParam(c, "proposal_id")
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	proposalVote, err := s.nls.GetUserProposalVote(ctx, models.Network(s.stringFromContextQuery(c, "network")), s.stringFromContextQuery(c, "address"), proposalID)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewProposalVoteResp(proposalVote)})
 }
 
 func (s *Server) CreateProposal(c *gin.Context) {

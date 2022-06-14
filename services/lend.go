@@ -1133,8 +1133,8 @@ func (s *NftLend) updateCollectionForLoan(tx *gorm.DB, collectionID uint) error 
 	loan, err := s.ld.First(
 		tx,
 		map[string][]interface{}{
-			"collection_id": []interface{}{collection.ID},
-			"status":        []interface{}{models.LoanStatusNew},
+			"collection_id = ?": []interface{}{collection.ID},
+			"status = ?":        []interface{}{models.LoanStatusNew},
 		},
 		map[string][]interface{}{},
 		[]string{"id desc"},

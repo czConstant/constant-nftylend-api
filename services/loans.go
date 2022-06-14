@@ -48,7 +48,7 @@ func (s *NftLend) GetListingLoans(
 		filters["collections.id = ?"] = []interface{}{collectionId}
 	}
 	if collectionSeoUrl != "" {
-		filters["collections.seo_url >= ?"] = []interface{}{collectionSeoUrl}
+		filters["collections.seo_url = ?"] = []interface{}{collectionSeoUrl}
 	}
 	if search != "" {
 		searchs := strings.Split(search, " ")
