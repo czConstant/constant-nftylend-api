@@ -173,20 +173,20 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 			if err != nil {
 				return errs.NewError(err)
 			}
-			pwpBalance, err := s.bcs.Near.FtBalance(
-				pwpToken.ContractAddress,
-				req.Address,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			if pwpBalance.Cmp(big.NewInt(0)) <= 0 {
-				return errs.NewError(errs.ErrBadRequest)
-			}
 			var powerVote *big.Float
 			switch msg.Type {
 			case models.ProposalTypeGovernment:
 				{
+					pwpBalance, err := s.bcs.Near.FtBalance(
+						pwpToken.ContractAddress,
+						req.Address,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if pwpBalance.Cmp(big.NewInt(0)) <= 0 {
+						return errs.NewError(errs.ErrBadRequest)
+					}
 					powerVote = models.ConvertWeiToBigFloat(pwpBalance, pwpToken.Decimals)
 					if powerVote.Cmp(&pwpToken.ProposalThreshold.Float) < 0 {
 						return errs.NewError(errs.ErrBadRequest)
