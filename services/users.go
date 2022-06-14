@@ -438,21 +438,22 @@ func (s *NftLend) transactionUserBalance(tx *gorm.DB, network models.Network, us
 		userBalance.LockedBalance = numeric.BigFloat{*newLockedBalance}
 	}
 	if isClaimed {
+		claimTx := &models.UserBalanceHistory{
+			Network:       userBalance.Network,
+			Type:          models.UserBalanceHistoryTypeClaimedBalance,
+			UserBalanceID: userBalance.ID,
+			CurrencyID:    currencyID,
+			Amount:        numeric.BigFloat{*models.NegativeBigFloat(&amount.Float)},
+			Reference:     reference,
+		}
 		err = s.ubhd.Create(
 			tx,
-			&models.UserBalanceHistory{
-				Network:       userBalance.Network,
-				Type:          models.UserBalanceHistoryTypeClaimedBalance,
-				UserBalanceID: userBalance.ID,
-				CurrencyID:    currencyID,
-				Amount:        numeric.BigFloat{*models.NegativeBigFloat(&amount.Float)},
-				Reference:     reference,
-			},
+			claimTx,
 		)
 		if err != nil {
 			return errs.NewError(err)
 		}
-		newClaimedBalance := models.AddBigFloats(&userBalance.ClaimedBalance.Float, &amount.Float)
+		newClaimedBalance := models.AddBigFloats(&userBalance.ClaimedBalance.Float, &claimTx.Amount.Float)
 		userBalance.ClaimedBalance = numeric.BigFloat{*newClaimedBalance}
 	}
 	err = s.ubd.Save(
