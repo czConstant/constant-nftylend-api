@@ -28,7 +28,7 @@ type Collection struct {
 	CurrencyID            uint
 	Currency              *Currency
 	NewLoanID             uint
-	NewLoan               *Loan
+	NewLoan               *Loan `gorm:"foreignKey:new_loan_id"`
 }
 
 type NftyRPTListingCollection struct {
