@@ -23,6 +23,8 @@ type ProposalResp struct {
 	Snapshot          int64                     `json:"snapshot"`
 	Name              string                    `json:"name"`
 	Body              string                    `json:"body"`
+	ProjectName       string                    `json:"project_name"`
+	Contact           string                    `json:"contact"`
 	Timestamp         *time.Time                `json:"timestamp"`
 	Start             *time.Time                `json:"start"`
 	End               *time.Time                `json:"end"`

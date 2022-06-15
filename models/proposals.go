@@ -25,6 +25,7 @@ func (m *ProposalType) Valid() bool {
 const (
 	ProposalTypeGovernment = "government"
 	ProposalTypeCommunity  = "community"
+	ProposalTypeProposal   = "proposal"
 
 	ProposalStatusPending   ProposalStatus = "pending"
 	ProposalStatusCreated   ProposalStatus = "created"
@@ -49,7 +50,9 @@ type Proposal struct {
 	Signature         string
 	Snapshot          int64
 	Name              string `gorm:"type:text collate utf8mb4_unicode_ci"`
+	ProjectName       string `gorm:"type:text collate utf8mb4_unicode_ci"`
 	Body              string `gorm:"type:text collate utf8mb4_unicode_ci"`
+	Contact           string
 	Timestamp         *time.Time
 	Start             *time.Time
 	End               *time.Time
