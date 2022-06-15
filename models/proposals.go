@@ -45,11 +45,11 @@ type Proposal struct {
 	User              *User
 	Type              ProposalType
 	ChoiceType        ProposalChoiceType
-	Message           string `gorm:"type:text"`
+	Message           string `gorm:"type:text collate utf8mb4_unicode_ci"`
 	Signature         string
 	Snapshot          int64
-	Name              string `gorm:"type:text"`
-	Body              string `gorm:"type:text"`
+	Name              string `gorm:"type:text collate utf8mb4_unicode_ci"`
+	Body              string `gorm:"type:text collate utf8mb4_unicode_ci"`
 	Timestamp         *time.Time
 	Start             *time.Time
 	End               *time.Time

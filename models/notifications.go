@@ -10,8 +10,8 @@ type Notification struct {
 	UserID      uint
 	User        *User
 	Type        NotificationType
-	Title       string `gorm:"type:text"`
-	Content     string `gorm:"type:text"`
-	RedirectURL string `gorm:"type:text"`
-	ImageURL    string `gorm:"type:text"`
+	Title       string `gorm:"type:text collate utf8mb4_unicode_ci"`
+	Content     string `gorm:"type:text collate utf8mb4_unicode_ci"`
+	RedirectURL string `gorm:"type:text collate utf8mb4_unicode_ci"`
+	ImageURL    string `gorm:"type:text collate utf8mb4_unicode_ci"`
 }

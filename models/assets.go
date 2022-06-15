@@ -17,16 +17,16 @@ type Asset struct {
 	TokenID                   string
 	TestContractAddress       string
 	TestTokenID               string
-	TokenURL                  string `gorm:"type:text"`
-	ExternalUrl               string `gorm:"type:text"`
+	TokenURL                  string `gorm:"type:text collate utf8mb4_unicode_ci"`
+	ExternalUrl               string `gorm:"type:text collate utf8mb4_unicode_ci"`
 	Name                      string
 	Symbol                    string
-	Description               string `gorm:"type:text"`
+	Description               string `gorm:"type:text collate utf8mb4_unicode_ci"`
 	SearchText                string `gorm:"type:text collate utf8mb4_unicode_ci"`
 	MimeType                  string
 	SellerFeeRate             float64 `gorm:"type:decimal(6,4);default:0"`
-	Attributes                string  `gorm:"type:text"`
-	MetaJson                  string  `gorm:"type:text"`
+	Attributes                string  `gorm:"type:text collate utf8mb4_unicode_ci"`
+	MetaJson                  string  `gorm:"type:text collate utf8mb4_unicode_ci"`
 	MetaJsonUrl               string
 	NewLoan                   *Loan
 	OriginNetwork             Network

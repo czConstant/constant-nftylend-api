@@ -10,7 +10,7 @@ type Collection struct {
 	Network               Network
 	SeoURL                string
 	Name                  string
-	Description           string `gorm:"type:text"`
+	Description           string `gorm:"type:text collate utf8mb4_unicode_ci"`
 	Creator               string
 	ContractAddress       string
 	OriginNetwork         Network
