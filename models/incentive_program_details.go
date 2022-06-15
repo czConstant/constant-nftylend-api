@@ -22,5 +22,5 @@ type IncentiveProgramDetail struct {
 	IncentiveProgram   *IncentiveProgram
 	Type               IncentiveTransactionType
 	Amount             numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
-	Description        string           `gorm:"type:text"`
+	Description        string           `gorm:"type:text collate utf8mb4_unicode_ci"`
 }

@@ -16,6 +16,6 @@ type Instruction struct {
 	InstructionIndex uint
 	Program          string
 	Instruction      string
-	Data             string `gorm:"type:text"`
+	Data             string `gorm:"type:text collate utf8mb4_unicode_ci"`
 	Status           string `gorm:"default:0"`
 }
