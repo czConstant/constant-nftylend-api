@@ -216,6 +216,7 @@ func (s *NftLend) JobIncentiveForUnlock(ctx context.Context) error {
 		map[string][]interface{}{
 			"type in (?)": []interface{}{[]models.IncentiveTransactionType{
 				models.IncentiveTransactionTypeUserAirdropReward,
+				models.IncentiveTransactionTypeUserAmaReward,
 			}},
 			"status = ?": []interface{}{models.IncentiveTransactionStatusPending},
 		},
@@ -240,6 +241,7 @@ func (s *NftLend) JobIncentiveForUnlock(ctx context.Context) error {
 				models.IncentiveTransactionTypeBorrowerLoanListed,
 				models.IncentiveTransactionTypeLenderLoanMatched,
 				models.IncentiveTransactionTypeUserAirdropReward,
+				models.IncentiveTransactionTypeUserAmaReward,
 			}},
 			"status = ?":                []interface{}{models.IncentiveTransactionStatusLocked},
 			"lock_until_at is not null": []interface{}{},
@@ -339,7 +341,8 @@ func (s *NftLend) IncentiveForLock(ctx context.Context, transactionID uint) erro
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			switch itM.Type {
-			case models.IncentiveTransactionTypeUserAirdropReward:
+			case models.IncentiveTransactionTypeUserAirdropReward,
+				models.IncentiveTransactionTypeUserAmaReward:
 				{
 				}
 			default:
