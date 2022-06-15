@@ -12,6 +12,7 @@ const (
 	IncentiveTransactionTypeBorrowerLoanDelisted IncentiveTransactionType = "borrower_loan_delisted"
 	IncentiveTransactionTypeLenderLoanMatched    IncentiveTransactionType = "lender_loan_matched"
 	IncentiveTransactionTypeUserAirdropReward    IncentiveTransactionType = "user_airdrop_reward"
+	IncentiveTransactionTypeUserAmaReward        IncentiveTransactionType = "user_ama_reward"
 )
 
 type IncentiveProgramDetail struct {
