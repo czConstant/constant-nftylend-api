@@ -188,7 +188,7 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 						return errs.NewError(errs.ErrBadRequest)
 					}
 					powerVote = models.ConvertWeiToBigFloat(pwpBalance, pwpToken.Decimals)
-					if powerVote.Cmp(&pwpToken.ProposalThreshold.Float) < 0 {
+					if powerVote.Cmp(&pwpToken.ProposalPowerRequired.Float) < 0 {
 						return errs.NewError(errs.ErrBadRequest)
 					}
 				}
