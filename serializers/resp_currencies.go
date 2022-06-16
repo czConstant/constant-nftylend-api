@@ -8,19 +8,20 @@ import (
 )
 
 type CurrencyResp struct {
-	ID                uint             `json:"id"`
-	CreatedAt         time.Time        `json:"created_at"`
-	UpdatedAt         time.Time        `json:"updated_at"`
-	Network           models.Network   `json:"network"`
-	ContractAddress   string           `json:"contract_address"`
-	Decimals          uint             `json:"decimals"`
-	Symbol            string           `json:"symbol"`
-	Name              string           `json:"name"`
-	IconURL           string           `json:"icon_url"`
-	AdminFeeAddress   string           `json:"admin_fee_address"`
-	Price             float64          `json:"price"`
-	ClaimEnabled      bool             `json:"claim_enabled"`
-	ProposalThreshold numeric.BigFloat `json:"proposal_threshold"`
+	ID                    uint             `json:"id"`
+	CreatedAt             time.Time        `json:"created_at"`
+	UpdatedAt             time.Time        `json:"updated_at"`
+	Network               models.Network   `json:"network"`
+	ContractAddress       string           `json:"contract_address"`
+	Decimals              uint             `json:"decimals"`
+	Symbol                string           `json:"symbol"`
+	Name                  string           `json:"name"`
+	IconURL               string           `json:"icon_url"`
+	AdminFeeAddress       string           `json:"admin_fee_address"`
+	Price                 float64          `json:"price"`
+	ClaimEnabled          bool             `json:"claim_enabled"`
+	ProposalThreshold     numeric.BigFloat `json:"proposal_threshold"`
+	ProposalPowerRequired numeric.BigFloat `json:"proposal_power_required"`
 }
 
 func NewCurrencyResp(m *models.Currency) *CurrencyResp {

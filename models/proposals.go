@@ -8,10 +8,24 @@ import (
 )
 
 type ProposalStatus string
+type ProposalType string
 type ProposalChoiceType string
 
+func (m *ProposalType) Valid() bool {
+	switch *m {
+	case ProposalTypeGovernment,
+		ProposalTypeCommunity:
+		{
+			return true
+		}
+	}
+	return false
+}
+
 const (
-	ProposalTypeProposal = "proposal"
+	ProposalTypeGovernment = "government"
+	ProposalTypeCommunity  = "community"
+	ProposalTypeProposal   = "proposal"
 
 	ProposalStatusPending   ProposalStatus = "pending"
 	ProposalStatusCreated   ProposalStatus = "created"
@@ -30,13 +44,15 @@ type Proposal struct {
 	Network           Network
 	UserID            uint
 	User              *User
-	Type              string
+	Type              ProposalType
 	ChoiceType        ProposalChoiceType
-	Message           string `gorm:"type:text"`
+	Message           string `gorm:"type:text collate utf8mb4_unicode_ci"`
 	Signature         string
 	Snapshot          int64
-	Name              string `gorm:"type:text"`
-	Body              string `gorm:"type:text"`
+	Name              string `gorm:"type:text collate utf8mb4_unicode_ci"`
+	ProjectName       string `gorm:"type:text collate utf8mb4_unicode_ci"`
+	Body              string `gorm:"type:text collate utf8mb4_unicode_ci"`
+	Contact           string
 	Timestamp         *time.Time
 	Start             *time.Time
 	End               *time.Time

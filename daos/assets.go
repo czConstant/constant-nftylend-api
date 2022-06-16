@@ -58,15 +58,11 @@ func (d *Asset) Find4Page(tx *gorm.DB, filters map[string][]interface{}, preload
 func (d *Asset) GetRPTListingCollection(tx *gorm.DB) ([]*models.NftyRPTListingCollection, error) {
 	var rs []*models.NftyRPTListingCollection
 	err := tx.Raw(`
-	select collection_id, count(1) total
-	from assets
-	where exists(
-				select 1
-				from loans
-				where asset_id = assets.id
-					and loans.status in (?)
-			)
-	group by collection_id
+	select collection_id, count(distinct asset_id) total
+	from loans
+		where loans.status in (?)
+		and loans.valid_at >= now()
+	group by collection_id;
 	`,
 		[]models.LoanStatus{
 			models.LoanStatusNew,

@@ -49,6 +49,7 @@ func (s *Server) Routers() {
 		})
 		nftAPI.GET("/configs", s.AppConfigs)
 		nftAPI.GET("/moralis/:address/nft", s.MoralisGetNFTs)
+		nftAPI.GET("/ipfs/:hash", s.GetIpfsInfo)
 	}
 	nftAPI.POST("/blockchain/update-block/:block", s.NftLendUpdateBlock)
 	nftAPI.POST("/blockchain/:network/scan-block/:block", s.BlockchainScanBlock)
@@ -69,6 +70,7 @@ func (s *Server) Routers() {
 		collectionnftAPI.GET("/detail/:seo_url", s.GetCollectionDetail)
 		collectionnftAPI.GET("/verified", s.GetCollectionAssetVerified)
 		collectionnftAPI.POST("/submitted", s.CreateCollectionSubmitted)
+		collectionnftAPI.GET("/near-whitelist-creators", s.GetNearApprovedCreators)
 	}
 	loannftAPI := nftAPI.Group("/loans")
 	{
@@ -86,7 +88,9 @@ func (s *Server) Routers() {
 	{
 		proposalAPI.GET("/list", s.GetProposals)
 		proposalAPI.POST("/create", s.CreateProposal)
+		proposalAPI.GET("/detail/:proposal_id", s.GetProposalDetail)
 		proposalAPI.GET("/votes/list/:proposal_id", s.GetProposalVotes)
+		proposalAPI.GET("/votes/vote/:proposal_id", s.GetUserProposalVote)
 		proposalAPI.POST("/votes/create", s.CreateProposalVote)
 	}
 	hookInternalnftAPI := nftAPI.Group("/hook/internal")

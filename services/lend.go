@@ -358,31 +358,20 @@ func (s *NftLend) GetCollections(ctx context.Context, page int, limit int) ([]*m
 	categories, count, err := s.cld.Find4Page(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
-			"network in (?)": []interface{}{s.getSupportedNetworks()},
+			"network in (?)":  []interface{}{s.getSupportedNetworks()},
+			"new_loan_id > ?": []interface{}{0},
+			`exists(
+				select 1
+				from collection_submitteds
+				where collections.network = collection_submitteds.network
+				  and collections.creator = collection_submitteds.creator
+				  and collection_submitteds.status = ?
+			)`: []interface{}{models.CollectionSubmittedStatusApproved},
 		},
 		map[string][]interface{}{
-			"Currency": []interface{}{},
-			"ListingAsset": []interface{}{
-				`id in (
-					select asset_id
-					from loans
-					where asset_id = assets.id
-					  and loans.status in (?)
-				)`,
-				[]models.LoanOfferStatus{
-					models.LoanOfferStatusNew,
-				},
-				func(db *gorm.DB) *gorm.DB {
-					return db.Order(`
-					(
-						select max(loans.created_at)
-						from loans
-						where asset_id = assets.id
-						  and loans.status in ('new')
-					) desc
-					`)
-				},
-			},
+			"Currency":      []interface{}{},
+			"NewLoan":       []interface{}{},
+			"NewLoan.Asset": []interface{}{},
 		},
 		[]string{"id desc"},
 		page,
@@ -402,12 +391,9 @@ func (s *NftLend) GetCollectionDetail(ctx context.Context, seoURL string) (*mode
 			"network in (?)": []interface{}{s.getSupportedNetworks()},
 		},
 		map[string][]interface{}{
-			"Currency": []interface{}{},
-			"RandAsset": []interface{}{
-				func(db *gorm.DB) *gorm.DB {
-					return db.Order(`rand()`)
-				},
-			},
+			"Currency":      []interface{}{},
+			"NewLoan":       []interface{}{},
+			"NewLoan.Asset": []interface{}{},
 		},
 		[]string{"id desc"},
 	)
@@ -1117,4 +1103,40 @@ func (s *NftLend) GetAssetFloorPrice(ctx context.Context, assetID uint) (numeric
 		}
 	}
 	return m.FloorPrice, saleCurrency, nil
+}
+
+func (s *NftLend) updateCollectionForLoan(tx *gorm.DB, collectionID uint) error {
+	collection, err := s.cld.FirstByID(
+		tx,
+		collectionID,
+		map[string][]interface{}{},
+		true,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	loan, err := s.ld.First(
+		tx,
+		map[string][]interface{}{
+			"collection_id = ?": []interface{}{collection.ID},
+			"status = ?":        []interface{}{models.LoanStatusNew},
+		},
+		map[string][]interface{}{},
+		[]string{"id desc"},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	collection.NewLoanID = 0
+	if loan != nil {
+		collection.NewLoanID = loan.ID
+	}
+	err = s.cld.Save(
+		tx,
+		collection,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
 }

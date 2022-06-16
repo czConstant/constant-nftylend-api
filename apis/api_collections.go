@@ -2,6 +2,7 @@ package apis
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/serializers"
@@ -21,4 +22,14 @@ func (s *Server) CreateCollectionSubmitted(c *gin.Context) {
 		return
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
+}
+
+func (s *Server) GetNearApprovedCreators(c *gin.Context) {
+	ctx := s.requestContext(c)
+	creators, err := s.nls.GetNearApprovedCreators(ctx)
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxSTRING(c, http.StatusOK, strings.Join(creators, "\n"))
 }

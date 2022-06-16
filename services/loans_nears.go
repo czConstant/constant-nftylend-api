@@ -87,6 +87,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					Config:          saleInfo.LoanConfig,
 					CurrencyID:      currency.ID,
 					AssetID:         asset.ID,
+					CollectionID:    asset.CollectionID,
 					Status:          models.LoanStatusNew,
 					NonceHex:        saleInfo.CreatedAt,
 					DataLoanAddress: fmt.Sprintf("%d", saleInfo.ApprovalID),
@@ -464,6 +465,13 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 			err = s.updateIncentiveForLoan(
 				tx,
 				loan,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			err = s.updateCollectionForLoan(
+				tx,
+				loan.CollectionID,
 			)
 			if err != nil {
 				return errs.NewError(err)

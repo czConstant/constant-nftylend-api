@@ -41,6 +41,8 @@ type Loan struct {
 	LenderUser           *User
 	AssetID              uint
 	Asset                *Asset
+	CollectionID         uint
+	Collection           *Collection
 	CurrencyID           uint `gorm:"default:0"`
 	Currency             *Currency
 	StartedAt            *time.Time

@@ -10,7 +10,9 @@ type IncentiveTransactionType string
 const (
 	IncentiveTransactionTypeBorrowerLoanListed   IncentiveTransactionType = "borrower_loan_listed"
 	IncentiveTransactionTypeBorrowerLoanDelisted IncentiveTransactionType = "borrower_loan_delisted"
-	IncentiveTransactionTypeLenderLoanMatched    IncentiveTransactionType = "lender_loan_mathced"
+	IncentiveTransactionTypeLenderLoanMatched    IncentiveTransactionType = "lender_loan_matched"
+	IncentiveTransactionTypeUserAirdropReward    IncentiveTransactionType = "user_airdrop_reward"
+	IncentiveTransactionTypeUserAmaReward        IncentiveTransactionType = "user_ama_reward"
 )
 
 type IncentiveProgramDetail struct {
@@ -20,5 +22,5 @@ type IncentiveProgramDetail struct {
 	IncentiveProgram   *IncentiveProgram
 	Type               IncentiveTransactionType
 	Amount             numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
-	Description        string           `gorm:"type:text"`
+	Description        string           `gorm:"type:text collate utf8mb4_unicode_ci"`
 }

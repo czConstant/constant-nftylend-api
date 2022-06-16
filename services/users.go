@@ -438,21 +438,22 @@ func (s *NftLend) transactionUserBalance(tx *gorm.DB, network models.Network, us
 		userBalance.LockedBalance = numeric.BigFloat{*newLockedBalance}
 	}
 	if isClaimed {
+		claimTx := &models.UserBalanceHistory{
+			Network:       userBalance.Network,
+			Type:          models.UserBalanceHistoryTypeClaimedBalance,
+			UserBalanceID: userBalance.ID,
+			CurrencyID:    currencyID,
+			Amount:        numeric.BigFloat{*models.NegativeBigFloat(&amount.Float)},
+			Reference:     reference,
+		}
 		err = s.ubhd.Create(
 			tx,
-			&models.UserBalanceHistory{
-				Network:       userBalance.Network,
-				Type:          models.UserBalanceHistoryTypeClaimedBalance,
-				UserBalanceID: userBalance.ID,
-				CurrencyID:    currencyID,
-				Amount:        numeric.BigFloat{*models.NegativeBigFloat(&amount.Float)},
-				Reference:     reference,
-			},
+			claimTx,
 		)
 		if err != nil {
 			return errs.NewError(err)
 		}
-		newClaimedBalance := models.AddBigFloats(&userBalance.ClaimedBalance.Float, &amount.Float)
+		newClaimedBalance := models.AddBigFloats(&userBalance.ClaimedBalance.Float, &claimTx.Amount.Float)
 		userBalance.ClaimedBalance = numeric.BigFloat{*newClaimedBalance}
 	}
 	err = s.ubd.Save(
@@ -546,6 +547,16 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			// validate request by sig
+			message := fmt.Sprintf("%s-%s-%s-%d", strings.ToLower(user.Address), strings.ToLower(currency.ContractAddress), req.Amount.ToString(), req.Timestamp)
+			err = s.bcs.Near.ValidateMessageSignature(
+				s.conf.Contract.NearNftypawnAddress,
+				message,
+				req.Signature,
+				user.Address,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
 			//
 			userBalanceTransaction := &models.UserBalanceTransaction{
 				Network:       userBalance.Network,
@@ -554,7 +565,8 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 				CurrencyID:    userBalance.CurrencyID,
 				Type:          models.UserBalanceTransactionTypeClaim,
 				ToAddress:     req.ToAddress,
-				Amount:        req.Amount,
+				Amount:        numeric.BigFloat{*models.NegativeBigFloat(&req.Amount.Float)},
+				Message:       message,
 				Signature:     req.Signature,
 				Status:        models.UserBalanceTransactionStatusDone,
 			}
@@ -570,7 +582,7 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 				userBalance.Network,
 				userBalance.UserID,
 				userBalance.CurrencyID,
-				numeric.BigFloat{*models.NegativeBigFloat(&userBalanceTransaction.Amount.Float)},
+				userBalanceTransaction.Amount,
 				false,
 				true,
 				fmt.Sprintf("ubt_%d_claim", userBalanceTransaction.ID),

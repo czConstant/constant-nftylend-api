@@ -15,8 +15,19 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func (s *NftLend) GetProposals(ctx context.Context, statuses []string, page int, limit int) ([]*models.Proposal, uint, error) {
+func (s *NftLend) GetIpfsInfo(hash string) ([]byte, error) {
+	res, err := s.ifc.GetIpfsInfo(hash)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return res, nil
+}
+
+func (s *NftLend) GetProposals(ctx context.Context, types []string, statuses []string, page int, limit int) ([]*models.Proposal, uint, error) {
 	filters := map[string][]interface{}{}
+	if len(types) > 0 {
+		filters["type in (?)"] = []interface{}{types}
+	}
 	if len(statuses) > 0 {
 		filters["status in (?)"] = []interface{}{statuses}
 	}
@@ -35,6 +46,22 @@ func (s *NftLend) GetProposals(ctx context.Context, statuses []string, page int,
 		return nil, 0, errs.NewError(err)
 	}
 	return proposals, count, nil
+}
+
+func (s *NftLend) GetProposalDetail(ctx context.Context, proposalID uint) (*models.Proposal, error) {
+	proposal, err := s.pd.FirstByID(
+		daos.GetDBMainCtx(ctx),
+		proposalID,
+		map[string][]interface{}{
+			"User":    []interface{}{},
+			"Choices": []interface{}{},
+		},
+		false,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return proposal, nil
 }
 
 func (s *NftLend) GetProposalVotes(ctx context.Context, proposalID uint, statuses []string, page int, limit int) ([]*models.ProposalVote, uint, error) {
@@ -86,16 +113,18 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
 			var msg struct {
-				Timestamp int64  `json:"timestamp"`
-				Type      string `json:"type"`
+				Timestamp int64               `json:"timestamp"`
+				Type      models.ProposalType `json:"type"`
 				Payload   struct {
-					Name     string   `json:"name"`
-					Body     string   `json:"body"`
-					Start    int64    `json:"start"`
-					End      int64    `json:"end"`
-					Snapshot int64    `json:"snapshot"`
-					Type     string   `json:"type"`
-					Choices  []string `json:"choices"`
+					Name        string   `json:"name"`
+					Body        string   `json:"body"`
+					ProjectName string   `json:"project_name"`
+					Contact     string   `json:"contact"`
+					Start       int64    `json:"start"`
+					End         int64    `json:"end"`
+					Snapshot    int64    `json:"snapshot"`
+					Type        string   `json:"type"`
+					Choices     []string `json:"choices"`
 				} `json:"payload"`
 			}
 			err = json.Unmarshal([]byte(req.Message), &msg)
@@ -104,30 +133,92 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 			}
 			if msg.Type == "" ||
 				msg.Timestamp <= 0 ||
-				msg.Payload.Snapshot <= 0 ||
-				msg.Payload.Start <= 0 ||
-				msg.Payload.End <= 0 ||
 				msg.Payload.Name == "" ||
-				msg.Payload.Body == "" ||
-				len(msg.Payload.Choices) <= 1 {
+				msg.Payload.Body == "" {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			if !msg.Type.Valid() {
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			if msg.Timestamp < time.Now().Add(-60*time.Second).Unix() ||
 				msg.Timestamp > time.Now().Add(60*time.Second).Unix() {
 				return errs.NewError(errs.ErrBadRequest)
 			}
-			if msg.Payload.Start < time.Now().Add(-60*time.Second).Unix() {
-				return errs.NewError(errs.ErrBadRequest)
+			var choiceType models.ProposalChoiceType
+			switch msg.Type {
+			case models.ProposalTypeGovernment,
+				models.ProposalTypeCommunity:
+				{
+					if msg.Timestamp <= 0 ||
+						msg.Payload.Name == "" ||
+						msg.Payload.Body == "" ||
+						len(msg.Payload.Choices) <= 1 {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					if msg.Payload.Start < time.Now().Add(-60*time.Second).Unix() {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					if msg.Payload.End < time.Now().Unix() {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					if msg.Payload.Start >= msg.Payload.End {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					choiceType = models.ProposalChoiceType(msg.Payload.Type)
+					switch choiceType {
+					case models.ProposalChoiceTypeSingleChoice:
+						{
+						}
+					default:
+						{
+							return errs.NewError(errs.ErrBadRequest)
+						}
+					}
+				}
+			case models.ProposalTypeProposal:
+				{
+					if msg.Payload.ProjectName == "" ||
+						msg.Payload.Contact == "" {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+				}
+			default:
+				{
+					return errs.NewError(errs.ErrBadRequest)
+				}
 			}
-			if msg.Payload.End < time.Now().Unix() {
-				return errs.NewError(errs.ErrBadRequest)
-			}
-			if msg.Payload.Start >= msg.Payload.End {
-				return errs.NewError(errs.ErrBadRequest)
-			}
-			choiceType := models.ProposalChoiceType(msg.Payload.Type)
-			switch choiceType {
-			case models.ProposalChoiceTypeSingleChoice:
+			var powerVote *big.Float
+			var proposalThreshold numeric.BigFloat
+			var ipfsHash string
+			switch msg.Type {
+			case models.ProposalTypeGovernment:
+				{
+					pwpToken, err := s.getLendCurrencyBySymbol(
+						tx,
+						models.SymbolPWPToken,
+						req.Network,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					pwpBalance, err := s.bcs.Near.FtBalance(
+						pwpToken.ContractAddress,
+						req.Address,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if pwpBalance.Cmp(big.NewInt(0)) <= 0 {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					powerVote = models.ConvertWeiToBigFloat(pwpBalance, pwpToken.Decimals)
+					if powerVote.Cmp(&pwpToken.ProposalPowerRequired.Float) < 0 {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					proposalThreshold = pwpToken.ProposalThreshold
+				}
+			case models.ProposalTypeCommunity,
+				models.ProposalTypeProposal:
 				{
 				}
 			default:
@@ -135,49 +226,40 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 					return errs.NewError(errs.ErrBadRequest)
 				}
 			}
-			pwpToken, err := s.getLendCurrencyBySymbol(
-				tx,
-				models.SymbolPWPToken,
-				req.Network,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			pwpBalance, err := s.bcs.Near.FtBalance(
-				pwpToken.ContractAddress,
-				req.Address,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			if pwpBalance.Cmp(big.NewInt(0)) <= 0 {
-				return errs.NewError(errs.ErrBadRequest)
-			}
-			powerVote := models.ConvertWeiToBigFloat(pwpBalance, pwpToken.Decimals)
-			if powerVote.Cmp(&pwpToken.ProposalThreshold.Float) < 0 {
-				return errs.NewError(errs.ErrBadRequest)
-			}
-			ipfsData, err := json.Marshal(&req)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			ipfsHash, err := s.ifc.UploadString(string(ipfsData))
-			if err != nil {
-				return errs.NewError(err)
-			}
-			proposal, err = s.pd.First(
-				tx,
-				map[string][]interface{}{
-					"ipfs_hash = ?": []interface{}{ipfsHash},
-				},
-				map[string][]interface{}{},
-				[]string{},
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			if proposal != nil {
-				return errs.NewError(errs.ErrBadRequest)
+			switch msg.Type {
+			case models.ProposalTypeGovernment,
+				models.ProposalTypeCommunity:
+				{
+					ipfsData, err := json.Marshal(&req)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					ipfsHash, err = s.ifc.UploadString(string(ipfsData))
+					if err != nil {
+						return errs.NewError(err)
+					}
+					proposal, err = s.pd.First(
+						tx,
+						map[string][]interface{}{
+							"ipfs_hash = ?": []interface{}{ipfsHash},
+						},
+						map[string][]interface{}{},
+						[]string{},
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if proposal != nil {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+				}
+			case models.ProposalTypeProposal:
+				{
+				}
+			default:
+				{
+					return errs.NewError(errs.ErrBadRequest)
+				}
 			}
 			user, err := s.getUser(
 				tx,
@@ -190,7 +272,7 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 			proposal = &models.Proposal{
 				Network:           user.Network,
 				UserID:            user.ID,
-				Type:              msg.Type,
+				Type:              models.ProposalType(msg.Type),
 				Timestamp:         helpers.TimeFromUnix(msg.Timestamp),
 				ChoiceType:        choiceType,
 				Message:           req.Message,
@@ -199,9 +281,11 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 				End:               helpers.TimeFromUnix(msg.Payload.End),
 				Snapshot:          msg.Payload.Snapshot,
 				Name:              msg.Payload.Name,
+				ProjectName:       msg.Payload.ProjectName,
+				Contact:           msg.Payload.Contact,
 				Body:              msg.Payload.Body,
 				IpfsHash:          ipfsHash,
-				ProposalThreshold: pwpToken.ProposalThreshold,
+				ProposalThreshold: proposalThreshold,
 				Status:            models.ProposalStatusPending,
 			}
 			err = s.pd.Create(
@@ -211,21 +295,27 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 			if err != nil {
 				return errs.NewError(err)
 			}
-			for idx, choice := range msg.Payload.Choices {
-				proposalChoice := &models.ProposalChoice{
-					Network:    proposal.Network,
-					ProposalID: proposal.ID,
-					Choice:     (idx + 1),
-					Name:       choice,
-					PowerVote:  numeric.BigFloat{*big.NewFloat(0)},
-					Status:     models.ProposalChoiceStatusPending,
-				}
-				err = s.pcd.Create(
-					tx,
-					proposalChoice,
-				)
-				if err != nil {
-					return errs.NewError(err)
+			switch msg.Type {
+			case models.ProposalTypeGovernment,
+				models.ProposalTypeCommunity:
+				{
+					for idx, choice := range msg.Payload.Choices {
+						proposalChoice := &models.ProposalChoice{
+							Network:    proposal.Network,
+							ProposalID: proposal.ID,
+							Choice:     (idx + 1),
+							Name:       choice,
+							PowerVote:  numeric.BigFloat{*big.NewFloat(0)},
+							Status:     models.ProposalChoiceStatusPending,
+						}
+						err = s.pcd.Create(
+							tx,
+							proposalChoice,
+						)
+						if err != nil {
+							return errs.NewError(err)
+						}
+					}
 				}
 			}
 			return nil
@@ -235,6 +325,41 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 		return nil, errs.NewError(err)
 	}
 	return proposal, nil
+}
+
+func (s *NftLend) GetUserProposalVote(ctx context.Context, network models.Network, address string, proposalID uint) (*models.ProposalVote, error) {
+	var proposalVote *models.ProposalVote
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			user, err := s.getUser(
+				tx,
+				network,
+				address,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			proposalVote, err = s.pvd.First(
+				tx,
+				map[string][]interface{}{
+					"proposal_id = ?": []interface{}{proposalID},
+					"user_id = ?":     []interface{}{user.ID},
+					"status = ?":      []interface{}{models.ProposalVoteStatusCreated},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return proposalVote, nil
 }
 
 func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.CreateProposalVoteReq) (*models.ProposalVote, error) {
@@ -320,11 +445,19 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 					return errs.NewError(errs.ErrBadRequest)
 				}
 			}
+			user, err := s.getUser(
+				tx,
+				req.Network,
+				req.Address,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
 			proposalVote, err = s.pvd.First(
 				tx,
 				map[string][]interface{}{
 					"proposal_id = ?": []interface{}{proposal.ID},
-					"address = ?":     []interface{}{req.Address},
+					"user_id = ?":     []interface{}{user.ID},
 					"status = ?":      []interface{}{models.ProposalVoteStatusCreated},
 				},
 				map[string][]interface{}{},
@@ -350,29 +483,43 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			if err != nil {
 				return errs.NewError(err)
 			}
-			if len(proposalChoices) == len(msg.Payload.Choice) {
+			if len(proposalChoices) != len(msg.Payload.Choice) {
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			// get power vote
-			pwpToken, err := s.getLendCurrencyBySymbol(
-				tx,
-				models.SymbolPWPToken,
-				req.Network,
-			)
-			if err != nil {
-				return errs.NewError(err)
+			var powerVote *big.Float
+			switch proposal.Type {
+			case models.ProposalTypeGovernment:
+				{
+					pwpToken, err := s.getLendCurrencyBySymbol(
+						tx,
+						models.SymbolPWPToken,
+						req.Network,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					pwpBalance, err := s.bcs.Near.FtBalance(
+						pwpToken.ContractAddress,
+						req.Address,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if pwpBalance.Cmp(big.NewInt(0)) <= 0 {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					powerVote = models.ConvertWeiToBigFloat(pwpBalance, pwpToken.Decimals)
+				}
+			case models.ProposalTypeCommunity:
+				{
+					powerVote = big.NewFloat(1)
+				}
+			default:
+				{
+					return errs.NewError(errs.ErrBadRequest)
+				}
 			}
-			pwpBalance, err := s.bcs.Near.FtBalance(
-				pwpToken.ContractAddress,
-				req.Address,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			if pwpBalance.Cmp(big.NewInt(0)) <= 0 {
-				return errs.NewError(errs.ErrBadRequest)
-			}
-			powerVote := models.ConvertWeiToBigFloat(pwpBalance, pwpToken.Decimals)
 			// end
 			ipfsData, err := json.Marshal(&req)
 			if err != nil {
@@ -395,14 +542,6 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			}
 			if proposalVote != nil {
 				return errs.NewError(errs.ErrBadRequest)
-			}
-			user, err := s.getUser(
-				tx,
-				req.Network,
-				req.Address,
-			)
-			if err != nil {
-				return errs.NewError(err)
 			}
 			for _, proposalChoice := range proposalChoices {
 				proposalVote = &models.ProposalVote{
@@ -491,8 +630,12 @@ func (s *NftLend) ProposalUnVote(ctx context.Context, network models.Network, ad
 						select 1
 						from proposals
 						where proposal_votes.proposal_id = proposals.id
-						  and proposals.status = ?
-					)`: []interface{}{models.ProposalStatusCreated},
+							and proposals.type = ?
+						  	and proposals.status = ?
+					)`: []interface{}{
+						models.ProposalTypeGovernment,
+						models.ProposalStatusCreated,
+					},
 				},
 				map[string][]interface{}{},
 				[]string{},
@@ -522,7 +665,7 @@ func (s *NftLend) ProposalUnVote(ctx context.Context, network models.Network, ad
 					if err != nil {
 						return errs.NewError(err)
 					}
-					if proposal.Status == models.ProposalStatusPending {
+					if proposal.Status == models.ProposalStatusCreated {
 						proposalVote.CancelledHash = txHash
 						proposalVote.Status = models.ProposalVoteStatusCancelled
 						err = s.pvd.Save(
@@ -624,6 +767,7 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 	proposals, err = s.pd.Find(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
+			"type = ?":                         []interface{}{models.ProposalTypeGovernment},
 			"status = ?":                       []interface{}{models.ProposalStatusCreated},
 			"end <= ?":                         []interface{}{time.Now()},
 			"total_vote >= proposal_threshold": []interface{}{},
@@ -645,6 +789,7 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 	proposals, err = s.pd.Find(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
+			"type = ?":                        []interface{}{models.ProposalTypeGovernment},
 			"status = ?":                      []interface{}{models.ProposalStatusCreated},
 			"end <= ?":                        []interface{}{time.Now()},
 			"total_vote < proposal_threshold": []interface{}{},
@@ -666,6 +811,7 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 	proposals, err = s.pd.Find(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
+			"type = ?":   []interface{}{models.ProposalTypeGovernment},
 			"status = ?": []interface{}{models.ProposalStatusSucceeded},
 			"end <= ?":   []interface{}{time.Now().Add(-2 * 24 * time.Hour)},
 		},
@@ -681,6 +827,27 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 		err = s.ProposalStatusQueued(ctx, proposal.ID)
 		if err != nil {
 			retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, proposal.ID))
+		}
+	}
+	proposals, err = s.pd.Find(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"type = ?":   []interface{}{models.ProposalTypeCommunity},
+			"status = ?": []interface{}{models.ProposalStatusCreated},
+			"end <= ?":   []interface{}{time.Now()},
+		},
+		map[string][]interface{}{},
+		[]string{},
+		0,
+		999999,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	for _, proposal := range proposals {
+		err = s.ProposalStatusQueued(ctx, proposal.ID)
+		if err != nil {
+			retErr = errs.MergeError(retErr, err)
 		}
 	}
 	return retErr
@@ -772,6 +939,18 @@ func (s *NftLend) ProposalStatusSucceeded(ctx context.Context, proposalID uint) 
 			}
 			if proposal.End.After(time.Now()) {
 				return errs.NewError(errs.ErrBadRequest)
+			}
+			switch proposal.Type {
+			case models.ProposalTypeGovernment:
+				{
+					if proposal.Status != models.ProposalStatusSucceeded {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+				}
+			default:
+				{
+					return errs.NewError(errs.ErrBadRequest)
+				}
 			}
 			if proposal.TotalVote.Float.Cmp(&proposal.ProposalThreshold.Float) < 0 {
 				return errs.NewError(errs.ErrBadRequest)
@@ -867,6 +1046,18 @@ func (s *NftLend) ProposalStatusDefeated(ctx context.Context, proposalID uint) e
 			if proposal.End.After(time.Now()) {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			switch proposal.Type {
+			case models.ProposalTypeGovernment:
+				{
+					if proposal.Status != models.ProposalStatusSucceeded {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+				}
+			default:
+				{
+					return errs.NewError(errs.ErrBadRequest)
+				}
+			}
 			if proposal.TotalVote.Float.Cmp(&proposal.ProposalThreshold.Float) >= 0 {
 				return errs.NewError(errs.ErrBadRequest)
 			}
@@ -932,8 +1123,23 @@ func (s *NftLend) ProposalStatusQueued(ctx context.Context, proposalID uint) err
 			if err != nil {
 				return errs.NewError(err)
 			}
-			if proposal.Status != models.ProposalStatusSucceeded {
-				return errs.NewError(errs.ErrBadRequest)
+			switch proposal.Type {
+			case models.ProposalTypeGovernment:
+				{
+					if proposal.Status != models.ProposalStatusSucceeded {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+				}
+			case models.ProposalTypeCommunity:
+				{
+					if proposal.Status != models.ProposalStatusCreated {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+				}
+			default:
+				{
+					return errs.NewError(errs.ErrBadRequest)
+				}
 			}
 			proposal.Status = models.ProposalStatusQueued
 			err = s.pd.Save(
@@ -955,22 +1161,24 @@ func (s *NftLend) ProposalStatusQueued(ctx context.Context, proposalID uint) err
 			if err != nil {
 				return errs.NewError(err)
 			}
-			proposalChoice, err = s.pcd.FirstByID(
-				tx,
-				proposalChoice.ID,
-				map[string][]interface{}{},
-				true,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			proposalChoice.Status = models.ProposalChoiceStatusQueued
-			err = s.pcd.Save(
-				tx,
-				proposalChoice,
-			)
-			if err != nil {
-				return errs.NewError(err)
+			if proposalChoice != nil {
+				proposalChoice, err = s.pcd.FirstByID(
+					tx,
+					proposalChoice.ID,
+					map[string][]interface{}{},
+					true,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				proposalChoice.Status = models.ProposalChoiceStatusQueued
+				err = s.pcd.Save(
+					tx,
+					proposalChoice,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
 			}
 			return nil
 		},
