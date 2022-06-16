@@ -20,4 +20,5 @@ type Currency struct {
 	ClaimEnabled          bool             `gorm:"default:0"`
 	ProposalThreshold     numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	ProposalPowerRequired numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	ProposalPwpRequired   numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 }

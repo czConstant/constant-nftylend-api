@@ -300,22 +300,9 @@ func (s *NftLend) GetUserPWPTokenBalance(ctx context.Context, network models.Net
 			if err != nil {
 				return errs.NewError(err)
 			}
-			pwpToken, err := s.getLendCurrencyBySymbol(
-				tx,
-				"PWP",
-				models.NetworkNEAR,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			if pwpToken == nil {
-				return errs.NewError(errs.ErrBadRequest)
-			}
-			userBalance, err = s.getUserBalance(
+			userBalance, err = s.getUserPWPTokenBalance(
 				tx,
 				user.ID,
-				pwpToken.ID,
-				false,
 			)
 			if err != nil {
 				return errs.NewError(err)
@@ -334,6 +321,30 @@ func (s *NftLend) GetUserPWPTokenBalance(ctx context.Context, network models.Net
 			}
 			return nil
 		},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return userBalance, nil
+}
+
+func (s *NftLend) getUserPWPTokenBalance(tx *gorm.DB, userID uint) (*models.UserBalance, error) {
+	pwpToken, err := s.getLendCurrencyBySymbol(
+		tx,
+		models.SymbolPWPToken,
+		models.NetworkNEAR,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	if pwpToken == nil {
+		return nil, errs.NewError(errs.ErrBadRequest)
+	}
+	userBalance, err := s.getUserBalance(
+		tx,
+		userID,
+		pwpToken.ID,
+		false,
 	)
 	if err != nil {
 		return nil, errs.NewError(err)

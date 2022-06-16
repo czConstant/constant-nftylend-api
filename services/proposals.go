@@ -187,6 +187,14 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 					return errs.NewError(errs.ErrBadRequest)
 				}
 			}
+			user, err := s.getUser(
+				tx,
+				req.Network,
+				req.Address,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
 			var powerVote *big.Float
 			var proposalThreshold numeric.BigFloat
 			var ipfsHash string
@@ -217,9 +225,29 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 					}
 					proposalThreshold = pwpToken.ProposalThreshold
 				}
-			case models.ProposalTypeCommunity,
-				models.ProposalTypeProposal:
+			case models.ProposalTypeCommunity:
 				{
+				}
+			case models.ProposalTypeProposal:
+				{
+					pwpToken, err := s.getLendCurrencyBySymbol(
+						tx,
+						models.SymbolPWPToken,
+						req.Network,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					userBalance, err := s.getUserPWPTokenBalance(
+						tx,
+						user.ID,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if userBalance.Balance.Float.Cmp(&pwpToken.ProposalPwpRequired.Float) < 0 {
+						return errs.NewError(errs.ErrBadRequest)
+					}
 				}
 			default:
 				{
@@ -260,14 +288,6 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 				{
 					return errs.NewError(errs.ErrBadRequest)
 				}
-			}
-			user, err := s.getUser(
-				tx,
-				req.Network,
-				req.Address,
-			)
-			if err != nil {
-				return errs.NewError(err)
 			}
 			proposal = &models.Proposal{
 				Network:           user.Network,
