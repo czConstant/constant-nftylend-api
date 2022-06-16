@@ -761,7 +761,7 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 	for _, proposal := range proposals {
 		err = s.ProposalStatusCreated(ctx, proposal.ID)
 		if err != nil {
-			retErr = errs.MergeError(retErr, err)
+			retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, proposal.ID))
 		}
 	}
 	proposals, err = s.pd.Find(
@@ -783,7 +783,7 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 	for _, proposal := range proposals {
 		err = s.ProposalStatusSucceeded(ctx, proposal.ID)
 		if err != nil {
-			retErr = errs.MergeError(retErr, err)
+			retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, proposal.ID))
 		}
 	}
 	proposals, err = s.pd.Find(
@@ -805,7 +805,7 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 	for _, proposal := range proposals {
 		err = s.ProposalStatusDefeated(ctx, proposal.ID)
 		if err != nil {
-			retErr = errs.MergeError(retErr, err)
+			retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, proposal.ID))
 		}
 	}
 	proposals, err = s.pd.Find(
@@ -826,7 +826,7 @@ func (s *NftLend) JobProposalStatus(ctx context.Context) error {
 	for _, proposal := range proposals {
 		err = s.ProposalStatusQueued(ctx, proposal.ID)
 		if err != nil {
-			retErr = errs.MergeError(retErr, err)
+			retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, proposal.ID))
 		}
 	}
 	proposals, err = s.pd.Find(
@@ -934,16 +934,13 @@ func (s *NftLend) ProposalStatusSucceeded(ctx context.Context, proposalID uint) 
 			if err != nil {
 				return errs.NewError(err)
 			}
-			if proposal.Status != models.ProposalStatusCreated {
-				return errs.NewError(errs.ErrBadRequest)
-			}
-			if proposal.End.After(time.Now()) {
-				return errs.NewError(errs.ErrBadRequest)
-			}
 			switch proposal.Type {
 			case models.ProposalTypeGovernment:
 				{
-					if proposal.Status != models.ProposalStatusSucceeded {
+					if proposal.Status != models.ProposalStatusCreated {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					if proposal.End.After(time.Now()) {
 						return errs.NewError(errs.ErrBadRequest)
 					}
 				}
