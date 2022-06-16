@@ -238,9 +238,11 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 					if err != nil {
 						return errs.NewError(err)
 					}
-					userBalance, err := s.getUserPWPTokenBalance(
+					userBalance, err := s.getUserBalance(
 						tx,
 						user.ID,
+						pwpToken.ID,
+						false,
 					)
 					if err != nil {
 						return errs.NewError(err)
