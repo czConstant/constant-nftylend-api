@@ -450,6 +450,9 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					loan.OfferExpiredAt = offer.ExpiredAt
 					loan.OfferPrincipalAmount = offer.PrincipalAmount
 					loan.OfferInterestRate = offer.InterestRate
+					if loan.CurrencyPrice <= 0 {
+						loan.CurrencyPrice = currency.Price
+					}
 				}
 			}
 			if isUpdated {
