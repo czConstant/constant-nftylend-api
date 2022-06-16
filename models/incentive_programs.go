@@ -20,8 +20,8 @@ type IncentiveProgram struct {
 	Currency          *Currency
 	Start             *time.Time
 	End               *time.Time
-	Name              string `gorm:"type:text"`
-	Description       string `gorm:"type:text"`
+	Name              string `gorm:"type:text collate utf8mb4_unicode_ci"`
+	Description       string `gorm:"type:text collate utf8mb4_unicode_ci"`
 	Status            string
 	LoanValidDuration uint `gorm:"default:0"`
 	LockDuration      uint `gorm:"default:0"`

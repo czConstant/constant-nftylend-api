@@ -24,6 +24,11 @@ func (s *Server) AppConfigs(c *gin.Context) {
 		"near_nftypawn_admin_fee":  100,
 		"proposals": []map[string]interface{}{
 			map[string]interface{}{
+				"key":    models.ProposalTypeProposal,
+				"name":   "Proposal",
+				"active": true,
+			},
+			map[string]interface{}{
 				"key":    models.ProposalTypeGovernment,
 				"name":   "Government",
 				"active": true,
