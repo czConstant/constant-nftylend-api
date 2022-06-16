@@ -186,12 +186,11 @@ func (d *Loan) GetPlatformStats(tx *gorm.DB) (*models.PlatformStats, error) {
 												'done',
 												'liquidated',
 												'expired'
-								) then loans.offer_principal_amount * currencies.price
+								) then loans.offer_principal_amount * loan.currency_price
 							else 0 end
 					), 0
 			) total_volume
-		from loans
-		join currencies on loans.currency_id = currencies.id;
+		from loans;
 	`,
 	).Find(&rs).Error
 	if err != nil {
