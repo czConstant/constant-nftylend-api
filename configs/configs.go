@@ -44,7 +44,8 @@ type Config struct {
 		Service string `json:"service"`
 		Version string `json:"version"`
 	} `json:"datadog"`
-	Moralis struct {
+	Proposals interface{} `json:"proposals"`
+	Moralis   struct {
 		APIKey string `json:"api_key"`
 	} `json:"moralis"`
 	SaleTrack struct {
