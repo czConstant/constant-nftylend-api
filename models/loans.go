@@ -45,6 +45,7 @@ type Loan struct {
 	Collection           *Collection
 	CurrencyID           uint `gorm:"default:0"`
 	Currency             *Currency
+	CurrencyPrice        float64 `gorm:"type:decimal(16,8);default:0"`
 	StartedAt            *time.Time
 	Duration             uint `gorm:"default:0"`
 	ExpiredAt            *time.Time
