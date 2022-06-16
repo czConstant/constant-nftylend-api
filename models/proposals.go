@@ -14,7 +14,8 @@ type ProposalChoiceType string
 func (m *ProposalType) Valid() bool {
 	switch *m {
 	case ProposalTypeGovernment,
-		ProposalTypeCommunity:
+		ProposalTypeCommunity,
+		ProposalTypeProposal:
 		{
 			return true
 		}

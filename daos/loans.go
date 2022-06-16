@@ -68,24 +68,21 @@ func (d *Loan) GetRPTCollectionLoan(tx *gorm.DB, collectionId uint) (*models.Nft
 	var rs models.NftyRPTCollectionLoan
 	err := tx.Raw(`
 	select (
-		select sum(nll.offer_principal_amount)
+		select sum(nll.offer_principal_amount * nll.currency_price)
 		from loans nll
-				 join assets nla on nll.asset_id = nla.id
-		where nla.collection_id = ?
+		where nll.collection_id = ?
 		  and nll.offer_principal_amount > 0
 	) total_volume,
 	(
 		select count(1)
 		from loans nll
-				 join assets nla on nll.asset_id = nla.id
-		where nla.collection_id = ?
+		where nll.collection_id = ?
 		  and nll.offer_principal_amount > 0
 	) total_listed,
 	(
-		select avg(nll.offer_principal_amount)
+		select avg(nll.offer_principal_amount * nll.currency_price)
 		from loans nll
-				 join assets nla on nll.asset_id = nla.id
-		where nla.collection_id = ?
+		where nll.collection_id = ?
 		  and nll.offer_principal_amount > 0
 		  and nll.offer_started_at >= adddate(now(), interval -24 hour)
 	) avg24h_amount;
