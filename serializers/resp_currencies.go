@@ -22,6 +22,7 @@ type CurrencyResp struct {
 	ClaimEnabled          bool             `json:"claim_enabled"`
 	ProposalThreshold     numeric.BigFloat `json:"proposal_threshold"`
 	ProposalPowerRequired numeric.BigFloat `json:"proposal_power_required"`
+	ProposalPwpRequired   numeric.BigFloat `json:"proposal_pwp_required"`
 }
 
 func NewCurrencyResp(m *models.Currency) *CurrencyResp {
@@ -29,19 +30,21 @@ func NewCurrencyResp(m *models.Currency) *CurrencyResp {
 		return nil
 	}
 	resp := &CurrencyResp{
-		ID:                m.ID,
-		CreatedAt:         m.CreatedAt,
-		UpdatedAt:         m.UpdatedAt,
-		Network:           m.Network,
-		ContractAddress:   m.ContractAddress,
-		Decimals:          m.Decimals,
-		Symbol:            m.Symbol,
-		Name:              m.Name,
-		IconURL:           m.IconURL,
-		AdminFeeAddress:   m.AdminFeeAddress,
-		Price:             m.Price,
-		ClaimEnabled:      m.ClaimEnabled,
-		ProposalThreshold: m.ProposalThreshold,
+		ID:                    m.ID,
+		CreatedAt:             m.CreatedAt,
+		UpdatedAt:             m.UpdatedAt,
+		Network:               m.Network,
+		ContractAddress:       m.ContractAddress,
+		Decimals:              m.Decimals,
+		Symbol:                m.Symbol,
+		Name:                  m.Name,
+		IconURL:               m.IconURL,
+		AdminFeeAddress:       m.AdminFeeAddress,
+		Price:                 m.Price,
+		ClaimEnabled:          m.ClaimEnabled,
+		ProposalThreshold:     m.ProposalThreshold,
+		ProposalPowerRequired: m.ProposalPowerRequired,
+		ProposalPwpRequired:   m.ProposalPwpRequired,
 	}
 	return resp
 }
