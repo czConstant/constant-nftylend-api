@@ -934,16 +934,13 @@ func (s *NftLend) ProposalStatusSucceeded(ctx context.Context, proposalID uint) 
 			if err != nil {
 				return errs.NewError(err)
 			}
-			if proposal.Status != models.ProposalStatusCreated {
-				return errs.NewError(errs.ErrBadRequest)
-			}
-			if proposal.End.After(time.Now()) {
-				return errs.NewError(errs.ErrBadRequest)
-			}
 			switch proposal.Type {
 			case models.ProposalTypeGovernment:
 				{
-					if proposal.Status != models.ProposalStatusSucceeded {
+					if proposal.Status != models.ProposalStatusCreated {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					if proposal.End.After(time.Now()) {
 						return errs.NewError(errs.ErrBadRequest)
 					}
 				}
