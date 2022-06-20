@@ -358,7 +358,7 @@ func (s *NftLend) GetUserBalanceTransactions(ctx context.Context, network models
 	return userBalanceTxns, count, nil
 }
 
-func (s *NftLend) GetUserPWPTokenBalance(ctx context.Context, network models.Network, address string) (*models.UserBalance, error) {
+func (s *NftLend) GetUserCurrencyBalance(ctx context.Context, network models.Network, address string, symbol string) (*models.UserBalance, error) {
 	var userBalance *models.UserBalance
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
@@ -367,9 +367,11 @@ func (s *NftLend) GetUserPWPTokenBalance(ctx context.Context, network models.Net
 			if err != nil {
 				return errs.NewError(err)
 			}
-			userBalance, err = s.getUserPWPTokenBalance(
+			userBalance, err = s.getUserCurrencyBalance(
 				tx,
+				network,
 				user.ID,
+				symbol,
 			)
 			if err != nil {
 				return errs.NewError(err)
@@ -395,11 +397,11 @@ func (s *NftLend) GetUserPWPTokenBalance(ctx context.Context, network models.Net
 	return userBalance, nil
 }
 
-func (s *NftLend) getUserPWPTokenBalance(tx *gorm.DB, userID uint) (*models.UserBalance, error) {
+func (s *NftLend) getUserCurrencyBalance(tx *gorm.DB, network models.Network, userID uint, symbol string) (*models.UserBalance, error) {
 	pwpToken, err := s.getLendCurrencyBySymbol(
 		tx,
-		models.SymbolPWPToken,
-		models.NetworkNEAR,
+		network,
+		symbol,
 	)
 	if err != nil {
 		return nil, errs.NewError(err)

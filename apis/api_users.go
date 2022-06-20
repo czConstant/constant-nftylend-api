@@ -47,9 +47,29 @@ func (s *Server) GetUserStats(c *gin.Context) {
 	}})
 }
 
-func (s *Server) GetUserPWPTokenBalance(c *gin.Context) {
+func (s *Server) GetUserPWPCurrencyBalance(c *gin.Context) {
 	ctx := s.requestContext(c)
-	userBalance, err := s.nls.GetUserPWPTokenBalance(ctx, models.Network(s.stringFromContextQuery(c, "network")), s.stringFromContextQuery(c, "address"))
+	userBalance, err := s.nls.GetUserCurrencyBalance(
+		ctx,
+		models.Network(s.stringFromContextQuery(c, "network")),
+		s.stringFromContextQuery(c, "address"),
+		models.SymbolPWPToken,
+	)
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewUserBalanceResp(userBalance)})
+}
+
+func (s *Server) GetUserNEARCurrencyBalance(c *gin.Context) {
+	ctx := s.requestContext(c)
+	userBalance, err := s.nls.GetUserCurrencyBalance(
+		ctx,
+		models.Network(s.stringFromContextQuery(c, "network")),
+		s.stringFromContextQuery(c, "address"),
+		models.SymbolNEARToken,
+	)
 	if err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

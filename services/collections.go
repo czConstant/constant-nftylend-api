@@ -191,7 +191,7 @@ func (s *NftLend) UpdateStatsCollection(ctx context.Context, collectionID uint) 
 						return errs.NewError(err)
 					}
 					collection.VolumeUsd = parasStats.VolumeUsd
-					saleCurrency, err := s.getLendCurrencyBySymbol(tx, "NEAR", models.NetworkNEAR)
+					saleCurrency, err := s.getLendCurrencyBySymbol(tx, models.NetworkNEAR, "NEAR")
 					if err != nil {
 						return errs.NewError(err)
 					}

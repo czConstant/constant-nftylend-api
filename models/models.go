@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	SymbolPWPToken = "PWP"
+	SymbolPWPToken  = "PWP"
+	SymbolNEARToken = "NEAR"
 )
 
 var MoralisNetworkMap = map[string]map[string]string{
