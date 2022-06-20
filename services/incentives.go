@@ -67,9 +67,10 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 						return errs.NewError(err)
 					}
 					if referrer != nil {
-						return errs.NewError(errs.ErrBadRequest)
+						if referrer.Type == models.UserTypeAffiliate {
+							address = referrer.Address
+						}
 					}
-					address = referrer.Address
 				}
 			}
 			checkIncentiveTime = loan.OfferStartedAt
