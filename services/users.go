@@ -83,10 +83,12 @@ func (s *NftLend) getUser(tx *gorm.DB, network models.Network, address string) (
 		return nil, errs.NewError(err)
 	}
 	if user == nil {
+		addressChecked := strings.ToLower(strings.TrimSpace(address))
 		user = &models.User{
 			Network:         network,
 			Address:         address,
-			AddressChecked:  strings.ToLower(strings.TrimSpace(address)),
+			AddressChecked:  addressChecked,
+			UserName:        addressChecked,
 			NewsNotiEnabled: false,
 			LoanNotiEnabled: false,
 		}
@@ -97,6 +99,70 @@ func (s *NftLend) getUser(tx *gorm.DB, network models.Network, address string) (
 		if err != nil {
 			return nil, errs.NewError(err)
 		}
+	}
+	return user, nil
+}
+
+func (s *NftLend) UserConnected(ctx context.Context, network models.Network, address string, referrerCode string) (*models.User, error) {
+	referrerCode = strings.ToLower(referrerCode)
+	var user *models.User
+	var err error
+	if address == "" {
+		return nil, errs.NewError(errs.ErrBadRequest)
+	}
+	switch network {
+	case models.NetworkSOL,
+		models.NetworkAVAX,
+		models.NetworkBOBA,
+		models.NetworkBSC,
+		models.NetworkETH,
+		models.NetworkMATIC,
+		models.NetworkNEAR:
+		{
+		}
+	default:
+		{
+			return nil, errs.NewError(errs.ErrBadRequest)
+		}
+	}
+	err = daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			user, err = s.getUser(tx, network, address)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			// check wallet connected
+			if referrerCode != "" {
+				user.ReferrerCode = referrerCode
+				referrer, err := s.ud.First(
+					tx,
+					map[string][]interface{}{
+						"network = ?":   []interface{}{network},
+						"user_name = ?": []interface{}{referrerCode},
+					},
+					map[string][]interface{}{},
+					[]string{},
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if referrer != nil {
+					user.ReferrerUserID = referrer.ID
+				}
+				err = s.ud.Save(
+					tx,
+					user,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
 	}
 	return user, nil
 }
