@@ -184,6 +184,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 								{
 									currencyID = loan.CurrencyID
 									amount = numeric.BigFloat{*models.MulBigFloats(&loan.OfferPrincipalAmount.Float, &ipdM.Amount.Float)}
+									txStatus = models.IncentiveTransactionStatusDone
 								}
 							default:
 								{
@@ -242,13 +243,17 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 							if err != nil {
 								return errs.NewError(err)
 							}
+							var isLock bool
+							if itM.Status == models.IncentiveTransactionStatusLocked {
+								isLock = true
+							}
 							err = s.transactionUserBalance(
 								tx,
 								ipM.Network,
 								itM.UserID,
 								itM.CurrencyID,
 								itM.Amount,
-								true,
+								isLock,
 								false,
 								reference,
 							)
