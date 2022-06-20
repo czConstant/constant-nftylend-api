@@ -554,7 +554,7 @@ func (s *NftLend) updateIncentiveForLoan(tx *gorm.DB, loan *models.Loan) error {
 			}
 			err = s.IncentiveForLoan(
 				tx,
-				models.IncentiveTransactionTypeReferrerLoanDone,
+				models.IncentiveTransactionTypeAffiliateLoanDone,
 				loan.ID,
 			)
 			if err != nil {

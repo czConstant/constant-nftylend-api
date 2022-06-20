@@ -14,7 +14,7 @@ const (
 	IncentiveTransactionTypeLenderLoanMatched    IncentiveTransactionType = "lender_loan_matched"
 	IncentiveTransactionTypeUserAirdropReward    IncentiveTransactionType = "user_airdrop_reward"
 	IncentiveTransactionTypeUserAmaReward        IncentiveTransactionType = "user_ama_reward"
-	IncentiveTransactionTypeReferrerLoanDone     IncentiveTransactionType = "referrer_loan_done"
+	IncentiveTransactionTypeAffiliateLoanDone    IncentiveTransactionType = "affiliate_loan_done"
 
 	IncentiveTransactionRewardTypeAmount     IncentiveTransactionRewardType = "amount"
 	IncentiveTransactionRewardTypeRateOfLoan IncentiveTransactionRewardType = "rate_of_loan"

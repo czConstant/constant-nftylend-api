@@ -89,6 +89,7 @@ func (s *NftLend) getUser(tx *gorm.DB, network models.Network, address string) (
 			Address:         address,
 			AddressChecked:  addressChecked,
 			UserName:        addressChecked,
+			Type:            models.UserTypeUser,
 			NewsNotiEnabled: false,
 			LoanNotiEnabled: false,
 		}
