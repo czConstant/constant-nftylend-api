@@ -5,15 +5,27 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+type UserType string
+
+const (
+	UserTypeAdmin     UserType = "admin"
+	UserTypeUser      UserType = "user"
+	UserTypeAffiliate UserType = "affiliate"
+)
+
 type User struct {
 	gorm.Model
 	Network         Network
 	Address         string
 	AddressChecked  string
+	UserName        string
+	Type            UserType `gorm:"default:'user'"`
 	Email           string
 	NewsNotiEnabled bool `gorm:"default:0"`
 	LoanNotiEnabled bool `gorm:"default:0"`
 	SeenNotiID      uint `gorm:"default:0"`
+	ReferrerCode    string
+	ReferrerUserID  uint
 }
 
 type UserBorrowStats struct {

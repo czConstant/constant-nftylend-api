@@ -534,8 +534,34 @@ func (s *NftLend) updateIncentiveForLoan(tx *gorm.DB, loan *models.Loan) error {
 				return errs.NewError(err)
 			}
 		}
+	case models.LoanStatusDone:
+		{
+			err = s.IncentiveForLoan(
+				tx,
+				models.IncentiveTransactionTypeBorrowerLoanListed,
+				loan.ID,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			err = s.IncentiveForLoan(
+				tx,
+				models.IncentiveTransactionTypeLenderLoanMatched,
+				loan.ID,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			err = s.IncentiveForLoan(
+				tx,
+				models.IncentiveTransactionTypeAffiliateLoanDone,
+				loan.ID,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+		}
 	case models.LoanStatusCreated,
-		models.LoanStatusDone,
 		models.LoanStatusLiquidated,
 		models.LoanStatusExpired:
 		{
