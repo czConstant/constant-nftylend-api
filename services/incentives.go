@@ -173,14 +173,21 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 						}
 						if isOk {
 							var amount numeric.BigFloat
+							var currencyID uint
 							switch ipdM.RewardType {
 							case models.IncentiveTransactionRewardTypeAmount:
 								{
+									currencyID = ipM.CurrencyID
 									amount = ipdM.Amount
 								}
 							case models.IncentiveTransactionRewardTypeRateOfLoan:
 								{
+									currencyID = loan.CurrencyID
 									amount = numeric.BigFloat{*models.MulBigFloats(&loan.OfferPrincipalAmount.Float, &ipdM.Amount.Float)}
+								}
+							default:
+								{
+									return errs.NewError(errs.ErrBadRequest)
 								}
 							}
 							itM = &models.IncentiveTransaction{
@@ -188,7 +195,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 								IncentiveProgramID: ipM.ID,
 								Type:               ipdM.Type,
 								UserID:             user.ID,
-								CurrencyID:         ipdM.IncentiveProgram.CurrencyID,
+								CurrencyID:         currencyID,
 								LoanID:             loanID,
 								Amount:             amount,
 								LockUntilAt:        helpers.TimeAdd(*checkIncentiveTime, time.Duration(ipM.LockDuration)*time.Second),
