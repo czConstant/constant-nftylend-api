@@ -93,29 +93,14 @@ func ConvertNumberFloat(amt float64, decimals uint) float64 {
 	return newAmt
 }
 
-func ConvertWeiToCollateralFloatAmount(amt *big.Int, decimals uint) float64 {
-	if amt.Cmp(big.NewInt(0)) < 0 {
-		panic(errors.New("amount is small than 0"))
-	}
-	newAmt, err := decimal.NewFromString(amt.String())
-	if err != nil {
-		panic(err)
-	}
-	newAmt = newAmt.Shift(-int32(decimals)).Truncate(int32(8))
-	val, _ := newAmt.Float64()
-	return val
-}
-
 func ConvertWeiToBigFloat(amt *big.Int, decimals uint) *big.Float {
 	if amt.Cmp(big.NewInt(0)) < 0 {
 		panic(errors.New("amount is small than 0"))
 	}
-	newAmt, err := decimal.NewFromString(amt.String())
-	if err != nil {
-		panic(err)
-	}
-	newAmt = newAmt.Shift(-int32(decimals)).Truncate(int32(decimals))
-	return newAmt.BigFloat()
+	newAmt := new(big.Float).SetPrec(1024).SetInt(amt)
+	decimalFloat := new(big.Float).SetPrec(1024).SetInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(decimals)), nil))
+	newAmt = new(big.Float).Quo(newAmt, decimalFloat)
+	return newAmt
 }
 
 func ConvertBigFloatToWei(amt *big.Float, decimals uint) *big.Int {
@@ -265,7 +250,7 @@ func Number2BigInt(s string, decimals int) *big.Int {
 func MulBigFloats(val1 *big.Float, vals ...*big.Float) *big.Float {
 	val := val1
 	for _, v := range vals {
-		val = big.NewFloat(0).Mul(val, v)
+		val = new(big.Float).Mul(val, v)
 	}
 	return val
 }

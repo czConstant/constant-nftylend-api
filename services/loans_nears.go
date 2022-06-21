@@ -58,7 +58,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 			if err != nil {
 				return errs.NewError(err)
 			}
-			principalAmount := models.ConvertWeiToCollateralFloatAmount(&saleInfo.LoanPrincipalAmount.Int, currency.Decimals)
+			principalAmount := models.ConvertWeiToBigFloat(&saleInfo.LoanPrincipalAmount.Int, currency.Decimals)
 			interestRate, _ := models.ConvertWeiToBigFloat(big.NewInt(int64(saleInfo.LoanInterestRate)), 4).Float64()
 			if loan == nil {
 				v, err := models.ConvertString2BigInt(saleInfo.CreatedAt)
@@ -78,7 +78,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					Network:         models.NetworkNEAR,
 					Owner:           saleInfo.OwnerID,
 					BorrowerUserID:  borrower.ID,
-					PrincipalAmount: numeric.BigFloat{*big.NewFloat(principalAmount)},
+					PrincipalAmount: numeric.BigFloat{*principalAmount},
 					InterestRate:    interestRate,
 					Duration:        uint(saleInfo.LoanDuration),
 					StartedAt:       createdAt,
@@ -261,7 +261,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					return errs.NewError(err)
 				}
 				if offer == nil {
-					offerPrincipalAmount := models.ConvertWeiToCollateralFloatAmount(&saleOffer.LoanPrincipalAmount.Int, currency.Decimals)
+					offerPrincipalAmount := models.ConvertWeiToBigFloat(&saleOffer.LoanPrincipalAmount.Int, currency.Decimals)
 					offerInterestRate, _ := models.ConvertWeiToBigFloat(big.NewInt(int64(saleOffer.LoanInterestRate)), 4).Float64()
 					lender, err := s.getUser(
 						tx,
@@ -276,7 +276,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						LoanID:          loan.ID,
 						Lender:          saleInfo.Lender,
 						LenderUserID:    lender.ID,
-						PrincipalAmount: numeric.BigFloat{*big.NewFloat(offerPrincipalAmount)},
+						PrincipalAmount: numeric.BigFloat{*offerPrincipalAmount},
 						InterestRate:    offerInterestRate,
 						Duration:        uint(saleOffer.LoanDuration),
 						Status:          models.LoanOfferStatusNew,
