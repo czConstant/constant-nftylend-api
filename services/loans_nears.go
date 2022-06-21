@@ -447,6 +447,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				}
 				if isOffered {
 					loan.Lender = offer.Lender
+					loan.LenderUserID = offer.LenderUserID
 					loan.OfferStartedAt = offer.StartedAt
 					loan.OfferDuration = offer.Duration
 					loan.OfferExpiredAt = offer.ExpiredAt
