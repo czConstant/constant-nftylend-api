@@ -128,5 +128,6 @@ func (s *Server) Routers() {
 	affiliateAPI := nftAPI.Group("/affiliates")
 	{
 		affiliateAPI.GET("/stats", s.GetAffiliateStats)
+		affiliateAPI.GET("/volumes", s.GetAffiliateVolumes)
 	}
 }

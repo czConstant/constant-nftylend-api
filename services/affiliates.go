@@ -76,3 +76,33 @@ func (s *NftLend) GetAffiliateShareRate(ctx context.Context, network models.Netw
 	}
 	return shareRate, nil
 }
+
+func (s *NftLend) GetAffiliateVolumes(ctx context.Context, network models.Network, address string, rptBy string, limit uint) ([]*models.AffiliateVolumes, error) {
+	user, err := s.GetUser(
+		ctx,
+		network,
+		address,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	nToken, err := s.getLendCurrencyBySymbol(
+		daos.GetDBMainCtx(ctx),
+		network,
+		models.SymbolNEARToken,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	m, err := s.itd.GetAffiliateVolumes(
+		daos.GetDBMainCtx(ctx),
+		user.ID,
+		nToken.ID,
+		rptBy,
+		limit,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return m, nil
+}

@@ -42,3 +42,8 @@ type AffiliateStats struct {
 	TotalUsers        uint
 	TotalTransactions uint
 }
+
+type AffiliateVolumes struct {
+	RptDate         *time.Time
+	TotalCommisions numeric.BigFloat
+}

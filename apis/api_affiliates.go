@@ -31,3 +31,20 @@ func (s *Server) GetAffiliateStats(c *gin.Context) {
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAffiliateStatsRespResp(affiliateStats, affiliateShareRate)})
 }
+
+func (s *Server) GetAffiliateVolumes(c *gin.Context) {
+	ctx := s.requestContext(c)
+	_, limit := s.pagingFromContext(c)
+	rpts, err := s.nls.GetAffiliateVolumes(
+		ctx,
+		models.Network(s.stringFromContextQuery(c, "network")),
+		s.stringFromContextQuery(c, "address"),
+		s.stringFromContextQuery(c, "rpt_by"),
+		uint(limit),
+	)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAffiliateVolumesRespArr(rpts)})
+}
