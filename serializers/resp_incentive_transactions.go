@@ -19,6 +19,7 @@ type IncentiveTransactionResp struct {
 	CurrencyID         uint                              `json:"currency_id"`
 	Currency           *CurrencyResp                     `json:"currency"`
 	LoanID             uint                              `json:"loan_id"`
+	Loan               *LoanResp                         `json:"loan"`
 	Amount             numeric.BigFloat                  `json:"amount"`
 	LockUntilAt        *time.Time                        `json:"lock_until_at"`
 	UnlockedAt         *time.Time                        `json:"unlocked_at"`
@@ -41,6 +42,7 @@ func NewIncentiveTransactionResp(m *models.IncentiveTransaction) *IncentiveTrans
 		CurrencyID:         m.CurrencyID,
 		Currency:           NewCurrencyResp(m.Currency),
 		LoanID:             m.LoanID,
+		Loan:               NewLoanResp(m.Loan),
 		Amount:             m.Amount,
 		LockUntilAt:        m.LockUntilAt,
 		UnlockedAt:         m.UnlockedAt,
@@ -53,6 +55,50 @@ func NewIncentiveTransactionRespArr(arr []*models.IncentiveTransaction) []*Incen
 	resps := []*IncentiveTransactionResp{}
 	for _, m := range arr {
 		resps = append(resps, NewIncentiveTransactionResp(m))
+	}
+	return resps
+}
+
+type AffiliateStatsResp struct {
+	CommisionsRate    float64          `json:"commisions_rate"`
+	TotalCommisions   numeric.BigFloat `json:"total_commisions"`
+	TotalUsers        uint             `json:"total_users"`
+	TotalTransactions uint             `json:"total_transactions"`
+}
+
+func NewAffiliateStatsRespResp(m *models.AffiliateStats, commisionsRate float64) *AffiliateStatsResp {
+	if m == nil {
+		return nil
+	}
+	resp := &AffiliateStatsResp{
+		CommisionsRate:    commisionsRate,
+		TotalCommisions:   m.TotalCommisions,
+		TotalUsers:        m.TotalUsers,
+		TotalTransactions: m.TotalTransactions,
+	}
+	return resp
+}
+
+type AffiliateVolumesResp struct {
+	RptDate         *time.Time       `json:"rpt_date"`
+	TotalCommisions numeric.BigFloat `json:"total_commisions"`
+}
+
+func NewAffiliateVolumesResp(m *models.AffiliateVolumes) *AffiliateVolumesResp {
+	if m == nil {
+		return nil
+	}
+	resp := &AffiliateVolumesResp{
+		RptDate:         m.RptDate,
+		TotalCommisions: m.TotalCommisions,
+	}
+	return resp
+}
+
+func NewAffiliateVolumesRespArr(arr []*models.AffiliateVolumes) []*AffiliateVolumesResp {
+	resps := []*AffiliateVolumesResp{}
+	for _, m := range arr {
+		resps = append(resps, NewAffiliateVolumesResp(m))
 	}
 	return resps
 }

@@ -97,10 +97,11 @@ func (n *BigFloat) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 	s = strings.Trim(s, `"`)
-	m, ok := big.NewFloat(0).SetString(s)
+	m, ok := big.NewFloat(0).SetPrec(1024).SetString(s)
 	if !ok {
 		return errors.New("invalid data type")
 	}
+	m = m.SetPrec(1024)
 	*n = BigFloat{
 		*m,
 	}
@@ -128,10 +129,11 @@ func (n *BigFloat) Scan(src interface{}) error {
 		n = nil
 		return nil
 	}
-	m, ok := big.NewFloat(0).SetString(s)
+	m, ok := big.NewFloat(0).SetPrec(1024).SetString(s)
 	if !ok {
 		return errors.New("invalid data type")
 	}
+	m.SetPrec(1024)
 	*n = BigFloat{
 		*m,
 	}

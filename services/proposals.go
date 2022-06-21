@@ -191,6 +191,7 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 				tx,
 				req.Network,
 				req.Address,
+				false,
 			)
 			if err != nil {
 				return errs.NewError(err)
@@ -203,8 +204,8 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 				{
 					pwpToken, err := s.getLendCurrencyBySymbol(
 						tx,
-						models.SymbolPWPToken,
 						req.Network,
+						models.SymbolPWPToken,
 					)
 					if err != nil {
 						return errs.NewError(err)
@@ -232,8 +233,8 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 				{
 					pwpToken, err := s.getLendCurrencyBySymbol(
 						tx,
-						models.SymbolPWPToken,
 						req.Network,
+						models.SymbolPWPToken,
 					)
 					if err != nil {
 						return errs.NewError(err)
@@ -358,6 +359,7 @@ func (s *NftLend) GetUserProposalVote(ctx context.Context, network models.Networ
 				tx,
 				network,
 				address,
+				false,
 			)
 			if err != nil {
 				return errs.NewError(err)
@@ -471,6 +473,7 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 				tx,
 				req.Network,
 				req.Address,
+				false,
 			)
 			if err != nil {
 				return errs.NewError(err)
@@ -515,8 +518,8 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 				{
 					pwpToken, err := s.getLendCurrencyBySymbol(
 						tx,
-						models.SymbolPWPToken,
 						req.Network,
+						models.SymbolPWPToken,
 					)
 					if err != nil {
 						return errs.NewError(err)
@@ -638,6 +641,7 @@ func (s *NftLend) ProposalUnVote(ctx context.Context, network models.Network, ad
 				tx,
 				network,
 				address,
+				false,
 			)
 			if err != nil {
 				return errs.NewError(err)

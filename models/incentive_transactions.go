@@ -25,11 +25,25 @@ type IncentiveTransaction struct {
 	Type               IncentiveTransactionType
 	UserID             uint
 	User               *User
+	RefUserID          uint
+	RefUser            *User
 	CurrencyID         uint
 	Currency           *Currency
 	LoanID             uint
+	Loan               *Loan
 	Amount             numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
 	LockUntilAt        *time.Time
 	UnlockedAt         *time.Time
 	Status             IncentiveTransactionStatus
+}
+
+type AffiliateStats struct {
+	TotalCommisions   numeric.BigFloat
+	TotalUsers        uint
+	TotalTransactions uint
+}
+
+type AffiliateVolumes struct {
+	RptDate         *time.Time
+	TotalCommisions numeric.BigFloat
 }

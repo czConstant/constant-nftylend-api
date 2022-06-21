@@ -13,6 +13,12 @@ type UpdateUserSettingReq struct {
 	LoanNotiEnabled bool           `json:"loan_noti_enabled"`
 }
 
+type UserConnectedReq struct {
+	Network      models.Network `json:"network"`
+	Address      string         `json:"address"`
+	ReferrerCode string         `json:"referrer_code"`
+}
+
 type ClaimUserBalanceReq struct {
 	UserID     uint             `json:"user_id"`
 	CurrencyID uint             `json:"currency_id"`

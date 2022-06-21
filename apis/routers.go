@@ -113,8 +113,10 @@ func (s *Server) Routers() {
 	{
 		userNftAPI.GET("/settings", s.UserGetSettings)
 		userNftAPI.POST("/settings", s.UserUpdateSetting)
+		userNftAPI.POST("/connected", s.UserConnected)
 		userNftAPI.GET("/stats", s.GetUserStats)
-		userNftAPI.GET("/balances/pwp", s.GetUserPWPTokenBalance)
+		userNftAPI.GET("/balances/pwp", s.GetUserPWPCurrencyBalance)
+		userNftAPI.GET("/balances/near", s.GetUserNEARCurrencyBalance)
 		userNftAPI.GET("/balances/transactions", s.GetUserBalanceTransactions)
 		userNftAPI.POST("/balances/claim", s.ClaimUserBalance)
 	}
@@ -122,5 +124,10 @@ func (s *Server) Routers() {
 	{
 		notiAPI.GET("/list", s.GetNotifications)
 		notiAPI.POST("/seen", s.SeenNotification)
+	}
+	affiliateAPI := nftAPI.Group("/affiliates")
+	{
+		affiliateAPI.GET("/stats", s.GetAffiliateStats)
+		affiliateAPI.GET("/volumes", s.GetAffiliateVolumes)
 	}
 }
