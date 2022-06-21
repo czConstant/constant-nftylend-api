@@ -372,6 +372,7 @@ func (s *NftLend) GetUserBalanceTransactions(ctx context.Context, network models
 			"User":                      []interface{}{},
 			"Currency":                  []interface{}{},
 			"IncentiveTransaction":      []interface{}{},
+			"IncentiveTransaction.User": []interface{}{},
 			"IncentiveTransaction.Loan": []interface{}{},
 		},
 		[]string{"id desc"},
