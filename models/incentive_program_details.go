@@ -27,6 +27,8 @@ type IncentiveProgramDetail struct {
 	IncentiveProgramID uint
 	IncentiveProgram   *IncentiveProgram
 	Type               IncentiveTransactionType
+	RevokeTypes        IncentiveTransactionType
+	UnlockTypes        IncentiveTransactionType
 	RewardType         IncentiveTransactionRewardType `gorm:"default:'amount'"`
 	Amount             numeric.BigFloat               `gorm:"type:decimal(48,24);default:0"`
 	Description        string                         `gorm:"type:text collate utf8mb4_unicode_ci"`
