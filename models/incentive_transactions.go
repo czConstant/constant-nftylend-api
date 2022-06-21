@@ -25,6 +25,8 @@ type IncentiveTransaction struct {
 	Type               IncentiveTransactionType
 	UserID             uint
 	User               *User
+	RefUserID          uint
+	RefUser            *User
 	CurrencyID         uint
 	Currency           *Currency
 	LoanID             uint
