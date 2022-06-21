@@ -133,30 +133,33 @@ func (s *NftLend) UserConnected(ctx context.Context, network models.Network, add
 			if err != nil {
 				return errs.NewError(err)
 			}
-			// check wallet connected
-			if referrerCode != "" {
-				user.ReferrerCode = referrerCode
-				referrer, err := s.ud.First(
-					tx,
-					map[string][]interface{}{
-						"network = ?":   []interface{}{network},
-						"user_name = ?": []interface{}{referrerCode},
-					},
-					map[string][]interface{}{},
-					[]string{},
-				)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				if referrer != nil {
-					user.ReferrerUserID = referrer.ID
-				}
-				err = s.ud.Save(
-					tx,
-					user,
-				)
-				if err != nil {
-					return errs.NewError(err)
+			if !user.IsConnected {
+				// check wallet connected
+				if referrerCode != "" {
+					user.ReferrerCode = referrerCode
+					referrer, err := s.ud.First(
+						tx,
+						map[string][]interface{}{
+							"network = ?":   []interface{}{network},
+							"user_name = ?": []interface{}{referrerCode},
+						},
+						map[string][]interface{}{},
+						[]string{},
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if referrer != nil {
+						user.ReferrerUserID = referrer.ID
+					}
+					user.IsConnected = true
+					err = s.ud.Save(
+						tx,
+						user,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
 				}
 			}
 			return nil
