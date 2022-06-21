@@ -97,10 +97,10 @@ func ConvertWeiToBigFloat(amt *big.Int, decimals uint) *big.Float {
 	if amt.Cmp(big.NewInt(0)) < 0 {
 		panic(errors.New("amount is small than 0"))
 	}
-	newAmt := new(big.Float).SetPrec(1024).SetInt(amt)
+	amtFloat := new(big.Float).SetPrec(1024).SetInt(amt)
 	decimalFloat := new(big.Float).SetPrec(1024).SetInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(decimals)), nil))
-	newAmt = new(big.Float).Quo(newAmt, decimalFloat)
-	return newAmt
+	retFloat := new(big.Float).Quo(amtFloat, decimalFloat)
+	return retFloat
 }
 
 func ConvertBigFloatToWei(amt *big.Float, decimals uint) *big.Int {
