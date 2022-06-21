@@ -248,18 +248,11 @@ func Number2BigInt(s string, decimals int) *big.Int {
 }
 
 func MulBigFloats(val1 *big.Float, vals ...*big.Float) *big.Float {
-	valD, err := decimal.NewFromString(val1.Text('f', 128))
-	if err != nil {
-		panic(err)
-	}
+	val := val1
 	for _, v := range vals {
-		vD, err := decimal.NewFromString(v.Text('f', 128))
-		if err != nil {
-			panic(err)
-		}
-		valD = valD.Mul(vD)
+		val = new(big.Float).Mul(val, v)
 	}
-	return valD.BigFloat()
+	return val
 }
 
 func AddBigFloats(val1 *big.Float, vals ...*big.Float) *big.Float {
