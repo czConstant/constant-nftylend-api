@@ -670,14 +670,40 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 			if err != nil {
 				return errs.NewError(err)
 			}
-			hash, err := s.bcs.Near.FtTransfer(
-				currency.ContractAddress,
-				currency.PoolAddress,
-				userBalanceTransaction.ToAddress,
-				models.ConvertBigFloatToWei(&userBalanceTransaction.Amount.Float, currency.Decimals),
-			)
-			if err != nil {
-				return errs.NewError(err)
+			var hash string
+			switch currency.Network {
+			case models.NetworkNEAR:
+				{
+					switch currency.ContractAddress {
+					case models.SymbolNEARToken:
+						{
+							hash, err = s.bcs.Near.Transfer(
+								currency.PoolAddress,
+								userBalanceTransaction.ToAddress,
+								models.ConvertBigFloatToWei(&userBalanceTransaction.Amount.Float, currency.Decimals),
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+						}
+					default:
+						{
+							hash, err = s.bcs.Near.FtTransfer(
+								currency.ContractAddress,
+								currency.PoolAddress,
+								userBalanceTransaction.ToAddress,
+								models.ConvertBigFloatToWei(&userBalanceTransaction.Amount.Float, currency.Decimals),
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+						}
+					}
+				}
+			default:
+				{
+					return errs.NewError(errs.ErrBadRequest)
+				}
 			}
 			userBalanceTransaction.TxHash = hash
 			err = s.ubtd.Save(
