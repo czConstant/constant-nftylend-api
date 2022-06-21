@@ -174,7 +174,6 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 						}
 						if itM == nil {
 							isOk := true
-							txStatus := models.IncentiveTransactionStatusLocked
 							switch incentiveTransactionType {
 							case models.IncentiveTransactionTypeBorrowerLoanDelisted:
 								{
@@ -206,7 +205,6 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 											return errs.NewError(err)
 										}
 									}
-									txStatus = models.IncentiveTransactionStatusDone
 								}
 							case models.IncentiveTransactionTypeLenderLoanMatched:
 								{
@@ -235,7 +233,6 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 											return errs.NewError(err)
 										}
 									}
-									txStatus = models.IncentiveTransactionStatusDone
 								}
 							}
 							if isOk {
@@ -251,18 +248,16 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 									{
 										currencyID = loan.CurrencyID
 										amount = numeric.BigFloat{*models.MulBigFloats(&loan.OfferPrincipalAmount.Float, &ipdM.Amount.Float)}
-										txStatus = models.IncentiveTransactionStatusDone
 									}
 								default:
 									{
 										return errs.NewError(errs.ErrBadRequest)
 									}
 								}
+								transactionStatus := models.IncentiveTransactionStatusLocked
 								lockUntilAt := helpers.TimeAdd(*checkIncentiveTime, time.Duration(ipdM.LockDuration)*time.Second)
-								if txStatus != models.IncentiveTransactionStatusDone {
-									if !lockUntilAt.After(time.Now()) {
-										txStatus = models.IncentiveTransactionStatusDone
-									}
+								if !lockUntilAt.After(time.Now()) {
+									transactionStatus = models.IncentiveTransactionStatusDone
 								}
 								itM = &models.IncentiveTransaction{
 									Network:            ipM.Network,
@@ -272,9 +267,9 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 									CurrencyID:         currencyID,
 									LoanID:             loanID,
 									Amount:             amount,
-									LockUntilAt:        helpers.TimeAdd(*checkIncentiveTime, time.Duration(ipdM.LockDuration)*time.Second),
+									LockUntilAt:        lockUntilAt,
 									UnlockedAt:         nil,
-									Status:             txStatus,
+									Status:             transactionStatus,
 									RefUserID:          refUserID,
 								}
 								err = s.itd.Create(
@@ -285,12 +280,6 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 									return errs.NewError(err)
 								}
 								reference := fmt.Sprintf("it_%d_locked", itM.ID)
-								switch itM.Type {
-								case models.IncentiveTransactionTypeBorrowerLoanDelisted:
-									{
-										reference = fmt.Sprintf("it_%d_revoked", itM.ID)
-									}
-								}
 								switch itM.Status {
 								case models.IncentiveTransactionStatusDone:
 									{
