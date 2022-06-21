@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/czConstant/constant-nftylend-api/daos"
@@ -163,7 +164,6 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 							map[string][]interface{}{
 								"incentive_program_id = ?": []interface{}{ipM.ID},
 								"type = ?":                 []interface{}{ipdM.Type},
-								"user_id = ?":              []interface{}{user.ID},
 								"loan_id = ?":              []interface{}{loan.ID},
 							},
 							map[string][]interface{}{},
@@ -174,16 +174,14 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 						}
 						if itM == nil {
 							isOk := true
-							switch incentiveTransactionType {
-							case models.IncentiveTransactionTypeBorrowerLoanDelisted:
-								{
-									// check tx for listed
+							if ipdM.RevokeTypes != "" {
+								revokeTypes := strings.Split(string(ipdM.RevokeTypes), ",")
+								for _, revokeType := range revokeTypes {
 									itM, err = s.itd.First(
 										tx,
 										map[string][]interface{}{
-											"user_id = ?":              []interface{}{user.ID},
 											"incentive_program_id = ?": []interface{}{ipdM.IncentiveProgramID},
-											"type = ?":                 []interface{}{models.IncentiveTransactionTypeBorrowerLoanListed},
+											"type = ?":                 []interface{}{revokeType},
 											"loan_id = ?":              []interface{}{loan.ID},
 											"status = ?":               []interface{}{models.IncentiveTransactionStatusLocked},
 										},
@@ -206,14 +204,15 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 										}
 									}
 								}
-							case models.IncentiveTransactionTypeLenderLoanMatched:
-								{
-									// check tx for listed
+							}
+							if ipdM.UnlockTypes != "" {
+								unlockTypes := strings.Split(string(ipdM.UnlockTypes), ",")
+								for _, unlockType := range unlockTypes {
 									itM, err = s.itd.First(
 										tx,
 										map[string][]interface{}{
 											"incentive_program_id = ?": []interface{}{ipdM.IncentiveProgramID},
-											"type = ?":                 []interface{}{models.IncentiveTransactionTypeBorrowerLoanListed},
+											"type = ?":                 []interface{}{unlockType},
 											"loan_id = ?":              []interface{}{loan.ID},
 											"status = ?":               []interface{}{models.IncentiveTransactionStatusLocked},
 										},
