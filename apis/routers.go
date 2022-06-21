@@ -113,6 +113,7 @@ func (s *Server) Routers() {
 	{
 		userNftAPI.GET("/settings", s.UserGetSettings)
 		userNftAPI.POST("/settings", s.UserUpdateSetting)
+		userNftAPI.POST("/connected", s.UserConnected)
 		userNftAPI.GET("/stats", s.GetUserStats)
 		userNftAPI.GET("/balances/pwp", s.GetUserPWPCurrencyBalance)
 		userNftAPI.GET("/balances/near", s.GetUserNEARCurrencyBalance)
