@@ -30,4 +30,5 @@ type IncentiveProgramDetail struct {
 	RewardType         IncentiveTransactionRewardType `gorm:"default:'amount'"`
 	Amount             numeric.BigFloat               `gorm:"type:decimal(48,24);default:0"`
 	Description        string                         `gorm:"type:text collate utf8mb4_unicode_ci"`
+	UserRank           UserRank
 }
