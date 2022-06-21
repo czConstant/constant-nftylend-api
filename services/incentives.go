@@ -226,17 +226,10 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 										return errs.NewError(err)
 									}
 									if itM != nil {
-										itM.LockUntilAt = helpers.TimeNow()
-										err = s.itd.Save(
-											tx,
-											itM,
-										)
-										if err != nil {
-											return errs.NewError(err)
-										}
 										err = s.incentiveForUnlock(
 											tx,
 											itM.ID,
+											true,
 										)
 										if err != nil {
 											return errs.NewError(err)
@@ -428,6 +421,7 @@ func (s *NftLend) IncentiveForUnlock(ctx context.Context, transactionID uint) er
 			err := s.incentiveForUnlock(
 				tx,
 				transactionID,
+				false,
 			)
 			if err != nil {
 				return errs.NewError(err)
@@ -441,7 +435,7 @@ func (s *NftLend) IncentiveForUnlock(ctx context.Context, transactionID uint) er
 	return nil
 }
 
-func (s *NftLend) incentiveForUnlock(tx *gorm.DB, transactionID uint) error {
+func (s *NftLend) incentiveForUnlock(tx *gorm.DB, transactionID uint, checked bool) error {
 	itM, err := s.itd.FirstByID(
 		tx,
 		transactionID,
@@ -467,7 +461,7 @@ func (s *NftLend) incentiveForUnlock(tx *gorm.DB, transactionID uint) error {
 	if itM.Status != models.IncentiveTransactionStatusLocked {
 		return errs.NewError(errs.ErrBadRequest)
 	}
-	if itM.LockUntilAt.After(time.Now()) {
+	if checked || itM.LockUntilAt.After(time.Now()) {
 		return errs.NewError(errs.ErrBadRequest)
 	}
 	itM.UnlockedAt = helpers.TimeNow()
