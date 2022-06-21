@@ -9,12 +9,13 @@ type IncentiveTransactionType string
 type IncentiveTransactionRewardType string
 
 const (
-	IncentiveTransactionTypeBorrowerLoanListed   IncentiveTransactionType = "borrower_loan_listed"
-	IncentiveTransactionTypeBorrowerLoanDelisted IncentiveTransactionType = "borrower_loan_delisted"
-	IncentiveTransactionTypeLenderLoanMatched    IncentiveTransactionType = "lender_loan_matched"
-	IncentiveTransactionTypeUserAirdropReward    IncentiveTransactionType = "user_airdrop_reward"
-	IncentiveTransactionTypeUserAmaReward        IncentiveTransactionType = "user_ama_reward"
-	IncentiveTransactionTypeAffiliateLoanDone    IncentiveTransactionType = "affiliate_loan_done"
+	IncentiveTransactionTypeBorrowerLoanListed        IncentiveTransactionType = "borrower_loan_listed"
+	IncentiveTransactionTypeBorrowerLoanDelisted      IncentiveTransactionType = "borrower_loan_delisted"
+	IncentiveTransactionTypeLenderLoanMatched         IncentiveTransactionType = "lender_loan_matched"
+	IncentiveTransactionTypeUserAirdropReward         IncentiveTransactionType = "user_airdrop_reward"
+	IncentiveTransactionTypeUserAmaReward             IncentiveTransactionType = "user_ama_reward"
+	IncentiveTransactionTypeAffiliateBorrowerLoanDone IncentiveTransactionType = "affiliate_borrower_loan_done"
+	IncentiveTransactionTypeAffiliateLenderLoanDone   IncentiveTransactionType = "affiliate_lender_loan_done"
 
 	IncentiveTransactionRewardTypeAmount     IncentiveTransactionRewardType = "amount"
 	IncentiveTransactionRewardTypeRateOfLoan IncentiveTransactionRewardType = "rate_of_loan"

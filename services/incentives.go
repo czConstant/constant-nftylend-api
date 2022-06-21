@@ -44,7 +44,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 			address = loan.Lender
 			checkIncentiveTime = loan.OfferStartedAt
 		}
-	case models.IncentiveTransactionTypeAffiliateLoanDone:
+	case models.IncentiveTransactionTypeAffiliateBorrowerLoanDone:
 		{
 			borrower, err := s.ud.FirstByID(
 				tx,
