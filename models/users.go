@@ -6,11 +6,14 @@ import (
 )
 
 type UserType string
+type UserRank string
 
 const (
 	UserTypeAdmin     UserType = "admin"
 	UserTypeUser      UserType = "user"
 	UserTypeAffiliate UserType = "affiliate"
+
+	UserRankAffiliate1 UserRank = "affiliate1"
 )
 
 type User struct {
@@ -26,6 +29,7 @@ type User struct {
 	SeenNotiID      uint `gorm:"default:0"`
 	ReferrerCode    string
 	ReferrerUserID  uint
+	Rank            UserRank
 }
 
 type UserBorrowStats struct {
