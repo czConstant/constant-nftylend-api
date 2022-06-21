@@ -14,7 +14,7 @@ func (s *NftLend) CreateNotification(ctx context.Context, network models.Network
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			user, err := s.getUser(tx, network, address)
+			user, err := s.getUser(tx, network, address, false)
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -97,7 +97,7 @@ func (s *NftLend) SeenNotification(ctx context.Context, req *serializers.SeenNot
 	err = daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			user, err = s.getUser(tx, req.Network, req.Address)
+			user, err = s.getUser(tx, req.Network, req.Address, false)
 			if err != nil {
 				return errs.NewError(err)
 			}
