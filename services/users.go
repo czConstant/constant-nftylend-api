@@ -343,7 +343,7 @@ func (s *NftLend) GetUserBalances(ctx context.Context, network models.Network, a
 	return userBalances, nil
 }
 
-func (s *NftLend) GetUserBalanceTransactions(ctx context.Context, network models.Network, address string, currencyID uint, page int, limit int) ([]*models.UserBalanceTransaction, uint, error) {
+func (s *NftLend) GetUserBalanceTransactions(ctx context.Context, network models.Network, address string, currencyID uint, currencySymbol string, page int, limit int) ([]*models.UserBalanceTransaction, uint, error) {
 	user, err := s.GetUser(ctx, network, address)
 	if err != nil {
 		return nil, 0, errs.NewError(err)
@@ -354,13 +354,25 @@ func (s *NftLend) GetUserBalanceTransactions(ctx context.Context, network models
 	if currencyID > 0 {
 		filters["currency_id = ?"] = []interface{}{currencyID}
 	}
+	if currencySymbol != "" {
+		currency, err := s.getLendCurrencyBySymbol(
+			daos.GetDBMainCtx(ctx),
+			network,
+			currencySymbol,
+		)
+		if err != nil {
+			return nil, 0, errs.NewError(err)
+		}
+		filters["currency_id = ?"] = []interface{}{currency.ID}
+	}
 	userBalanceTxns, count, err := s.ubtd.Find4Page(
 		daos.GetDBMainCtx(ctx),
 		filters,
 		map[string][]interface{}{
-			"User":                 []interface{}{},
-			"Currency":             []interface{}{},
-			"IncentiveTransaction": []interface{}{},
+			"User":                      []interface{}{},
+			"Currency":                  []interface{}{},
+			"IncentiveTransaction":      []interface{}{},
+			"IncentiveTransaction.Loan": []interface{}{},
 		},
 		[]string{"id desc"},
 		page,
