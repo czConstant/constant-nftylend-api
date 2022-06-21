@@ -31,4 +31,6 @@ type IncentiveProgramDetail struct {
 	Amount             numeric.BigFloat               `gorm:"type:decimal(48,24);default:0"`
 	Description        string                         `gorm:"type:text collate utf8mb4_unicode_ci"`
 	UserRank           UserRank
+	LoanValidDuration  uint `gorm:"default:0"`
+	LockDuration       uint `gorm:"default:0"`
 }

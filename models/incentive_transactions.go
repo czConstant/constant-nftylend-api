@@ -36,3 +36,14 @@ type IncentiveTransaction struct {
 	UnlockedAt         *time.Time
 	Status             IncentiveTransactionStatus
 }
+
+type AffiliateStats struct {
+	TotalCommisions   numeric.BigFloat
+	TotalUsers        uint
+	TotalTransactions uint
+}
+
+type AffiliateVolumes struct {
+	RptDate         *time.Time
+	TotalCommisions numeric.BigFloat
+}
