@@ -212,10 +212,16 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 								return errs.NewError(err)
 							}
 							reference := fmt.Sprintf("it_%d_locked", itM.ID)
-							switch incentiveTransactionType {
+							switch itM.Type {
 							case models.IncentiveTransactionTypeBorrowerLoanDelisted:
 								{
 									reference = fmt.Sprintf("it_%d_revoked", itM.ID)
+								}
+							}
+							switch itM.Status {
+							case models.IncentiveTransactionStatusDone:
+								{
+									reference = fmt.Sprintf("it_%d_done", itM.ID)
 								}
 							}
 							userBalance, err := s.getUserBalance(
@@ -251,7 +257,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 									isLock = true
 								}
 							}
-							switch incentiveTransactionType {
+							switch itM.Type {
 							case models.IncentiveTransactionTypeBorrowerLoanDelisted:
 								{
 									isLock = true
