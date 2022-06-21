@@ -70,6 +70,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					tx,
 					models.NetworkNEAR,
 					saleInfo.OwnerID,
+					false,
 				)
 				if err != nil {
 					return errs.NewError(err)
@@ -267,6 +268,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						tx,
 						models.NetworkNEAR,
 						saleInfo.Lender,
+						false,
 					)
 					if err != nil {
 						return errs.NewError(err)

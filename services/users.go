@@ -38,7 +38,7 @@ func (s *NftLend) GetUser(ctx context.Context, network models.Network, address s
 	err = daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			user, err = s.getUser(tx, network, address)
+			user, err = s.getUser(tx, network, address, false)
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -51,7 +51,7 @@ func (s *NftLend) GetUser(ctx context.Context, network models.Network, address s
 	return user, nil
 }
 
-func (s *NftLend) getUser(tx *gorm.DB, network models.Network, address string) (*models.User, error) {
+func (s *NftLend) getUser(tx *gorm.DB, network models.Network, address string, forUpdate bool) (*models.User, error) {
 	if address == "" {
 		return nil, errs.NewError(errs.ErrBadRequest)
 	}
@@ -101,6 +101,17 @@ func (s *NftLend) getUser(tx *gorm.DB, network models.Network, address string) (
 			return nil, errs.NewError(err)
 		}
 	}
+	if forUpdate {
+		user, err = s.ud.FirstByID(
+			tx,
+			user.ID,
+			map[string][]interface{}{},
+			true,
+		)
+		if err != nil {
+			return nil, errs.NewError(err)
+		}
+	}
 	return user, nil
 }
 
@@ -129,7 +140,7 @@ func (s *NftLend) UserConnected(ctx context.Context, network models.Network, add
 	err = daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			user, err = s.getUser(tx, network, address)
+			user, err = s.getUser(tx, network, address, true)
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -195,7 +206,7 @@ func (s *NftLend) UserGetSettings(ctx context.Context, network models.Network, a
 	err = daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			user, err = s.getUser(tx, network, address)
+			user, err = s.getUser(tx, network, address, false)
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -235,7 +246,7 @@ func (s *NftLend) UserUpdateSetting(ctx context.Context, req *serializers.Update
 	err = daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			user, err = s.getUser(tx, req.Network, req.Address)
+			user, err = s.getUser(tx, req.Network, req.Address, true)
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -284,7 +295,7 @@ func (s *NftLend) GetUserStats(ctx context.Context, network models.Network, addr
 	err = daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			user, err = s.getUser(tx, network, address)
+			user, err = s.getUser(tx, network, address, false)
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -332,7 +343,7 @@ func (s *NftLend) GetUserBalances(ctx context.Context, network models.Network, a
 	return userBalances, nil
 }
 
-func (s *NftLend) GetUserBalanceTransactions(ctx context.Context, network models.Network, address string, currencyID uint, page int, limit int) ([]*models.UserBalanceTransaction, uint, error) {
+func (s *NftLend) GetUserBalanceTransactions(ctx context.Context, network models.Network, address string, currencyID uint, currencySymbol string, page int, limit int) ([]*models.UserBalanceTransaction, uint, error) {
 	user, err := s.GetUser(ctx, network, address)
 	if err != nil {
 		return nil, 0, errs.NewError(err)
@@ -343,13 +354,26 @@ func (s *NftLend) GetUserBalanceTransactions(ctx context.Context, network models
 	if currencyID > 0 {
 		filters["currency_id = ?"] = []interface{}{currencyID}
 	}
+	if currencySymbol != "" {
+		currency, err := s.getLendCurrencyBySymbol(
+			daos.GetDBMainCtx(ctx),
+			network,
+			currencySymbol,
+		)
+		if err != nil {
+			return nil, 0, errs.NewError(err)
+		}
+		filters["currency_id = ?"] = []interface{}{currency.ID}
+	}
 	userBalanceTxns, count, err := s.ubtd.Find4Page(
 		daos.GetDBMainCtx(ctx),
 		filters,
 		map[string][]interface{}{
-			"User":                 []interface{}{},
-			"Currency":             []interface{}{},
-			"IncentiveTransaction": []interface{}{},
+			"User":                      []interface{}{},
+			"Currency":                  []interface{}{},
+			"IncentiveTransaction":      []interface{}{},
+			"IncentiveTransaction.User": []interface{}{},
+			"IncentiveTransaction.Loan": []interface{}{},
 		},
 		[]string{"id desc"},
 		page,
@@ -366,7 +390,7 @@ func (s *NftLend) GetUserCurrencyBalance(ctx context.Context, network models.Net
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			user, err := s.getUser(tx, network, address)
+			user, err := s.getUser(tx, network, address, false)
 			if err != nil {
 				return errs.NewError(err)
 			}

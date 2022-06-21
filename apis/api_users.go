@@ -101,6 +101,7 @@ func (s *Server) GetUserBalanceTransactions(c *gin.Context) {
 		models.Network(s.stringFromContextQuery(c, "network")),
 		s.stringFromContextQuery(c, "address"),
 		currencyID,
+		s.stringFromContextQuery(c, "symbol"),
 		page,
 		limit,
 	)

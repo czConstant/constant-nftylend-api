@@ -28,6 +28,7 @@ type IncentiveTransaction struct {
 	CurrencyID         uint
 	Currency           *Currency
 	LoanID             uint
+	Loan               *Loan
 	Amount             numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
 	LockUntilAt        *time.Time
 	UnlockedAt         *time.Time

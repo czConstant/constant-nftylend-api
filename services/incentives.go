@@ -145,6 +145,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 				tx,
 				loan.Network,
 				address,
+				false,
 			)
 			if err != nil {
 				return errs.NewError(err)
@@ -467,6 +468,7 @@ func (s *NftLend) IncentiveForLock(ctx context.Context, transactionID uint) erro
 				tx,
 				itM.Network,
 				itM.Address,
+				false,
 			)
 			if err != nil {
 				return errs.NewError(err)

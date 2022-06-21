@@ -19,6 +19,7 @@ type IncentiveTransactionResp struct {
 	CurrencyID         uint                              `json:"currency_id"`
 	Currency           *CurrencyResp                     `json:"currency"`
 	LoanID             uint                              `json:"loan_id"`
+	Loan               *LoanResp                         `json:"loan"`
 	Amount             numeric.BigFloat                  `json:"amount"`
 	LockUntilAt        *time.Time                        `json:"lock_until_at"`
 	UnlockedAt         *time.Time                        `json:"unlocked_at"`
@@ -41,6 +42,7 @@ func NewIncentiveTransactionResp(m *models.IncentiveTransaction) *IncentiveTrans
 		CurrencyID:         m.CurrencyID,
 		Currency:           NewCurrencyResp(m.Currency),
 		LoanID:             m.LoanID,
+		Loan:               NewLoanResp(m.Loan),
 		Amount:             m.Amount,
 		LockUntilAt:        m.LockUntilAt,
 		UnlockedAt:         m.UnlockedAt,
