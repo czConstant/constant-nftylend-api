@@ -28,6 +28,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 	}
 	var checkIncentiveTime *time.Time
 	var address string
+	var refUserID uint
 	switch incentiveTransactionType {
 	case models.IncentiveTransactionTypeBorrowerLoanListed:
 		{
@@ -73,6 +74,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 					}
 				}
 			}
+			refUserID = borrower.ID
 			checkIncentiveTime = loan.OfferStartedAt
 		}
 	case models.IncentiveTransactionTypeAffiliateLenderLoanDone:
@@ -104,6 +106,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 					}
 				}
 			}
+			refUserID = lender.ID
 			checkIncentiveTime = loan.OfferStartedAt
 		}
 	default:
@@ -237,6 +240,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 									LockUntilAt:        helpers.TimeAdd(*checkIncentiveTime, time.Duration(ipM.LockDuration)*time.Second),
 									UnlockedAt:         nil,
 									Status:             txStatus,
+									RefUserID:          refUserID,
 								}
 								err = s.itd.Create(
 									tx,
