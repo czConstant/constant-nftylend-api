@@ -245,8 +245,17 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 								return errs.NewError(err)
 							}
 							var isLock bool
-							if itM.Status == models.IncentiveTransactionStatusLocked {
-								isLock = true
+							switch itM.Status {
+							case models.IncentiveTransactionStatusLocked:
+								{
+									isLock = true
+								}
+							}
+							switch incentiveTransactionType {
+							case models.IncentiveTransactionTypeBorrowerLoanDelisted:
+								{
+									isLock = true
+								}
 							}
 							err = s.transactionUserBalance(
 								tx,
