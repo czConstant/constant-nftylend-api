@@ -390,6 +390,64 @@ func (s *NftLend) UserChangeEmail(ctx context.Context, req *serializers.UpdateUs
 	return nil
 }
 
+func (s *NftLend) UserVerifyEmail(ctx context.Context, req *serializers.UserVerifyEmailReq) error {
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			vM, err := s.vd.First(
+				tx,
+				map[string][]interface{}{
+					"email = ?":  []interface{}{req.Email},
+					"type = ?":   []interface{}{models.VerificationTypeEmail},
+					"token = ?":  []interface{}{req.Token},
+					"status = ?": []interface{}{models.VerificationStatusVerifying},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if vM == nil {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			if vM.ExpiredAt.Before(time.Now()) {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			vM.Status = models.VerificationStatusVerified
+			err = s.vd.Save(
+				tx,
+				vM,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			user, err := s.ud.FirstByID(
+				tx,
+				vM.UserID,
+				map[string][]interface{}{},
+				true,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			user.IsVerified = true
+			err = s.ud.Save(
+				tx,
+				user,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
 func (s *NftLend) GetUserStats(ctx context.Context, network models.Network, address string) (*models.UserBorrowStats, *models.UserLendStats, error) {
 	var user *models.User
 	var err error

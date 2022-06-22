@@ -35,3 +35,8 @@ type UpdateUserChangeEmailReq struct {
 	Signature string         `json:"signature"`
 	Timestamp int64          `json:"timestamp"`
 }
+
+type UserVerifyEmailReq struct {
+	Email string `json:"email"`
+	Token string `json:"token"`
+}
