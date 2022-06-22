@@ -15,6 +15,7 @@ type CollectionSubmitted struct {
 	Description     string
 	Creator         string
 	ContractAddress string
+	TokenSeriesID   string
 	ContactInfo     string
 	Verified        bool `gorm:"default:0"`
 	WhoVerified     string

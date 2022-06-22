@@ -71,6 +71,7 @@ func (s *Server) Routers() {
 		collectionnftAPI.GET("/verified", s.GetCollectionAssetVerified)
 		collectionnftAPI.POST("/submitted", s.CreateCollectionSubmitted)
 		collectionnftAPI.GET("/near-whitelist-creators", s.GetNearApprovedCreators)
+		collectionnftAPI.GET("/near-whitelist-collections", s.GetNearApprovedCollections)
 	}
 	loannftAPI := nftAPI.Group("/loans")
 	{
