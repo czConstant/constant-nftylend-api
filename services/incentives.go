@@ -449,7 +449,7 @@ func (s *NftLend) incentiveForUnlock(tx *gorm.DB, transactionID uint, checked bo
 	if itM.Status != models.IncentiveTransactionStatusLocked {
 		return errs.NewError(errs.ErrBadRequest)
 	}
-	if checked || itM.LockUntilAt.After(time.Now()) {
+	if !checked && itM.LockUntilAt.After(time.Now()) {
 		return errs.NewError(errs.ErrBadRequest)
 	}
 	itM.UnlockedAt = helpers.TimeNow()
