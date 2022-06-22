@@ -438,7 +438,9 @@ func (s *NftLend) incentiveForUnlock(tx *gorm.DB, transactionID uint, checked bo
 	}
 	switch itM.Type {
 	case models.IncentiveTransactionTypeBorrowerLoanListed,
-		models.IncentiveTransactionTypeLenderLoanMatched:
+		models.IncentiveTransactionTypeLenderLoanMatched,
+		models.IncentiveTransactionTypeUserAirdropReward,
+		models.IncentiveTransactionTypeUserAmaReward:
 		{
 		}
 	default:
