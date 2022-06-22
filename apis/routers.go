@@ -129,5 +129,6 @@ func (s *Server) Routers() {
 	{
 		affiliateAPI.GET("/stats", s.GetAffiliateStats)
 		affiliateAPI.GET("/volumes", s.GetAffiliateVolumes)
+		affiliateAPI.GET("/transactions", s.GetAffiliateTransactions)
 	}
 }
