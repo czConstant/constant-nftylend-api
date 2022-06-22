@@ -36,10 +36,11 @@ type NftyRPTListingCollection struct {
 	Total        uint
 }
 
-type NftyRPTCollectionLoan struct {
+type CollectionStats struct {
 	TotalVolume  numeric.BigFloat
 	TotalListed  uint
 	Avg24hAmount numeric.BigFloat
+	MinAmount    numeric.BigFloat
 }
 
 type BorrowerStats struct {

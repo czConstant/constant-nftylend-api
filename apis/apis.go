@@ -124,7 +124,7 @@ func (s *Server) GetCollectionDetail(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrBadRequest)})
 		return
 	}
-	rpt, err := s.nls.GetRPTCollectionLoan(ctx, m.ID)
+	rpt, err := s.nls.GetCollectionStats(ctx, m.ID)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
@@ -132,6 +132,7 @@ func (s *Server) GetCollectionDetail(c *gin.Context) {
 	resp := serializers.NewCollectionResp(m)
 	resp.TotalVolume = rpt.TotalVolume
 	resp.Avg24hAmount = rpt.Avg24hAmount
+	resp.MinAmount = rpt.MinAmount
 	resp.TotalListed = rpt.TotalListed
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: resp})
 }
