@@ -64,8 +64,8 @@ func (d *Loan) FindJoin4Page(tx *gorm.DB, joins map[string][]interface{}, filter
 	return ms, c, nil
 }
 
-func (d *Loan) GetRPTCollectionLoan(tx *gorm.DB, collectionId uint) (*models.NftyRPTCollectionLoan, error) {
-	var rs models.NftyRPTCollectionLoan
+func (d *Loan) GetCollectionStats(tx *gorm.DB, collectionId uint) (*models.CollectionStats, error) {
+	var rs models.CollectionStats
 	err := tx.Raw(`
 	select (
 		select sum(nll.offer_principal_amount * nll.currency_price)
@@ -85,8 +85,15 @@ func (d *Loan) GetRPTCollectionLoan(tx *gorm.DB, collectionId uint) (*models.Nft
 		where nll.collection_id = ?
 		  and nll.offer_principal_amount > 0
 		  and nll.offer_started_at >= adddate(now(), interval -24 hour)
-	) avg24h_amount;
+	) avg24h_amount,
+	(
+		select min(nll.offer_principal_amount * nll.currency_price)
+		from loans nll
+		where nll.collection_id = ?
+		  and nll.offer_principal_amount > 0
+	) min_amount;
 	`,
+		collectionId,
 		collectionId,
 		collectionId,
 		collectionId,

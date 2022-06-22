@@ -231,8 +231,8 @@ func (s *NftLend) GetLastListingLoanByCollection(ctx context.Context, collection
 	return loan, nil
 }
 
-func (s *NftLend) GetRPTCollectionLoan(ctx context.Context, collectionID uint) (*models.NftyRPTCollectionLoan, error) {
-	m, err := s.ld.GetRPTCollectionLoan(
+func (s *NftLend) GetCollectionStats(ctx context.Context, collectionID uint) (*models.CollectionStats, error) {
+	m, err := s.ld.GetCollectionStats(
 		daos.GetDBMainCtx(ctx),
 		collectionID,
 	)
