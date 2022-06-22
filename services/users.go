@@ -182,14 +182,14 @@ func (s *NftLend) UserConnected(ctx context.Context, network models.Network, add
 					if referrer != nil {
 						user.ReferrerUserID = referrer.ID
 					}
-					user.IsConnected = true
-					err = s.ud.Save(
-						tx,
-						user,
-					)
-					if err != nil {
-						return errs.NewError(err)
-					}
+				}
+				user.IsConnected = true
+				err = s.ud.Save(
+					tx,
+					user,
+				)
+				if err != nil {
+					return errs.NewError(err)
 				}
 			}
 			return nil
