@@ -14,6 +14,42 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+func (s *NftLend) GetIncentiveTransactions(ctx context.Context, network models.Network, address string, types []string, statuses []string, page int, limit int) ([]*models.IncentiveTransaction, uint, error) {
+	user, err := s.GetUser(
+		ctx,
+		network,
+		address,
+	)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	filters := map[string][]interface{}{
+		"user_id = ?": []interface{}{user.ID},
+	}
+	if len(types) > 0 {
+		filters["type in (?)"] = []interface{}{types}
+	}
+	if len(statuses) > 0 {
+		filters["status in (?)"] = []interface{}{statuses}
+	}
+	txns, count, err := s.itd.Find4Page(
+		daos.GetDBMainCtx(ctx),
+		filters,
+		map[string][]interface{}{
+			"User":     []interface{}{},
+			"Currency": []interface{}{},
+			"Loan":     []interface{}{},
+		},
+		[]string{"id desc"},
+		page,
+		limit,
+	)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	return txns, count, nil
+}
+
 func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.IncentiveTransactionType, loanID uint) error {
 	loan, err := s.ld.FirstByID(
 		tx,

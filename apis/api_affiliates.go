@@ -48,3 +48,25 @@ func (s *Server) GetAffiliateVolumes(c *gin.Context) {
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAffiliateVolumesRespArr(rpts)})
 }
+
+func (s *Server) GetAffiliateTransactions(c *gin.Context) {
+	ctx := s.requestContext(c)
+	page, limit := s.pagingFromContext(c)
+	statuses := s.stringArrayFromContextQuery(c, "status")
+	txns, count, err := s.nls.GetIncentiveTransactions(ctx,
+		models.Network(s.stringFromContextQuery(c, "network")),
+		s.stringFromContextQuery(c, "address"),
+		[]string{
+			string(models.IncentiveTransactionTypeAffiliateBorrowerLoanDone),
+			string(models.IncentiveTransactionTypeAffiliateLenderLoanDone),
+		},
+		statuses,
+		page,
+		limit,
+	)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewIncentiveTransactionRespArr(txns), Count: &count})
+}
