@@ -55,6 +55,26 @@ func (s *NftLend) GetNearApprovedCreators(ctx context.Context) ([]string, error)
 	return rets, nil
 }
 
+func (s *NftLend) GetNearApprovedCollections(ctx context.Context) ([]*models.CollectionSubmitted, error) {
+	ms, err := s.clsd.Find(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"network = ?": []interface{}{models.NetworkNEAR},
+			"status in (?)": []interface{}{[]models.CollectionSubmittedStatus{
+				models.CollectionSubmittedStatusApproved,
+			}},
+		},
+		map[string][]interface{}{},
+		[]string{},
+		0,
+		999999,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return ms, nil
+}
+
 func (s *NftLend) JobUpdateProfileCollection(ctx context.Context) error {
 	var retErr error
 	collections, err := s.cld.Find(
