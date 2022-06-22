@@ -121,6 +121,8 @@ func main() {
 		ipdd = &daos.IncentiveProgramDetail{}
 		itd  = &daos.IncentiveTransaction{}
 
+		vd = &daos.Verification{}
+
 		stc = &saletrack.Client{
 			NftbankKey: conf.SaleTrack.NftbankKey,
 		}
@@ -161,6 +163,8 @@ func main() {
 			ipd,
 			ipdd,
 			itd,
+
+			vd,
 		)
 	)
 

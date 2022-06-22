@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
+	"time"
 
 	"github.com/czConstant/constant-nftylend-api/daos"
 	"github.com/czConstant/constant-nftylend-api/errs"
+	"github.com/czConstant/constant-nftylend-api/helpers"
 	"github.com/czConstant/constant-nftylend-api/models"
 	"github.com/czConstant/constant-nftylend-api/serializers"
 	"github.com/czConstant/constant-nftylend-api/types/numeric"
@@ -286,6 +288,85 @@ func (s *NftLend) UserUpdateSetting(ctx context.Context, req *serializers.Update
 		return nil, errs.NewError(err)
 	}
 	return user, nil
+}
+
+func (s *NftLend) UserChangeEmail(ctx context.Context, network models.Network, address string, email string) error {
+	email = strings.ToLower(email)
+	var err error
+	if address == "" {
+		return errs.NewError(errs.ErrBadRequest)
+	}
+	switch network {
+	case models.NetworkSOL,
+		models.NetworkAVAX,
+		models.NetworkBOBA,
+		models.NetworkBSC,
+		models.NetworkETH,
+		models.NetworkMATIC,
+		models.NetworkNEAR:
+		{
+		}
+	default:
+		{
+			return errs.NewError(errs.ErrBadRequest)
+		}
+	}
+	err = daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			user, err := s.getUser(tx, network, address, false)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			vMs, err := s.vd.Find(
+				tx,
+				map[string][]interface{}{
+					"network = ?": []interface{}{network},
+					"user_id = ?": []interface{}{user.ID},
+					"type = ?":    []interface{}{models.VerificationTypeEmail},
+					"status = ?":  []interface{}{models.VerificationStatusVerifying},
+				},
+				map[string][]interface{}{},
+				[]string{},
+				0,
+				999999,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			for _, vM := range vMs {
+				vM.Status = models.VerificationStatusCancelled
+				err = s.vd.Save(
+					tx,
+					vM,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+			}
+			vM := &models.Verification{
+				Network:   user.Network,
+				UserID:    user.ID,
+				Type:      models.VerificationTypeEmail,
+				Email:     email,
+				Token:     "",
+				ExpiredAt: helpers.TimeAdd(time.Now(), 15*time.Minute),
+				Status:    models.VerificationStatusVerifying,
+			}
+			err = s.vd.Create(
+				tx,
+				vM,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
 }
 
 func (s *NftLend) GetUserStats(ctx context.Context, network models.Network, address string) (*models.UserBorrowStats, *models.UserLendStats, error) {
