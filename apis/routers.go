@@ -126,6 +126,11 @@ func (s *Server) Routers() {
 		notiAPI.GET("/list", s.GetNotifications)
 		notiAPI.POST("/seen", s.SeenNotification)
 	}
+	verificationAPI := nftAPI.Group("/verifications")
+	{
+		verificationAPI.POST("/verify-email", s.UserVerifyEmail)
+		verificationAPI.POST("/verify-token", s.UserVerifyEmailToken)
+	}
 	affiliateAPI := nftAPI.Group("/affiliates")
 	{
 		affiliateAPI.GET("/stats", s.GetAffiliateStats)
