@@ -32,6 +32,7 @@ func NewUserResp(m *models.User) *UserResp {
 		Email:           m.Email,
 		NewsNotiEnabled: m.NewsNotiEnabled,
 		LoanNotiEnabled: m.LoanNotiEnabled,
+		IsVerified:      m.IsVerified,
 	}
 	return resp
 }
