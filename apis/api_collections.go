@@ -36,11 +36,6 @@ func (s *Server) GetNearApprovedCreators(c *gin.Context) {
 
 func (s *Server) GetNearApprovedCollections(c *gin.Context) {
 	ctx := s.requestContext(c)
-	var req serializers.CollectionSubmittedReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
-		return
-	}
 	ms, err := s.nls.GetNearApprovedCollections(ctx)
 	if err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
