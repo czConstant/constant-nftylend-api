@@ -51,6 +51,7 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.IncentiveProgram)(nil),
 		(*models.IncentiveProgramDetail)(nil),
 		(*models.IncentiveTransaction)(nil),
+		(*models.Verification)(nil),
 	}
 	if err := db.AutoMigrate(allTables...).Error; err != nil {
 		return err
@@ -74,5 +75,6 @@ func MigrateDBMain(db *gorm.DB) error {
 	db.Model(&models.UserBalanceHistory{}).AddUniqueIndex("user_balance_histories_main_uindex", "user_balance_id", "type", "reference")
 	db.Model(&models.IncentiveTransaction{}).AddUniqueIndex("incentive_transactions_main_uindex", "user_id", "incentive_program_id", "type", "loan_id")
 	db.Model(&models.IncentiveTransaction{}).AddIndex("incentive_transactions_balances_user_id_uindex", "user_id")
+	db.Model(&models.Verification{}).AddIndex("verifications_user_id_uindex", "user_id")
 	return nil
 }
