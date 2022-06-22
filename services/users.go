@@ -146,6 +146,25 @@ func (s *NftLend) UserConnected(ctx context.Context, network models.Network, add
 			}
 			if !user.IsConnected {
 				// check wallet connected
+				switch network {
+				case models.NetworkNEAR:
+					{
+						rs, err := s.bcs.Near.AddressConnected(
+							s.conf.Contract.NearNftypawnAddress,
+							address,
+						)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						if !rs {
+							return errs.NewError(errs.ErrBadRequest)
+						}
+					}
+				default:
+					{
+						return errs.NewError(errs.ErrBadRequest)
+					}
+				}
 				if referrerCode != "" {
 					user.ReferrerCode = referrerCode
 					referrer, err := s.ud.First(
