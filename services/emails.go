@@ -296,6 +296,25 @@ func (s *NftLend) sendEmailToUser(ctx context.Context, address string, network m
 	return nil
 }
 
+func (s *NftLend) sendEmailToEmail(ctx context.Context, email string, emailType string, reqMap map[string]interface{}) error {
+	reqMap["web_url"] = s.conf.WebUrl
+	err := mailer.Send(
+		"hello@nftpawn.financial",
+		"Admin",
+		email,
+		"",
+		emailType,
+		"en",
+		reqMap,
+		[]string{},
+		[]string{},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
 func (s *NftLend) EmailForReference(ctx context.Context, emailQuueue []*models.EmailQueue) error {
 	var retErr error
 	for _, q := range emailQuueue {
@@ -616,6 +635,32 @@ func (s *NftLend) EmailForLenderLoanLiquidated(ctx context.Context, loanID uint)
 		address,
 		network,
 		models.EMAIL_LENDER_LOAN_LIQUIDATED,
+		reqMap,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *NftLend) EmailForEmailVerification(ctx context.Context, vID uint) error {
+	vM, err := s.vd.FirstByID(
+		daos.GetDBMainCtx(ctx),
+		vID,
+		map[string][]interface{}{},
+		false,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	reqMap := map[string]interface{}{
+		"email": vM.Email,
+		"token": vM.Token,
+	}
+	err = s.sendEmailToEmail(
+		ctx,
+		vM.Email,
+		models.EMAIL_USER_VERIFY_EMAIL,
 		reqMap,
 	)
 	if err != nil {

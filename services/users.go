@@ -290,38 +290,53 @@ func (s *NftLend) UserUpdateSetting(ctx context.Context, req *serializers.Update
 	return user, nil
 }
 
-func (s *NftLend) UserChangeEmail(ctx context.Context, network models.Network, address string, email string) error {
-	email = strings.ToLower(email)
+func (s *NftLend) UserChangeEmail(ctx context.Context, req *serializers.UpdateUserChangeEmailReq) error {
+	req.Email = strings.ToLower(req.Email)
 	var err error
-	if address == "" {
+	if req.Address == "" {
 		return errs.NewError(errs.ErrBadRequest)
 	}
-	switch network {
+	if time.Unix(req.Timestamp, 0).Before(time.Now().Add(-10 * time.Minute)) {
+		return errs.NewError(errs.ErrBadRequest)
+	}
+	switch req.Network {
 	case models.NetworkSOL,
 		models.NetworkAVAX,
 		models.NetworkBOBA,
 		models.NetworkBSC,
 		models.NetworkETH,
-		models.NetworkMATIC,
-		models.NetworkNEAR:
+		models.NetworkMATIC:
 		{
+		}
+	case models.NetworkNEAR:
+		{
+			err := s.bcs.Near.ValidateMessageSignature(
+				s.conf.Contract.NearNftypawnAddress,
+				fmt.Sprintf("%s-%d", req.Email, req.Timestamp),
+				req.Signature,
+				req.Address,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
 		}
 	default:
 		{
 			return errs.NewError(errs.ErrBadRequest)
 		}
 	}
+	var vM *models.Verification
 	err = daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			user, err := s.getUser(tx, network, address, false)
+			user, err := s.getUser(tx, req.Network, req.Address, false)
 			if err != nil {
 				return errs.NewError(err)
 			}
 			vMs, err := s.vd.Find(
 				tx,
 				map[string][]interface{}{
-					"network = ?": []interface{}{network},
+					"network = ?": []interface{}{req.Network},
 					"user_id = ?": []interface{}{user.ID},
 					"type = ?":    []interface{}{models.VerificationTypeEmail},
 					"status = ?":  []interface{}{models.VerificationStatusVerifying},
@@ -344,12 +359,12 @@ func (s *NftLend) UserChangeEmail(ctx context.Context, network models.Network, a
 					return errs.NewError(err)
 				}
 			}
-			vM := &models.Verification{
+			vM = &models.Verification{
 				Network:   user.Network,
 				UserID:    user.ID,
 				Type:      models.VerificationTypeEmail,
-				Email:     email,
-				Token:     "",
+				Email:     req.Email,
+				Token:     helpers.RandomStringWithLength(32),
 				ExpiredAt: helpers.TimeAdd(time.Now(), 15*time.Minute),
 				Status:    models.VerificationStatusVerifying,
 			}
@@ -365,6 +380,12 @@ func (s *NftLend) UserChangeEmail(ctx context.Context, network models.Network, a
 	)
 	if err != nil {
 		return errs.NewError(err)
+	}
+	if vM != nil {
+		s.EmailForEmailVerification(
+			ctx,
+			vM.ID,
+		)
 	}
 	return nil
 }
