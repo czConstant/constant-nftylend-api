@@ -719,6 +719,9 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 			if err != nil {
 				return errs.NewError(err)
 			}
+			if currency.PoolAddress == "" {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			var hash string
 			switch currency.Network {
 			case models.NetworkNEAR:
