@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 	"strings"
@@ -269,9 +270,26 @@ func (s *NftLend) UserUpdateSetting(ctx context.Context, req *serializers.Update
 				return errs.NewError(err)
 			}
 			if req.Email != "" {
+				req.Email = strings.TrimSpace(strings.ToLower(req.Email))
 				user.Email = req.Email
 			}
 			if req.Username != "" {
+				req.Username = strings.TrimSpace(strings.ToLower(req.Username))
+				uCheck, err := s.ud.First(
+					tx,
+					map[string][]interface{}{
+						"id != ?":      []interface{}{user.ID},
+						"username = ?": []interface{}{req.Username},
+					},
+					map[string][]interface{}{},
+					[]string{},
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if uCheck != nil {
+					return errs.NewError(errors.New("username is existsed"))
+				}
 				user.Username = req.Username
 			}
 			if req.NewsNotiEnabled != nil {
