@@ -580,12 +580,12 @@ func (s *NftLend) getSolanaCollectionVerified(tx *gorm.DB, mintAddress string, m
 }
 
 func (s *NftLend) GetAseetTransactions(ctx context.Context, assetId uint, page int, limit int) ([]*models.AssetTransaction, uint, error) {
-	err := s.updateAssetTransactions(ctx, assetId)
-	if err != nil {
-		return nil, 0, errs.NewError(err)
-	}
 	filters := map[string][]interface{}{}
 	if assetId > 0 {
+		err := s.updateAssetTransactions(ctx, assetId)
+		if err != nil {
+			return nil, 0, errs.NewError(err)
+		}
 		filters["asset_id = ?"] = []interface{}{assetId}
 	}
 	txns, count, err := s.atd.Find4Page(
