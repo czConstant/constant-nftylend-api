@@ -161,6 +161,14 @@ func (s *NftLend) JobUpdateStatsCollection(ctx context.Context) error {
 		map[string][]interface{}{
 			"network = ?":               []interface{}{models.NetworkNEAR},
 			"paras_collection_id != ''": []interface{}{},
+			`exists (
+				select 1 from collection_submitteds
+				where collection_submitteds.network = collections.network
+					and collection_submitteds.creator = collections.creator
+					and collection_submitteds.status = ?
+			)`: []interface{}{
+				models.CollectionSubmittedStatusApproved,
+			},
 		},
 		map[string][]interface{}{},
 		[]string{},
