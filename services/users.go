@@ -52,6 +52,7 @@ func (s *NftLend) GetUser(ctx context.Context, network models.Network, address s
 }
 
 func (s *NftLend) getUser(tx *gorm.DB, network models.Network, address string, forUpdate bool) (*models.User, error) {
+	address = strings.TrimSpace(address)
 	if address == "" {
 		return nil, errs.NewError(errs.ErrBadRequest)
 	}
