@@ -62,7 +62,12 @@ func (s *Server) UserConnected(c *gin.Context) {
 
 func (s *Server) GetUserStats(c *gin.Context) {
 	ctx := s.requestContext(c)
-	borrowStats, lendStats, err := s.nls.GetUserStats(ctx, models.Network(s.stringFromContextQuery(c, "network")), s.stringFromContextQuery(c, "address"))
+	network, address, err := s.getNetworkAddress(c)
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	borrowStats, lendStats, err := s.nls.GetUserStats(ctx, network, address)
 	if err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
