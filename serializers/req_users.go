@@ -29,11 +29,8 @@ type ClaimUserBalanceReq struct {
 }
 
 type UserVerifyEmailReq struct {
-	Network   models.Network `json:"network"`
-	Address   string         `json:"address"`
-	Email     string         `json:"email"`
-	Signature string         `json:"signature"`
-	Timestamp int64          `json:"timestamp"`
+	SignatureTimestampReq
+	Email string `json:"email"`
 }
 
 type UserVerifyEmailTokenReq struct {

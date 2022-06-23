@@ -15,7 +15,22 @@ func (s *Server) UserVerifyEmail(c *gin.Context) {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	err := s.nls.UserVerifyEmail(ctx, &req)
+	err := s.validateTimestampWithSignature(
+		ctx,
+		req.Network,
+		req.Address,
+		req.Signature,
+		req.Timestamp,
+	)
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	err = s.nls.UserVerifyEmail(ctx, &req)
 	if err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

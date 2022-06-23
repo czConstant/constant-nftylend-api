@@ -228,6 +228,10 @@ func (s *NftLend) getEvmContractAddress(network models.Network) string {
 		{
 			return s.conf.Contract.BobaNftypawnAddress
 		}
+	case models.NetworkNEAR:
+		{
+			return s.conf.Contract.NearNftypawnAddress
+		}
 	}
 	return ""
 }
@@ -1142,6 +1146,28 @@ func (s *NftLend) updateCollectionForLoan(tx *gorm.DB, collectionID uint) error 
 	)
 	if err != nil {
 		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *NftLend) VerifyAddressSignature(ctx context.Context, network models.Network, address string, message string, signature string) error {
+	switch network {
+	case models.NetworkNEAR:
+		{
+			err := s.bcs.Near.ValidateMessageSignature(
+				s.getEvmContractAddress(network),
+				message,
+				signature,
+				address,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+		}
+	default:
+		{
+			return errs.NewError(errs.ErrBadRequest)
+		}
 	}
 	return nil
 }

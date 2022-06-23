@@ -3,6 +3,7 @@ package apis
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -18,6 +19,7 @@ import (
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/helpers"
 	"github.com/czConstant/constant-nftylend-api/logger"
+	"github.com/czConstant/constant-nftylend-api/models"
 	"github.com/czConstant/constant-nftylend-api/serializers"
 	"github.com/getsentry/raven-go"
 	"go.uber.org/zap"
@@ -431,4 +433,46 @@ func (s *Server) boolFromContextQuery(c *gin.Context, query string) (*bool, erro
 		return nil, err
 	}
 	return &ret, nil
+}
+
+func (s *Server) signatureBindJSON(c *gin.Context, resp interface{}) (*serializers.SignatureReq, error) {
+	var req serializers.SignatureReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		return nil, errs.NewError(err)
+	}
+	err := json.Unmarshal([]byte(req.Message), &req)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	err = s.nls.VerifyAddressSignature(
+		s.requestContext(c),
+		req.Network,
+		req.Address,
+		req.Message,
+		req.Signature,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return nil, nil
+}
+
+func (s *Server) validateTimestampWithSignature(ctx context.Context, network models.Network, address string, signature string, timestamp int64) error {
+	if time.Unix(timestamp, 0).Before(time.Now().Add(-30 * time.Second)) {
+		return errs.NewError(errs.ErrBadRequest)
+	}
+	if time.Unix(timestamp, 0).After(time.Now().Add(30 * time.Second)) {
+		return errs.NewError(errs.ErrBadRequest)
+	}
+	err := s.nls.VerifyAddressSignature(
+		ctx,
+		network,
+		address,
+		fmt.Sprintf("%d", timestamp),
+		signature,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
 }
