@@ -6,11 +6,10 @@ import (
 )
 
 type UpdateUserSettingReq struct {
-	Network         models.Network `json:"network"`
-	Address         string         `json:"address"`
-	Email           string         `json:"email"`
-	NewsNotiEnabled *bool          `json:"news_noti_enabled"`
-	LoanNotiEnabled *bool          `json:"loan_noti_enabled"`
+	SignatureTimestampReq
+	Email           string `json:"email"`
+	NewsNotiEnabled *bool  `json:"news_noti_enabled"`
+	LoanNotiEnabled *bool  `json:"loan_noti_enabled"`
 }
 
 type UserConnectedReq struct {
