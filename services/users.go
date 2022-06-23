@@ -288,7 +288,7 @@ func (s *NftLend) UserUpdateSetting(ctx context.Context, req *serializers.Update
 					return errs.NewError(err)
 				}
 				if uCheck != nil {
-					return errs.NewError(errors.New("username is existsed"))
+					return errs.NewError(errors.New("username is existed"))
 				}
 				user.Username = req.Username
 			}
