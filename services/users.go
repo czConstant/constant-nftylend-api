@@ -278,6 +278,7 @@ func (s *NftLend) UserUpdateSetting(ctx context.Context, req *serializers.Update
 				uCheck, err := s.ud.First(
 					tx,
 					map[string][]interface{}{
+						"network != ?": []interface{}{user.Network},
 						"id != ?":      []interface{}{user.ID},
 						"username = ?": []interface{}{req.Username},
 					},
