@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 	"strings"
@@ -52,6 +53,7 @@ func (s *NftLend) GetUser(ctx context.Context, network models.Network, address s
 }
 
 func (s *NftLend) getUser(tx *gorm.DB, network models.Network, address string, forUpdate bool) (*models.User, error) {
+	address = strings.TrimSpace(address)
 	if address == "" {
 		return nil, errs.NewError(errs.ErrBadRequest)
 	}
@@ -88,7 +90,7 @@ func (s *NftLend) getUser(tx *gorm.DB, network models.Network, address string, f
 			Network:         network,
 			Address:         address,
 			AddressChecked:  addressChecked,
-			UserName:        addressChecked,
+			Username:        addressChecked,
 			Type:            models.UserTypeUser,
 			NewsNotiEnabled: false,
 			LoanNotiEnabled: false,
@@ -165,13 +167,14 @@ func (s *NftLend) UserConnected(ctx context.Context, network models.Network, add
 						return errs.NewError(errs.ErrBadRequest)
 					}
 				}
+				referrerCode = strings.TrimSpace(strings.ToLower(referrerCode))
 				if referrerCode != "" {
 					user.ReferrerCode = referrerCode
 					referrer, err := s.ud.First(
 						tx,
 						map[string][]interface{}{
-							"network = ?":   []interface{}{network},
-							"user_name = ?": []interface{}{referrerCode},
+							"network = ?":  []interface{}{network},
+							"username = ?": []interface{}{referrerCode},
 						},
 						map[string][]interface{}{},
 						[]string{},
@@ -267,7 +270,27 @@ func (s *NftLend) UserUpdateSetting(ctx context.Context, req *serializers.Update
 				return errs.NewError(err)
 			}
 			if req.Email != "" {
+				req.Email = strings.TrimSpace(strings.ToLower(req.Email))
 				user.Email = req.Email
+			}
+			if req.Username != "" {
+				req.Username = strings.TrimSpace(strings.ToLower(req.Username))
+				uCheck, err := s.ud.First(
+					tx,
+					map[string][]interface{}{
+						"id != ?":      []interface{}{user.ID},
+						"username = ?": []interface{}{req.Username},
+					},
+					map[string][]interface{}{},
+					[]string{},
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if uCheck != nil {
+					return errs.NewError(errors.New("username is existsed"))
+				}
+				user.Username = req.Username
 			}
 			if req.NewsNotiEnabled != nil {
 				user.NewsNotiEnabled = *req.NewsNotiEnabled

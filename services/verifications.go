@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -31,15 +30,15 @@ func (s *NftLend) UserVerifyEmail(ctx context.Context, req *serializers.UserVeri
 		}
 	case models.NetworkNEAR:
 		{
-			err := s.bcs.Near.ValidateMessageSignature(
-				s.conf.Contract.NearNftypawnAddress,
-				fmt.Sprintf("%s-%d", req.Email, req.Timestamp),
-				req.Signature,
-				req.Address,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
+			// err := s.bcs.Near.ValidateMessageSignature(
+			// 	s.conf.Contract.NearNftypawnAddress,
+			// 	fmt.Sprintf("%s-%d", req.Email, req.Timestamp),
+			// 	req.Signature,
+			// 	req.Address,
+			// )
+			// if err != nil {
+			// 	return errs.NewError(err)
+			// }
 		}
 	default:
 		{
