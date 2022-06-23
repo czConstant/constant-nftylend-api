@@ -729,7 +729,7 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 							hash, err = s.bcs.Near.Transfer(
 								currency.PoolAddress,
 								userBalanceTransaction.ToAddress,
-								models.ConvertBigFloatToWei(&userBalanceTransaction.Amount.Float, currency.Decimals),
+								models.ConvertBigFloatToWei(models.NegativeBigFloat(&userBalanceTransaction.Amount.Float), currency.Decimals),
 							)
 							if err != nil {
 								return errs.NewError(err)
