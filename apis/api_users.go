@@ -41,7 +41,18 @@ func (s *Server) UserConnected(c *gin.Context) {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	_, err := s.nls.UserConnected(ctx, req.Network, req.Address, req.ReferrerCode)
+	err := s.validateTimestampWithSignature(
+		ctx,
+		req.Network,
+		req.Address,
+		req.Signature,
+		req.Timestamp,
+	)
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	_, err = s.nls.UserConnected(ctx, req.Network, req.Address, req.ReferrerCode)
 	if err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
