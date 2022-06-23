@@ -165,6 +165,7 @@ func (s *NftLend) UserConnected(ctx context.Context, network models.Network, add
 						return errs.NewError(errs.ErrBadRequest)
 					}
 				}
+				referrerCode = strings.TrimSpace(strings.ToLower(referrerCode))
 				if referrerCode != "" {
 					user.ReferrerCode = referrerCode
 					referrer, err := s.ud.First(
