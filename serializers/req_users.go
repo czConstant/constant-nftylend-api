@@ -1,22 +1,20 @@
 package serializers
 
 import (
-	"github.com/czConstant/constant-nftylend-api/models"
 	"github.com/czConstant/constant-nftylend-api/types/numeric"
 )
 
 type UpdateUserSettingReq struct {
-	Network         models.Network `json:"network"`
-	Address         string         `json:"address"`
-	Email           string         `json:"email"`
-	NewsNotiEnabled *bool          `json:"news_noti_enabled"`
-	LoanNotiEnabled *bool          `json:"loan_noti_enabled"`
+	SignatureTimestampReq
+	Email           string `json:"email"`
+	Username        string `json:"username"`
+	NewsNotiEnabled *bool  `json:"news_noti_enabled"`
+	LoanNotiEnabled *bool  `json:"loan_noti_enabled"`
 }
 
 type UserConnectedReq struct {
-	Network      models.Network `json:"network"`
-	Address      string         `json:"address"`
-	ReferrerCode string         `json:"referrer_code"`
+	SignatureTimestampReq
+	ReferrerCode string `json:"referrer_code"`
 }
 
 type ClaimUserBalanceReq struct {

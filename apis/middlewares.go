@@ -476,3 +476,13 @@ func (s *Server) validateTimestampWithSignature(ctx context.Context, network mod
 	}
 	return nil
 }
+
+func (s *Server) getNetworkAddress(c *gin.Context) (models.Network, string, error) {
+	network := s.stringFromContextQuery(c, "network")
+	address := s.stringFromContextQuery(c, "address")
+	if network == "" ||
+		address == "" {
+		return "", "", errs.NewError(errs.ErrBadRequest)
+	}
+	return models.Network(network), address, nil
+}

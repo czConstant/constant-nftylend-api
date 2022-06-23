@@ -13,6 +13,7 @@ const (
 	UserTypeUser      UserType = "user"
 	UserTypeAffiliate UserType = "affiliate"
 
+	UserRankAll        UserRank = "all"
 	UserRankAffiliate1 UserRank = "affiliate1"
 )
 
@@ -21,7 +22,7 @@ type User struct {
 	Network         Network
 	Address         string
 	AddressChecked  string
-	UserName        string
+	Username        string
 	Type            UserType `gorm:"default:'user'"`
 	Email           string
 	NewsNotiEnabled bool `gorm:"default:0"`

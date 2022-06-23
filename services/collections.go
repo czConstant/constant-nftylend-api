@@ -2,7 +2,10 @@ package services
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
+	"github.com/czConstant/blockchain-api/bcclient/solana"
 	"github.com/czConstant/constant-nftylend-api/daos"
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/models"
@@ -240,6 +243,224 @@ func (s *NftLend) UpdateStatsCollection(ctx context.Context, collectionID uint) 
 				return errs.NewError(err)
 			}
 		}
+	}
+	return nil
+}
+
+func (s *NftLend) GetRPTListingCollection(ctx context.Context) ([]*models.NftyRPTListingCollection, error) {
+	ms, err := s.ad.GetRPTListingCollection(
+		daos.GetDBMainCtx(ctx),
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return ms, nil
+}
+
+func (s *NftLend) GetCollectionVerified(ctx context.Context, network models.Network, contractAddress string, tokenID string) (*models.Collection, error) {
+	var m *models.Collection
+	var err error
+	switch network {
+	case models.NetworkSOL:
+		{
+			m, _, err = s.getSolanaCollectionVerified(
+				daos.GetDBMainCtx(ctx),
+				contractAddress,
+				nil,
+				nil,
+			)
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+		}
+	case models.NetworkNEAR:
+		{
+			asset, err := s.CreateNearAsset(ctx, contractAddress, tokenID)
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+			m, err = s.cld.FirstByID(
+				daos.GetDBMainCtx(ctx),
+				asset.CollectionID,
+				map[string][]interface{}{},
+				false,
+			)
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+			csM, err := s.clsd.First(
+				daos.GetDBMainCtx(ctx),
+				map[string][]interface{}{
+					"network = ?": []interface{}{m.Network},
+					"creator = ?": []interface{}{m.Creator},
+					"status = ?":  []interface{}{models.CollectionSubmittedStatusApproved},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+			if csM == nil {
+				m = nil
+			}
+		}
+	}
+	return m, nil
+}
+
+func (s *NftLend) getSolanaCollectionVerified(tx *gorm.DB, mintAddress string, meta *solana.MetadataResp, metaInfo *solana.MetadataInfoResp) (*models.Collection, string, error) {
+	vrs, err := s.bcs.SolanaNftVerifier.GetNftVerifier(mintAddress)
+	if err != nil {
+		return nil, "", errs.NewError(err)
+	}
+	if vrs.IsWrapped {
+		chain := s.bcs.SolanaNftVerifier.ParseChain(vrs.ChainID)
+		m, err := s.cld.First(
+			tx,
+			map[string][]interface{}{
+				"origin_network = ?":          []interface{}{chain},
+				"origin_contract_address = ?": []interface{}{vrs.AssetAddress},
+				"enabled = ?":                 []interface{}{true},
+			},
+			map[string][]interface{}{},
+			[]string{"id desc"},
+		)
+		if err != nil {
+			return nil, "", errs.NewError(err)
+		}
+		if m != nil {
+			return m, vrs.TokenID, nil
+		}
+	} else {
+		if meta == nil {
+			meta, err = s.bcs.Solana.GetMetadata(mintAddress)
+			if err != nil {
+				return nil, "", errs.NewError(err)
+			}
+		}
+		if metaInfo == nil {
+			metaInfo, err = s.bcs.Solana.GetMetadataInfo(meta.Data.Uri)
+			if err != nil {
+				return nil, "", errs.NewError(err)
+			}
+		}
+		collectionName := metaInfo.Collection.Name
+		if collectionName == "" {
+			collectionName = metaInfo.Collection.Family
+			if collectionName == "" {
+				names := strings.Split(metaInfo.Name, "#")
+				if len(names) >= 2 {
+					collectionName = strings.TrimSpace(names[0])
+				}
+			}
+		}
+		if collectionName == "" {
+			return nil, "", errs.NewError(err)
+		}
+		for _, creator := range meta.Data.Creators {
+			m, err := s.cld.First(
+				tx,
+				map[string][]interface{}{
+					"name = ?":       []interface{}{collectionName},
+					"creator like ?": []interface{}{fmt.Sprintf("%%%s%%", creator.Address)},
+					"enabled = ?":    []interface{}{true},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
+			if err != nil {
+				return nil, "", errs.NewError(err)
+			}
+			if m != nil {
+				return m, "", nil
+			}
+		}
+	}
+	return nil, "", nil
+}
+
+func (s *NftLend) GetCollections(ctx context.Context, page int, limit int) ([]*models.Collection, uint, error) {
+	categories, count, err := s.cld.Find4Page(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"network in (?)":  []interface{}{s.getSupportedNetworks()},
+			"new_loan_id > ?": []interface{}{0},
+			`exists(
+				select 1
+				from collection_submitteds
+				where collections.network = collection_submitteds.network
+				  and collections.creator = collection_submitteds.creator
+				  and collection_submitteds.status = ?
+			)`: []interface{}{models.CollectionSubmittedStatusApproved},
+		},
+		map[string][]interface{}{
+			"Currency":      []interface{}{},
+			"NewLoan":       []interface{}{},
+			"NewLoan.Asset": []interface{}{},
+		},
+		[]string{"id desc"},
+		page,
+		limit,
+	)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	return categories, count, nil
+}
+
+func (s *NftLend) GetCollectionDetail(ctx context.Context, seoURL string) (*models.Collection, error) {
+	m, err := s.cld.First(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"seo_url = ?":    []interface{}{seoURL},
+			"network in (?)": []interface{}{s.getSupportedNetworks()},
+		},
+		map[string][]interface{}{
+			"Currency":      []interface{}{},
+			"NewLoan":       []interface{}{},
+			"NewLoan.Asset": []interface{}{},
+		},
+		[]string{"id desc"},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return m, nil
+}
+
+func (s *NftLend) updateCollectionForLoan(tx *gorm.DB, collectionID uint) error {
+	collection, err := s.cld.FirstByID(
+		tx,
+		collectionID,
+		map[string][]interface{}{},
+		true,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	loan, err := s.ld.First(
+		tx,
+		map[string][]interface{}{
+			"collection_id = ?": []interface{}{collection.ID},
+			"status = ?":        []interface{}{models.LoanStatusNew},
+		},
+		map[string][]interface{}{},
+		[]string{"id desc"},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	collection.NewLoanID = 0
+	if loan != nil {
+		collection.NewLoanID = loan.ID
+	}
+	err = s.cld.Save(
+		tx,
+		collection,
+	)
+	if err != nil {
+		return errs.NewError(err)
 	}
 	return nil
 }

@@ -38,6 +38,14 @@ func (s *NftLend) GetAffiliateStats(ctx context.Context, network models.Network,
 }
 
 func (s *NftLend) GetAffiliateShareRate(ctx context.Context, network models.Network, address string) (float64, error) {
+	user, err := s.GetUser(
+		ctx,
+		network,
+		address,
+	)
+	if err != nil {
+		return 0, errs.NewError(err)
+	}
 	var shareRate float64
 	m, err := s.ipdd.First(
 		daos.GetDBMainCtx(ctx),
@@ -55,6 +63,10 @@ func (s *NftLend) GetAffiliateShareRate(ctx context.Context, network models.Netw
 				time.Now(),
 				models.IncentiveProgramStatusActived,
 			},
+			"user_rank = ? or user_rank = ?": []interface{}{
+				models.UserRankAll,
+				user.Rank,
+			},
 			"type in (?)": []interface{}{
 				[]models.IncentiveTransactionType{
 					models.IncentiveTransactionTypeAffiliateBorrowerLoanDone,
@@ -63,7 +75,7 @@ func (s *NftLend) GetAffiliateShareRate(ctx context.Context, network models.Netw
 		},
 		map[string][]interface{}{},
 		[]string{
-			"id desc",
+			"amount desc",
 		},
 	)
 	if err != nil {

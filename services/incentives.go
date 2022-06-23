@@ -152,7 +152,16 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 		}
 	}
 	if userID > 0 {
-		ipdMs, err := s.ipdd.Find(
+		user, err := s.ud.FirstByID(
+			tx,
+			userID,
+			map[string][]interface{}{},
+			false,
+		)
+		if err != nil {
+			return errs.NewError(err)
+		}
+		ipdM, err := s.ipdd.First(
 			tx,
 			map[string][]interface{}{
 				`exists(
@@ -168,39 +177,54 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 					checkIncentiveTime,
 					models.IncentiveProgramStatusActived,
 				},
-				"type = ?": []interface{}{incentiveTransactionType},
+				"user_rank = ? or user_rank = ?": []interface{}{
+					models.UserRankAll,
+					user.Rank,
+				},
+				"type = ?":                 []interface{}{incentiveTransactionType},
+				"loan_valid_duration <= ?": []interface{}{uint(loan.ValidAt.Sub(*loan.StartedAt).Seconds())},
 			},
 			map[string][]interface{}{
 				"IncentiveProgram": []interface{}{},
 			},
-			[]string{},
-			0,
-			999999,
+			[]string{
+				"amount desc",
+			},
 		)
 		if err != nil {
 			return errs.NewError(err)
 		}
-		if len(ipdMs) > 0 {
-			user, err := s.ud.FirstByID(
+		if ipdM != nil {
+			if !(ipdM.UserRank == models.UserRankAll ||
+				ipdM.UserRank == user.Rank) {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			ipM := ipdM.IncentiveProgram
+			itM, err := s.itd.First(
 				tx,
-				userID,
+				map[string][]interface{}{
+					"incentive_program_id = ?": []interface{}{ipM.ID},
+					"type = ?":                 []interface{}{ipdM.Type},
+					"loan_id = ?":              []interface{}{loan.ID},
+				},
 				map[string][]interface{}{},
-				false,
+				[]string{},
 			)
 			if err != nil {
 				return errs.NewError(err)
 			}
-			for _, ipdM := range ipdMs {
-				if ipdM.UserRank == "" ||
-					ipdM.UserRank == user.Rank {
-					ipM := ipdM.IncentiveProgram
-					if uint(loan.ValidAt.Sub(*loan.StartedAt).Seconds()) >= ipdM.LoanValidDuration {
-						itM, err := s.itd.First(
+			if itM == nil {
+				isOk := true
+				if ipdM.RevokeTypes != "" {
+					revokeTypes := strings.Split(string(ipdM.RevokeTypes), ",")
+					for _, revokeType := range revokeTypes {
+						itM, err = s.itd.First(
 							tx,
 							map[string][]interface{}{
-								"incentive_program_id = ?": []interface{}{ipM.ID},
-								"type = ?":                 []interface{}{ipdM.Type},
+								"incentive_program_id = ?": []interface{}{ipdM.IncentiveProgramID},
+								"type = ?":                 []interface{}{revokeType},
 								"loan_id = ?":              []interface{}{loan.ID},
+								"status = ?":               []interface{}{models.IncentiveTransactionStatusLocked},
 							},
 							map[string][]interface{}{},
 							[]string{},
@@ -209,172 +233,150 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 							return errs.NewError(err)
 						}
 						if itM == nil {
-							isOk := true
-							if ipdM.RevokeTypes != "" {
-								revokeTypes := strings.Split(string(ipdM.RevokeTypes), ",")
-								for _, revokeType := range revokeTypes {
-									itM, err = s.itd.First(
-										tx,
-										map[string][]interface{}{
-											"incentive_program_id = ?": []interface{}{ipdM.IncentiveProgramID},
-											"type = ?":                 []interface{}{revokeType},
-											"loan_id = ?":              []interface{}{loan.ID},
-											"status = ?":               []interface{}{models.IncentiveTransactionStatusLocked},
-										},
-										map[string][]interface{}{},
-										[]string{},
-									)
-									if err != nil {
-										return errs.NewError(err)
-									}
-									if itM == nil {
-										isOk = false
-									} else {
-										itM.Status = models.IncentiveTransactionStatusRevoked
-										err = s.itd.Save(
-											tx,
-											itM,
-										)
-										if err != nil {
-											return errs.NewError(err)
-										}
-									}
-								}
-							}
-							if ipdM.UnlockTypes != "" {
-								unlockTypes := strings.Split(string(ipdM.UnlockTypes), ",")
-								for _, unlockType := range unlockTypes {
-									itM, err = s.itd.First(
-										tx,
-										map[string][]interface{}{
-											"incentive_program_id = ?": []interface{}{ipdM.IncentiveProgramID},
-											"type = ?":                 []interface{}{unlockType},
-											"loan_id = ?":              []interface{}{loan.ID},
-											"status = ?":               []interface{}{models.IncentiveTransactionStatusLocked},
-										},
-										map[string][]interface{}{},
-										[]string{},
-									)
-									if err != nil {
-										return errs.NewError(err)
-									}
-									if itM != nil {
-										err = s.incentiveForUnlock(
-											tx,
-											itM.ID,
-											true,
-										)
-										if err != nil {
-											return errs.NewError(err)
-										}
-									}
-								}
-							}
-							if isOk {
-								var amount numeric.BigFloat
-								var currencyID uint
-								switch ipdM.RewardType {
-								case models.IncentiveTransactionRewardTypeAmount:
-									{
-										currencyID = ipM.CurrencyID
-										amount = ipdM.Amount
-									}
-								case models.IncentiveTransactionRewardTypeRateOfLoan:
-									{
-										currencyID = loan.CurrencyID
-										amount = numeric.BigFloat{*models.MulBigFloats(&loan.OfferPrincipalAmount.Float, &ipdM.Amount.Float)}
-									}
-								default:
-									{
-										return errs.NewError(errs.ErrBadRequest)
-									}
-								}
-								transactionStatus := models.IncentiveTransactionStatusLocked
-								lockUntilAt := helpers.TimeAdd(*checkIncentiveTime, time.Duration(ipdM.LockDuration)*time.Second)
-								if !lockUntilAt.After(time.Now()) {
-									transactionStatus = models.IncentiveTransactionStatusDone
-								}
-								itM = &models.IncentiveTransaction{
-									Network:            ipM.Network,
-									IncentiveProgramID: ipM.ID,
-									Type:               ipdM.Type,
-									UserID:             user.ID,
-									CurrencyID:         currencyID,
-									LoanID:             loanID,
-									Amount:             amount,
-									LockUntilAt:        lockUntilAt,
-									UnlockedAt:         nil,
-									Status:             transactionStatus,
-									RefUserID:          refUserID,
-								}
-								err = s.itd.Create(
-									tx,
-									itM,
-								)
-								if err != nil {
-									return errs.NewError(err)
-								}
-								reference := fmt.Sprintf("it_%d_locked", itM.ID)
-								switch itM.Status {
-								case models.IncentiveTransactionStatusDone:
-									{
-										reference = fmt.Sprintf("it_%d_done", itM.ID)
-									}
-								}
-								userBalance, err := s.getUserBalance(
-									tx,
-									itM.UserID,
-									itM.CurrencyID,
-									true,
-								)
-								if err != nil {
-									return errs.NewError(err)
-								}
-								userBalanceTransaction := &models.UserBalanceTransaction{
-									Network:                userBalance.Network,
-									UserID:                 userBalance.UserID,
-									UserBalanceID:          userBalance.ID,
-									CurrencyID:             userBalance.CurrencyID,
-									Type:                   models.UserBalanceTransactionTypeIncentive,
-									Amount:                 itM.Amount,
-									Status:                 models.UserBalanceTransactionStatusDone,
-									IncentiveTransactionID: itM.ID,
-								}
-								err = s.ubtd.Create(
-									tx,
-									userBalanceTransaction,
-								)
-								if err != nil {
-									return errs.NewError(err)
-								}
-								var isLock bool
-								switch itM.Status {
-								case models.IncentiveTransactionStatusLocked:
-									{
-										isLock = true
-									}
-								}
-								switch itM.Type {
-								case models.IncentiveTransactionTypeBorrowerLoanDelisted:
-									{
-										isLock = true
-									}
-								}
-								err = s.transactionUserBalance(
-									tx,
-									ipM.Network,
-									itM.UserID,
-									itM.CurrencyID,
-									itM.Amount,
-									isLock,
-									false,
-									reference,
-								)
-								if err != nil {
-									return errs.NewError(err)
-								}
+							isOk = false
+						} else {
+							itM.Status = models.IncentiveTransactionStatusRevoked
+							err = s.itd.Save(
+								tx,
+								itM,
+							)
+							if err != nil {
+								return errs.NewError(err)
 							}
 						}
+					}
+				}
+				if ipdM.UnlockTypes != "" {
+					unlockTypes := strings.Split(string(ipdM.UnlockTypes), ",")
+					for _, unlockType := range unlockTypes {
+						itM, err = s.itd.First(
+							tx,
+							map[string][]interface{}{
+								"incentive_program_id = ?": []interface{}{ipdM.IncentiveProgramID},
+								"type = ?":                 []interface{}{unlockType},
+								"loan_id = ?":              []interface{}{loan.ID},
+								"status = ?":               []interface{}{models.IncentiveTransactionStatusLocked},
+							},
+							map[string][]interface{}{},
+							[]string{},
+						)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						if itM != nil {
+							err = s.incentiveForUnlock(
+								tx,
+								itM.ID,
+								true,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+						}
+					}
+				}
+				if isOk {
+					var amount numeric.BigFloat
+					var currencyID uint
+					switch ipdM.RewardType {
+					case models.IncentiveTransactionRewardTypeAmount:
+						{
+							currencyID = ipM.CurrencyID
+							amount = ipdM.Amount
+						}
+					case models.IncentiveTransactionRewardTypeRateOfLoan:
+						{
+							currencyID = loan.CurrencyID
+							amount = numeric.BigFloat{*models.MulBigFloats(&loan.OfferPrincipalAmount.Float, &ipdM.Amount.Float)}
+						}
+					default:
+						{
+							return errs.NewError(errs.ErrBadRequest)
+						}
+					}
+					transactionStatus := models.IncentiveTransactionStatusLocked
+					lockUntilAt := helpers.TimeAdd(*checkIncentiveTime, time.Duration(ipdM.LockDuration)*time.Second)
+					if !lockUntilAt.After(time.Now()) {
+						transactionStatus = models.IncentiveTransactionStatusDone
+					}
+					itM = &models.IncentiveTransaction{
+						Network:            ipM.Network,
+						IncentiveProgramID: ipM.ID,
+						Type:               ipdM.Type,
+						UserID:             user.ID,
+						CurrencyID:         currencyID,
+						LoanID:             loanID,
+						Amount:             amount,
+						LockUntilAt:        lockUntilAt,
+						UnlockedAt:         nil,
+						Status:             transactionStatus,
+						RefUserID:          refUserID,
+					}
+					err = s.itd.Create(
+						tx,
+						itM,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					reference := fmt.Sprintf("it_%d_locked", itM.ID)
+					switch itM.Status {
+					case models.IncentiveTransactionStatusDone:
+						{
+							reference = fmt.Sprintf("it_%d_done", itM.ID)
+						}
+					}
+					userBalance, err := s.getUserBalance(
+						tx,
+						itM.UserID,
+						itM.CurrencyID,
+						true,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					userBalanceTransaction := &models.UserBalanceTransaction{
+						Network:                userBalance.Network,
+						UserID:                 userBalance.UserID,
+						UserBalanceID:          userBalance.ID,
+						CurrencyID:             userBalance.CurrencyID,
+						Type:                   models.UserBalanceTransactionTypeIncentive,
+						Amount:                 itM.Amount,
+						Status:                 models.UserBalanceTransactionStatusDone,
+						IncentiveTransactionID: itM.ID,
+					}
+					err = s.ubtd.Create(
+						tx,
+						userBalanceTransaction,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					var isLock bool
+					switch itM.Status {
+					case models.IncentiveTransactionStatusLocked:
+						{
+							isLock = true
+						}
+					}
+					switch itM.Type {
+					case models.IncentiveTransactionTypeBorrowerLoanDelisted:
+						{
+							isLock = true
+						}
+					}
+					err = s.transactionUserBalance(
+						tx,
+						ipM.Network,
+						itM.UserID,
+						itM.CurrencyID,
+						itM.Amount,
+						isLock,
+						false,
+						reference,
+					)
+					if err != nil {
+						return errs.NewError(err)
 					}
 				}
 			}
