@@ -271,6 +271,9 @@ func (s *NftLend) UserUpdateSetting(ctx context.Context, req *serializers.Update
 			if req.Email != "" {
 				user.Email = req.Email
 			}
+			if req.Username != "" {
+				user.Username = req.Username
+			}
 			if req.NewsNotiEnabled != nil {
 				user.NewsNotiEnabled = *req.NewsNotiEnabled
 			}
