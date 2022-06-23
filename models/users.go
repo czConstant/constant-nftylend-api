@@ -13,6 +13,7 @@ const (
 	UserTypeUser      UserType = "user"
 	UserTypeAffiliate UserType = "affiliate"
 
+	UserRankAll        UserRank = "all"
 	UserRankAffiliate1 UserRank = "affiliate1"
 )
 
