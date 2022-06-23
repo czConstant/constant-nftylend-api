@@ -16,6 +16,7 @@ type UserResp struct {
 	NewsNotiEnabled bool           `json:"news_noti_enabled"`
 	LoanNotiEnabled bool           `json:"loan_noti_enabled"`
 	SeenNotiID      uint           `json:"seen_noti_id"`
+	IsVerified      bool           `json:"is_verified"`
 }
 
 func NewUserResp(m *models.User) *UserResp {
@@ -31,6 +32,7 @@ func NewUserResp(m *models.User) *UserResp {
 		Email:           m.Email,
 		NewsNotiEnabled: m.NewsNotiEnabled,
 		LoanNotiEnabled: m.LoanNotiEnabled,
+		IsVerified:      m.IsVerified,
 	}
 	return resp
 }
@@ -40,11 +42,12 @@ func NewMiniUserResp(m *models.User) *UserResp {
 		return nil
 	}
 	resp := &UserResp{
-		ID:        m.ID,
-		CreatedAt: m.CreatedAt,
-		UpdatedAt: m.UpdatedAt,
-		Network:   m.Network,
-		Address:   m.Address,
+		ID:         m.ID,
+		CreatedAt:  m.CreatedAt,
+		UpdatedAt:  m.UpdatedAt,
+		Network:    m.Network,
+		Address:    m.Address,
+		IsVerified: m.IsVerified,
 	}
 	return resp
 }

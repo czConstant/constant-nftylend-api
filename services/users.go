@@ -244,9 +244,6 @@ func (s *NftLend) UserUpdateSetting(ctx context.Context, req *serializers.Update
 	if req.Address == "" {
 		return nil, errs.NewError(errs.ErrBadRequest)
 	}
-	if req.Email == "" {
-		return nil, errs.NewError(errs.ErrBadRequest)
-	}
 	switch req.Network {
 	case models.NetworkSOL,
 		models.NetworkAVAX,
@@ -269,9 +266,15 @@ func (s *NftLend) UserUpdateSetting(ctx context.Context, req *serializers.Update
 			if err != nil {
 				return errs.NewError(err)
 			}
-			user.Email = req.Email
-			user.NewsNotiEnabled = req.NewsNotiEnabled
-			user.LoanNotiEnabled = req.LoanNotiEnabled
+			if req.Email != "" {
+				user.Email = req.Email
+			}
+			if req.NewsNotiEnabled != nil {
+				user.NewsNotiEnabled = *req.NewsNotiEnabled
+			}
+			if req.LoanNotiEnabled != nil {
+				user.LoanNotiEnabled = *req.LoanNotiEnabled
+			}
 			if err != nil {
 				return errs.NewError(err)
 			}

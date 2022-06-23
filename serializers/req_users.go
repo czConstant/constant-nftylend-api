@@ -9,8 +9,8 @@ type UpdateUserSettingReq struct {
 	Network         models.Network `json:"network"`
 	Address         string         `json:"address"`
 	Email           string         `json:"email"`
-	NewsNotiEnabled bool           `json:"news_noti_enabled"`
-	LoanNotiEnabled bool           `json:"loan_noti_enabled"`
+	NewsNotiEnabled *bool          `json:"news_noti_enabled"`
+	LoanNotiEnabled *bool          `json:"loan_noti_enabled"`
 }
 
 type UserConnectedReq struct {
@@ -26,4 +26,14 @@ type ClaimUserBalanceReq struct {
 	Amount     numeric.BigFloat `json:"amount"`
 	Timestamp  int64            `json:"timestamp"`
 	Signature  string           `json:"signature"`
+}
+
+type UserVerifyEmailReq struct {
+	SignatureTimestampReq
+	Email string `json:"email"`
+}
+
+type UserVerifyEmailTokenReq struct {
+	Email string `json:"email"`
+	Token string `json:"token"`
 }
