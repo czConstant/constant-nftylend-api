@@ -20,9 +20,6 @@ func (s *NftLend) UserVerifyEmail(ctx context.Context, req *serializers.UserVeri
 	if req.Address == "" {
 		return errs.NewError(errs.ErrBadRequest)
 	}
-	if time.Unix(req.Timestamp, 0).Before(time.Now().Add(-10 * time.Minute)) {
-		return errs.NewError(errs.ErrBadRequest)
-	}
 	switch req.Network {
 	case models.NetworkSOL,
 		models.NetworkAVAX,
