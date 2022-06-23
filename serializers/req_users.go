@@ -13,9 +13,8 @@ type UpdateUserSettingReq struct {
 }
 
 type UserConnectedReq struct {
-	Network      models.Network `json:"network"`
-	Address      string         `json:"address"`
-	ReferrerCode string         `json:"referrer_code"`
+	SignatureTimestampReq
+	ReferrerCode string `json:"referrer_code"`
 }
 
 type ClaimUserBalanceReq struct {
