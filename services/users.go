@@ -88,7 +88,7 @@ func (s *NftLend) getUser(tx *gorm.DB, network models.Network, address string, f
 			Network:         network,
 			Address:         address,
 			AddressChecked:  addressChecked,
-			UserName:        addressChecked,
+			Username:        addressChecked,
 			Type:            models.UserTypeUser,
 			NewsNotiEnabled: false,
 			LoanNotiEnabled: false,
@@ -170,8 +170,8 @@ func (s *NftLend) UserConnected(ctx context.Context, network models.Network, add
 					referrer, err := s.ud.First(
 						tx,
 						map[string][]interface{}{
-							"network = ?":   []interface{}{network},
-							"user_name = ?": []interface{}{referrerCode},
+							"network = ?":  []interface{}{network},
+							"username = ?": []interface{}{referrerCode},
 						},
 						map[string][]interface{}{},
 						[]string{},

@@ -13,7 +13,7 @@ type UserResp struct {
 	Network         models.Network `json:"network"`
 	Address         string         `json:"address"`
 	Email           string         `json:"email"`
-	UserName        string         `json:"user_name"`
+	Username        string         `json:"username"`
 	NewsNotiEnabled bool           `json:"news_noti_enabled"`
 	LoanNotiEnabled bool           `json:"loan_noti_enabled"`
 	SeenNotiID      uint           `json:"seen_noti_id"`
@@ -31,7 +31,7 @@ func NewUserResp(m *models.User) *UserResp {
 		Network:         m.Network,
 		Address:         m.Address,
 		Email:           m.Email,
-		UserName:        m.UserName,
+		Username:        m.Username,
 		NewsNotiEnabled: m.NewsNotiEnabled,
 		LoanNotiEnabled: m.LoanNotiEnabled,
 		IsVerified:      m.IsVerified,
