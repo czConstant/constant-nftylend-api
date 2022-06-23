@@ -1,7 +1,6 @@
 package serializers
 
 import (
-	"github.com/czConstant/constant-nftylend-api/models"
 	"github.com/czConstant/constant-nftylend-api/types/numeric"
 )
 
