@@ -529,61 +529,68 @@ func (s *NftLend) GetAssetFloorPrice(ctx context.Context, assetID uint) (numeric
 			}
 		}
 	}
-	if m.FloorPriceAt == nil ||
-		m.FloorPriceAt.Before(time.Now().Add(-24*time.Hour)) {
-		assetFloorPrice := numeric.BigFloat{*big.NewFloat(0)}
-		switch m.Network {
-		case models.NetworkMATIC:
-			{
-				nftbankStats, _ := s.stc.GetNftbankFloorPrice(m.GetContractAddress(), "MATIC")
-				if nftbankStats != nil && len(nftbankStats) > 0 {
-					for _, v := range nftbankStats[0].FloorPrice {
-						if v.CurrencySymbol == "ETH" {
-							assetFloorPrice = v.FloorPrice
-						}
-					}
-				}
-			}
-		case models.NetworkNEAR:
-			{
-				// parasStats, _ := s.stc.GetParasCollectionStats(m.Collection.ParasCollectionID)
-				// if parasStats != nil {
-				// 	floorPrice := models.ConvertWeiToBigFloat(&parasStats.FloorPrice.Int, saleCurrency.Decimals)
-				// 	assetFloorPrice = numeric.BigFloat{*floorPrice}
-				// }
-				assetFloorPrice = m.Collection.FloorPrice
-			}
-		}
-		err = daos.WithTransaction(
-			daos.GetDBMainCtx(ctx),
-			func(tx *gorm.DB) error {
-				m, err = s.ad.FirstByID(
-					tx,
-					assetID,
-					map[string][]interface{}{},
-					true,
-				)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				if m == nil {
-					return errs.NewError(errs.ErrBadRequest)
-				}
-				m.FloorPrice = assetFloorPrice
-				m.FloorPriceAt = helpers.TimeNow()
-				err = s.ad.Save(
-					tx,
-					m,
-				)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				return nil
-			},
-		)
-		if err != nil {
-			return m.FloorPrice, nil, errs.NewError(err)
+	// if m.FloorPriceAt == nil ||
+	// 	m.FloorPriceAt.Before(time.Now().Add(-24*time.Hour)) {
+	// 	assetFloorPrice := numeric.BigFloat{*big.NewFloat(0)}
+	// 	switch m.Network {
+	// 	case models.NetworkMATIC:
+	// 		{
+	// 			nftbankStats, _ := s.stc.GetNftbankFloorPrice(m.GetContractAddress(), "MATIC")
+	// 			if nftbankStats != nil && len(nftbankStats) > 0 {
+	// 				for _, v := range nftbankStats[0].FloorPrice {
+	// 					if v.CurrencySymbol == "ETH" {
+	// 						assetFloorPrice = v.FloorPrice
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	case models.NetworkNEAR:
+	// 		{
+	// 			// parasStats, _ := s.stc.GetParasCollectionStats(m.Collection.ParasCollectionID)
+	// 			// if parasStats != nil {
+	// 			// 	floorPrice := models.ConvertWeiToBigFloat(&parasStats.FloorPrice.Int, saleCurrency.Decimals)
+	// 			// 	assetFloorPrice = numeric.BigFloat{*floorPrice}
+	// 			// }
+	// 			assetFloorPrice = m.Collection.FloorPrice
+	// 		}
+	// 	}
+	// 	err = daos.WithTransaction(
+	// 		daos.GetDBMainCtx(ctx),
+	// 		func(tx *gorm.DB) error {
+	// 			m, err = s.ad.FirstByID(
+	// 				tx,
+	// 				assetID,
+	// 				map[string][]interface{}{},
+	// 				true,
+	// 			)
+	// 			if err != nil {
+	// 				return errs.NewError(err)
+	// 			}
+	// 			if m == nil {
+	// 				return errs.NewError(errs.ErrBadRequest)
+	// 			}
+	// 			m.FloorPrice = assetFloorPrice
+	// 			m.FloorPriceAt = helpers.TimeNow()
+	// 			err = s.ad.Save(
+	// 				tx,
+	// 				m,
+	// 			)
+	// 			if err != nil {
+	// 				return errs.NewError(err)
+	// 			}
+	// 			return nil
+	// 		},
+	// 	)
+	// 	if err != nil {
+	// 		return m.FloorPrice, nil, errs.NewError(err)
+	// 	}
+	// }
+	assetFloorPrice := numeric.BigFloat{*big.NewFloat(0)}
+	switch m.Network {
+	case models.NetworkNEAR:
+		{
+			assetFloorPrice = m.Collection.FloorPrice
 		}
 	}
-	return m.FloorPrice, saleCurrency, nil
+	return assetFloorPrice, saleCurrency, nil
 }
