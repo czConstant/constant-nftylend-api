@@ -18,7 +18,6 @@ type UserBalanceTransactionResp struct {
 	Currency               *CurrencyResp                       `json:"currency"`
 	ToAddress              string                              `json:"to_address"`
 	Amount                 numeric.BigFloat                    `json:"amount"`
-	Signature              string                              `json:"signature"`
 	TxHash                 string                              `json:"tx_hash"`
 	Status                 models.UserBalanceTransactionStatus `json:"status"`
 	IncentiveTransactionID uint                                `json:"incentive_transaction_id"`
@@ -40,7 +39,6 @@ func NewUserBalanceTransactionResp(m *models.UserBalanceTransaction) *UserBalanc
 		Currency:               NewCurrencyResp(m.Currency),
 		ToAddress:              m.ToAddress,
 		Amount:                 m.Amount,
-		Signature:              m.Signature,
 		TxHash:                 m.TxHash,
 		Status:                 m.Status,
 		IncentiveTransactionID: m.IncentiveTransactionID,
