@@ -41,6 +41,7 @@ type LoanResp struct {
 	OfferStartedAt       *time.Time        `json:"offer_started_at"`
 	OfferDuration        uint              `json:"offer_duration"`
 	OfferExpiredAt       *time.Time        `json:"offer_expired_at"`
+	OfferOverduedAt      *time.Time        `json:"offer_overdued_at"`
 	OfferPrincipalAmount numeric.BigFloat  `json:"offer_principal_amount"`
 	OfferInterestRate    float64           `json:"offer_interest_rate"`
 	InitTxHash           string            `json:"init_tx_hash"`
@@ -83,6 +84,7 @@ func NewLoanResp(m *models.Loan) *LoanResp {
 		OfferStartedAt:       m.OfferStartedAt,
 		OfferDuration:        m.OfferDuration,
 		OfferExpiredAt:       m.OfferExpiredAt,
+		OfferOverduedAt:      m.OfferOverduedAt,
 		OfferPrincipalAmount: m.OfferPrincipalAmount,
 		OfferInterestRate:    m.OfferInterestRate,
 		InitTxHash:           m.InitTxHash,
