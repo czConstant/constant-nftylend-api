@@ -31,8 +31,9 @@ type User struct {
 	ReferrerCode    string
 	ReferrerUserID  uint
 	Rank            UserRank
-	IsConnected     bool `gorm:"default:0"`
-	IsVerified      bool `gorm:"default:0"`
+	IsConnected     bool  `gorm:"default:0"`
+	IsVerified      bool  `gorm:"default:0"`
+	TimestampReq    int64 `gorm:"default:0"`
 }
 
 type UserBorrowStats struct {

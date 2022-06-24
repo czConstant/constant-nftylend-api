@@ -474,6 +474,15 @@ func (s *Server) validateTimestampWithSignature(ctx context.Context, network mod
 	if err != nil {
 		return errs.NewError(err)
 	}
+	err = s.nls.VerifyUserTimestamp(
+		ctx,
+		network,
+		address,
+		timestamp,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
 	return nil
 }
 

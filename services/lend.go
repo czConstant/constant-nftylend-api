@@ -372,5 +372,63 @@ func (s *NftLend) VerifyAddressSignature(ctx context.Context, network models.Net
 			return errs.NewError(errs.ErrBadRequest)
 		}
 	}
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			user, err := s.getUser(
+				tx,
+				network,
+				address,
+				true,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			err = s.ud.Save(
+				tx,
+				user,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *NftLend) VerifyUserTimestamp(ctx context.Context, network models.Network, address string, timestamp int64) error {
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			user, err := s.getUser(
+				tx,
+				network,
+				address,
+				true,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if user.TimestampReq >= timestamp {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			user.TimestampReq = timestamp
+			err = s.ud.Save(
+				tx,
+				user,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
 	return nil
 }
