@@ -61,7 +61,7 @@ type Loan struct {
 	OfferInterestRate    float64          `gorm:"type:decimal(6,4);default:0"`
 	FeeRate              float64          `gorm:"type:decimal(6,4);default:0"`
 	FeeAmount            numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
-	OfferOverduedAt      *time.Time
+	OfferOverdueAt       *time.Time
 	NonceHex             string
 	ImageUrl             string
 	Signature            string
