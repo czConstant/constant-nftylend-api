@@ -2,11 +2,14 @@ package services
 
 import (
 	"context"
+	"math/big"
 	"time"
 
 	"github.com/czConstant/constant-nftylend-api/daos"
 	"github.com/czConstant/constant-nftylend-api/errs"
+	"github.com/czConstant/constant-nftylend-api/helpers"
 	"github.com/czConstant/constant-nftylend-api/models"
+	"github.com/czConstant/constant-nftylend-api/types/numeric"
 )
 
 func (s *NftLend) GetAffiliateStats(ctx context.Context, network models.Network, address string) (*models.AffiliateStats, error) {
@@ -106,7 +109,7 @@ func (s *NftLend) GetAffiliateVolumes(ctx context.Context, network models.Networ
 	if err != nil {
 		return nil, errs.NewError(err)
 	}
-	m, err := s.itd.GetAffiliateVolumes(
+	ms, err := s.itd.GetAffiliateVolumes(
 		daos.GetDBMainCtx(ctx),
 		user.ID,
 		nToken.ID,
@@ -116,5 +119,46 @@ func (s *NftLend) GetAffiliateVolumes(ctx context.Context, network models.Networ
 	if err != nil {
 		return nil, errs.NewError(err)
 	}
-	return m, nil
+	mMap := map[int64]*models.AffiliateVolumes{}
+	for _, m := range ms {
+		mMap[m.RptDate.Unix()] = m
+	}
+	rets := []*models.AffiliateVolumes{}
+	switch rptBy {
+	case "week":
+		{
+			rptDate := helpers.GetStartDayOfWeek(time.Now())
+			for i := 0; i < int(limit); i++ {
+				m, ok := mMap[rptDate.Unix()]
+				if !ok {
+					m = &models.AffiliateVolumes{
+						RptDate:         &rptDate,
+						TotalCommisions: numeric.BigFloat{*big.NewFloat(0)},
+					}
+				}
+				rets = append(rets, m)
+				rptDate = rptDate.Add(-7 * 24 * time.Hour)
+			}
+		}
+	case "month":
+		{
+			rptDate := helpers.GetStartDayOfMonth(time.Now())
+			for i := 0; i < int(limit); i++ {
+				m, ok := mMap[rptDate.Unix()]
+				if !ok {
+					m = &models.AffiliateVolumes{
+						RptDate:         &rptDate,
+						TotalCommisions: numeric.BigFloat{*big.NewFloat(0)},
+					}
+				}
+				rets = append(rets, m)
+				rptDate = rptDate.AddDate(0, -1, 0)
+			}
+		}
+	default:
+		{
+			return nil, errs.NewError(errs.ErrBadRequest)
+		}
+	}
+	return rets, nil
 }
