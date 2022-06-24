@@ -151,3 +151,21 @@ func ToWorkHours(t1 *time.Time, t2 *time.Time) float64 {
 	}
 	return workHours
 }
+
+func GetStartDayOfWeek(t time.Time) time.Time { //get monday 00:00:00
+	t = t.UTC()
+	weekday := time.Duration(t.Weekday())
+	if weekday == 0 {
+		weekday = 7
+	}
+	year, month, day := t.Date()
+	currentZeroDay := time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
+	return currentZeroDay.Add(-1 * (weekday - 1) * 24 * time.Hour)
+}
+
+func GetStartDayOfMonth(t time.Time) time.Time { //get monday 00:00:00
+	t = t.UTC()
+	year, month, _ := t.Date()
+	r := time.Date(year, month, 1, 0, 0, 0, 0, time.UTC)
+	return r
+}

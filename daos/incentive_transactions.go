@@ -60,7 +60,7 @@ func (d *IncentiveTransaction) Find4Page(tx *gorm.DB, filters map[string][]inter
 func (d *IncentiveTransaction) GetAffiliateStats(tx *gorm.DB, userID uint, currencyID uint) (*models.AffiliateStats, error) {
 	var rs models.AffiliateStats
 	err := tx.Raw(`
-	select sum(amount)              total_commisions,
+	select sum(amount)              total_commissions,
 		count(distinct ref_user_id) total_users,
 		count(1)                    total_transactions
 	from incentive_transactions
@@ -103,7 +103,7 @@ func (d *IncentiveTransaction) GetAffiliateVolumes(tx *gorm.DB, userID uint, cur
 	select *
 	from (
 			 select %s rpt_date,
-					sum(amount) total_commisions
+					sum(amount) total_commissions
 			 from incentive_transactions
 			 where 1 = 1
 				and user_id = ?

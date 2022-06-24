@@ -46,6 +46,7 @@ func (s *Server) GetAffiliateVolumes(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
+	
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAffiliateVolumesRespArr(rpts)})
 }
 

@@ -275,6 +275,14 @@ func (s *NftLend) GetBorrowerStats(ctx context.Context, borrower string) (*model
 func (s *NftLend) GetLoanTransactions(ctx context.Context, assetID uint, page int, limit int) ([]*models.LoanTransaction, uint, error) {
 	filters := map[string][]interface{}{}
 	filters["network in (?)"] = []interface{}{s.getSupportedNetworks()}
+	filters["type in (?)"] = []interface{}{
+		[]models.LoanTransactionType{
+			models.LoanTransactionTypeListed,
+			models.LoanTransactionTypeOffered,
+			models.LoanTransactionTypeRepaid,
+			models.LoanTransactionTypeLiquidated,
+		},
+	}
 	if assetID > 0 {
 		filters[`
 		exists(
