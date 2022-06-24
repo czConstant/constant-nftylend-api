@@ -278,6 +278,7 @@ func (s *NftLend) UserUpdateSetting(ctx context.Context, req *serializers.Update
 				uCheck, err := s.ud.First(
 					tx,
 					map[string][]interface{}{
+						"network != ?": []interface{}{user.Network},
 						"id != ?":      []interface{}{user.ID},
 						"username = ?": []interface{}{req.Username},
 					},
@@ -288,7 +289,7 @@ func (s *NftLend) UserUpdateSetting(ctx context.Context, req *serializers.Update
 					return errs.NewError(err)
 				}
 				if uCheck != nil {
-					return errs.NewError(errors.New("username is existsed"))
+					return errs.NewError(errors.New("username is existed"))
 				}
 				user.Username = req.Username
 			}
@@ -700,15 +701,15 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 			}
 			// validate request by sig
 			message := fmt.Sprintf("%s-%s-%s-%d", strings.ToLower(user.Address), strings.ToLower(currency.ContractAddress), req.Amount.ToString(), req.Timestamp)
-			err = s.bcs.Near.ValidateMessageSignature(
-				s.conf.Contract.NearNftypawnAddress,
-				message,
-				req.Signature,
-				user.Address,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
+			// err = s.bcs.Near.ValidateMessageSignature(
+			// 	s.conf.Contract.NearNftypawnAddress,
+			// 	message,
+			// 	req.Signature,
+			// 	user.Address,
+			// )
+			// if err != nil {
+			// 	return errs.NewError(err)
+			// }
 			//
 			userBalanceTransaction := &models.UserBalanceTransaction{
 				Network:       userBalance.Network,
