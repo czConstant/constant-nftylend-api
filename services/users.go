@@ -175,6 +175,7 @@ func (s *NftLend) UserConnected(ctx context.Context, network models.Network, add
 						map[string][]interface{}{
 							"network = ?":  []interface{}{network},
 							"username = ?": []interface{}{referrerCode},
+							"id != ?":      []interface{}{user.ID},
 						},
 						map[string][]interface{}{},
 						[]string{},
