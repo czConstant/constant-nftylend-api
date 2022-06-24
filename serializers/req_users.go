@@ -18,12 +18,10 @@ type UserConnectedReq struct {
 }
 
 type ClaimUserBalanceReq struct {
-	UserID     uint             `json:"user_id"`
+	SignatureTimestampReq
 	CurrencyID uint             `json:"currency_id"`
 	ToAddress  string           `json:"to_address"`
 	Amount     numeric.BigFloat `json:"amount"`
-	Timestamp  int64            `json:"timestamp"`
-	Signature  string           `json:"signature"`
 }
 
 type UserVerifyEmailReq struct {

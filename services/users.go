@@ -660,9 +660,18 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
+			user, err := s.getUser(
+				tx,
+				req.Network,
+				req.Address,
+				false,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
 			userBalance, err := s.getUserBalance(
 				tx,
-				req.UserID,
+				user.ID,
 				req.CurrencyID,
 				true,
 			)
@@ -674,15 +683,6 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 			}
 			if userBalance.GetAvaiableBalance().Cmp(&req.Amount.Float) < 0 {
 				return errs.NewError(errs.ErrBadRequest)
-			}
-			user, err := s.ud.FirstByID(
-				tx,
-				userBalance.UserID,
-				map[string][]interface{}{},
-				false,
-			)
-			if err != nil {
-				return errs.NewError(err)
 			}
 			if !strings.EqualFold(user.Address, req.ToAddress) {
 				return errs.NewError(errs.ErrBadRequest)
@@ -699,18 +699,6 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 			if !currency.ClaimEnabled {
 				return errs.NewError(errs.ErrBadRequest)
 			}
-			// validate request by sig
-			message := fmt.Sprintf("%s-%s-%s-%d", strings.ToLower(user.Address), strings.ToLower(currency.ContractAddress), req.Amount.ToString(), req.Timestamp)
-			err = s.bcs.Near.ValidateMessageSignature(
-				s.conf.Contract.NearNftypawnAddress,
-				message,
-				req.Signature,
-				user.Address,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-
 			userBalanceTransaction := &models.UserBalanceTransaction{
 				Network:       userBalance.Network,
 				UserID:        userBalance.UserID,
@@ -719,8 +707,6 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 				Type:          models.UserBalanceTransactionTypeClaim,
 				ToAddress:     req.ToAddress,
 				Amount:        numeric.BigFloat{*models.NegativeBigFloat(&req.Amount.Float)},
-				Message:       message,
-				Signature:     req.Signature,
 				Status:        models.UserBalanceTransactionStatusDone,
 			}
 			err = s.ubtd.Create(
