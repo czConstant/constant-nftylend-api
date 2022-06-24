@@ -60,19 +60,19 @@ func NewIncentiveTransactionRespArr(arr []*models.IncentiveTransaction) []*Incen
 }
 
 type AffiliateStatsResp struct {
-	CommisionsRate    float64          `json:"commisions_rate"`
-	TotalCommisions   numeric.BigFloat `json:"total_commisions"`
+	CommissionsRate   float64          `json:"commissions_rate"`
+	TotalCommissions  numeric.BigFloat `json:"total_commissions"`
 	TotalUsers        uint             `json:"total_users"`
 	TotalTransactions uint             `json:"total_transactions"`
 }
 
-func NewAffiliateStatsRespResp(m *models.AffiliateStats, commisionsRate float64) *AffiliateStatsResp {
+func NewAffiliateStatsRespResp(m *models.AffiliateStats, commissionsRate float64) *AffiliateStatsResp {
 	if m == nil {
 		return nil
 	}
 	resp := &AffiliateStatsResp{
-		CommisionsRate:    commisionsRate,
-		TotalCommisions:   m.TotalCommisions,
+		CommissionsRate:   commissionsRate,
+		TotalCommissions:  m.TotalCommissions,
 		TotalUsers:        m.TotalUsers,
 		TotalTransactions: m.TotalTransactions,
 	}
@@ -80,8 +80,8 @@ func NewAffiliateStatsRespResp(m *models.AffiliateStats, commisionsRate float64)
 }
 
 type AffiliateVolumesResp struct {
-	RptDate         *time.Time       `json:"rpt_date"`
-	TotalCommisions numeric.BigFloat `json:"total_commisions"`
+	RptDate          *time.Time       `json:"rpt_date"`
+	TotalCommissions numeric.BigFloat `json:"total_commissions"`
 }
 
 func NewAffiliateVolumesResp(m *models.AffiliateVolumes) *AffiliateVolumesResp {
@@ -89,8 +89,8 @@ func NewAffiliateVolumesResp(m *models.AffiliateVolumes) *AffiliateVolumesResp {
 		return nil
 	}
 	resp := &AffiliateVolumesResp{
-		RptDate:         m.RptDate,
-		TotalCommisions: m.TotalCommisions,
+		RptDate:          m.RptDate,
+		TotalCommissions: m.TotalCommissions,
 	}
 	return resp
 }

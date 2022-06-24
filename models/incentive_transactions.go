@@ -38,12 +38,12 @@ type IncentiveTransaction struct {
 }
 
 type AffiliateStats struct {
-	TotalCommisions   numeric.BigFloat
+	TotalCommissions  numeric.BigFloat
 	TotalUsers        uint
 	TotalTransactions uint
 }
 
 type AffiliateVolumes struct {
-	RptDate         *time.Time
-	TotalCommisions numeric.BigFloat
+	RptDate          *time.Time
+	TotalCommissions numeric.BigFloat
 }

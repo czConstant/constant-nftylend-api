@@ -132,8 +132,8 @@ func (s *NftLend) GetAffiliateVolumes(ctx context.Context, network models.Networ
 				m, ok := mMap[rptDate.Unix()]
 				if !ok {
 					m = &models.AffiliateVolumes{
-						RptDate:         &rptDate,
-						TotalCommisions: numeric.BigFloat{*big.NewFloat(0)},
+						RptDate:          &rptDate,
+						TotalCommissions: numeric.BigFloat{*big.NewFloat(0)},
 					}
 				}
 				rets = append(rets, m)
@@ -147,8 +147,8 @@ func (s *NftLend) GetAffiliateVolumes(ctx context.Context, network models.Networ
 				m, ok := mMap[rptDate.Unix()]
 				if !ok {
 					m = &models.AffiliateVolumes{
-						RptDate:         &rptDate,
-						TotalCommisions: numeric.BigFloat{*big.NewFloat(0)},
+						RptDate:          &rptDate,
+						TotalCommissions: numeric.BigFloat{*big.NewFloat(0)},
 					}
 				}
 				rets = append(rets, m)
