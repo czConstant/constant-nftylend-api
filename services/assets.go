@@ -516,7 +516,7 @@ func (s *NftLend) GetAssetFloorPrice(ctx context.Context, assetID uint) (numeric
 	switch m.Network {
 	case models.NetworkMATIC:
 		{
-			saleCurrency, err = s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), models.NetworkNEAR, "NEAR")
+			saleCurrency, err = s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), models.NetworkNEAR, "ETH")
 			if err != nil {
 				return numeric.BigFloat{}, nil, errs.NewError(err)
 			}
