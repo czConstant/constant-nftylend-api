@@ -118,9 +118,9 @@ func (s *NftLend) JobEmailScheduleBorrowerLoanLiquidated(ctx context.Context) er
 	loans, err := s.ld.Find(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
-			"status = ?":             []interface{}{models.LoanStatusCreated},
-			"offer_overdued_at >= ?": []interface{}{time.Now().Add((-1) * time.Hour)},
-			"offer_overdued_at < ?":  []interface{}{time.Now()},
+			"status = ?":            []interface{}{models.LoanStatusCreated},
+			"offer_overdue_at >= ?": []interface{}{time.Now().Add((-1) * time.Hour)},
+			"offer_overdue_at < ?":  []interface{}{time.Now()},
 		},
 		map[string][]interface{}{},
 		[]string{},
@@ -144,9 +144,9 @@ func (s *NftLend) JobEmailScheduleLenderLoanLiquidated(ctx context.Context) erro
 	loans, err := s.ld.Find(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
-			"status = ?":             []interface{}{models.LoanStatusCreated},
-			"offer_overdued_at >= ?": []interface{}{time.Now().Add((-1) * time.Hour)},
-			"offer_overdued_at < ?":  []interface{}{time.Now()},
+			"status = ?":            []interface{}{models.LoanStatusCreated},
+			"offer_overdue_at >= ?": []interface{}{time.Now().Add((-1) * time.Hour)},
+			"offer_overdue_at < ?":  []interface{}{time.Now()},
 		},
 		map[string][]interface{}{},
 		[]string{},

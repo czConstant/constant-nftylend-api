@@ -451,7 +451,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 					loan.OfferStartedAt = offer.StartedAt
 					loan.OfferDuration = offer.Duration
 					loan.OfferExpiredAt = offer.ExpiredAt
-					loan.OfferOverduedAt = helpers.TimeAdd(*loan.OfferExpiredAt, (2 * 24 * time.Hour))
+					loan.OfferOverdueAt = helpers.TimeAdd(*loan.OfferExpiredAt, (2 * 24 * time.Hour))
 					loan.OfferPrincipalAmount = offer.PrincipalAmount
 					loan.OfferInterestRate = offer.InterestRate
 					if loan.CurrencyPrice <= 0 {
