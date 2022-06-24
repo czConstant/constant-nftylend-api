@@ -458,22 +458,22 @@ func (s *Server) signatureBindJSON(c *gin.Context, resp interface{}) (*serialize
 }
 
 func (s *Server) validateTimestampWithSignature(ctx context.Context, network models.Network, address string, signature string, timestamp int64) error {
-	// if time.Unix(timestamp, 0).Before(time.Now().Add(-30 * time.Second)) {
-	// 	return errs.NewError(errs.ErrBadRequest)
-	// }
-	// if time.Unix(timestamp, 0).After(time.Now().Add(30 * time.Second)) {
-	// 	return errs.NewError(errs.ErrBadRequest)
-	// }
-	// err := s.nls.VerifyAddressSignature(
-	// 	ctx,
-	// 	network,
-	// 	address,
-	// 	fmt.Sprintf("%d", timestamp),
-	// 	signature,
-	// )
-	// if err != nil {
-	// 	return errs.NewError(err)
-	// }
+	if time.Unix(timestamp, 0).Before(time.Now().Add(-30 * time.Second)) {
+		return errs.NewError(errs.ErrBadRequest)
+	}
+	if time.Unix(timestamp, 0).After(time.Now().Add(30 * time.Second)) {
+		return errs.NewError(errs.ErrBadRequest)
+	}
+	err := s.nls.VerifyAddressSignature(
+		ctx,
+		network,
+		address,
+		fmt.Sprintf("%d", timestamp),
+		signature,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
 	return nil
 }
 
