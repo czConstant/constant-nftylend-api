@@ -152,6 +152,9 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 			return errs.NewError(errs.ErrBadRequest)
 		}
 	}
+	if checkIncentiveTime == nil {
+		return errs.NewError(errs.ErrBadRequest)
+	}
 	if userID > 0 {
 		user, err := s.ud.FirstByID(
 			tx,
