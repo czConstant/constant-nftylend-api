@@ -11,10 +11,15 @@ import (
 
 func (s *Server) GetAffiliateStats(c *gin.Context) {
 	ctx := s.requestContext(c)
+	network, address, err := s.getNetworkAddress(c)
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
 	affiliateStats, err := s.nls.GetAffiliateStats(
 		ctx,
-		models.Network(s.stringFromContextQuery(c, "network")),
-		s.stringFromContextQuery(c, "address"),
+		network,
+		address,
 	)
 	if err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
@@ -22,8 +27,8 @@ func (s *Server) GetAffiliateStats(c *gin.Context) {
 	}
 	affiliateShareRate, err := s.nls.GetAffiliateShareRate(
 		ctx,
-		models.Network(s.stringFromContextQuery(c, "network")),
-		s.stringFromContextQuery(c, "address"),
+		network,
+		address,
 	)
 	if err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
@@ -46,7 +51,7 @@ func (s *Server) GetAffiliateVolumes(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	
+
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAffiliateVolumesRespArr(rpts)})
 }
 

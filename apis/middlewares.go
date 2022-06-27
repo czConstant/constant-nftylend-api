@@ -493,5 +493,20 @@ func (s *Server) getNetworkAddress(c *gin.Context) (models.Network, string, erro
 		address == "" {
 		return "", "", errs.NewError(errs.ErrBadRequest)
 	}
+	switch models.Network(network) {
+	case models.NetworkSOL,
+		models.NetworkAVAX,
+		models.NetworkBOBA,
+		models.NetworkBSC,
+		models.NetworkETH,
+		models.NetworkMATIC,
+		models.NetworkNEAR:
+		{
+		}
+	default:
+		{
+			return models.Network(""), "", errs.NewError(errs.ErrBadRequest)
+		}
+	}
 	return models.Network(network), address, nil
 }
