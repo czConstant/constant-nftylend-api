@@ -39,6 +39,7 @@ func (s *NftLend) GetIncentiveTransactions(ctx context.Context, network models.N
 			"User":     []interface{}{},
 			"Currency": []interface{}{},
 			"Loan":     []interface{}{},
+			"RefUser":  []interface{}{},
 		},
 		[]string{"id desc"},
 		page,
