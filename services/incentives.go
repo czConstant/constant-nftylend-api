@@ -219,7 +219,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 				if ipdM.RevokeTypes != "" {
 					revokeTypes := strings.Split(string(ipdM.RevokeTypes), ",")
 					for _, revokeType := range revokeTypes {
-						itM, err = s.itd.First(
+						revokedTx, err := s.itd.First(
 							tx,
 							map[string][]interface{}{
 								"incentive_program_id = ?":  []interface{}{ipdM.IncentiveProgramID},
@@ -235,13 +235,25 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 						if err != nil {
 							return errs.NewError(err)
 						}
-						if itM == nil {
+						if revokedTx == nil {
 							isOk = false
 						} else {
-							itM.Status = models.IncentiveTransactionStatusRevoked
+							revokedTx, err = s.itd.FirstByID(
+								tx,
+								revokedTx.ID,
+								map[string][]interface{}{},
+								true,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							if revokedTx.Status != models.IncentiveTransactionStatusLocked {
+								return errs.NewError(errs.ErrBadRequest)
+							}
+							revokedTx.Status = models.IncentiveTransactionStatusRevoked
 							err = s.itd.Save(
 								tx,
-								itM,
+								revokedTx,
 							)
 							if err != nil {
 								return errs.NewError(err)
@@ -252,7 +264,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 				if ipdM.UnlockTypes != "" {
 					unlockTypes := strings.Split(string(ipdM.UnlockTypes), ",")
 					for _, unlockType := range unlockTypes {
-						itM, err = s.itd.First(
+						unlockedTx, err := s.itd.First(
 							tx,
 							map[string][]interface{}{
 								"incentive_program_id = ?": []interface{}{ipdM.IncentiveProgramID},
@@ -266,10 +278,22 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 						if err != nil {
 							return errs.NewError(err)
 						}
-						if itM != nil {
+						if unlockedTx != nil {
+							unlockedTx, err = s.itd.FirstByID(
+								tx,
+								unlockedTx.ID,
+								map[string][]interface{}{},
+								true,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							if unlockedTx.Status != models.IncentiveTransactionStatusLocked {
+								return errs.NewError(errs.ErrBadRequest)
+							}
 							err = s.incentiveForUnlock(
 								tx,
-								itM.ID,
+								unlockedTx.ID,
 								true,
 							)
 							if err != nil {
