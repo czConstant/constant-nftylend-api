@@ -221,10 +221,12 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 						itM, err = s.itd.First(
 							tx,
 							map[string][]interface{}{
-								"incentive_program_id = ?": []interface{}{ipdM.IncentiveProgramID},
-								"type = ?":                 []interface{}{revokeType},
-								"loan_id = ?":              []interface{}{loan.ID},
-								"status = ?":               []interface{}{models.IncentiveTransactionStatusLocked},
+								"incentive_program_id = ?":  []interface{}{ipdM.IncentiveProgramID},
+								"type = ?":                  []interface{}{revokeType},
+								"loan_id = ?":               []interface{}{loan.ID},
+								"status = ?":                []interface{}{models.IncentiveTransactionStatusLocked},
+								"lock_until_at is not null": []interface{}{},
+								"lock_until_at <= ?":        []interface{}{time.Now()},
 							},
 							map[string][]interface{}{},
 							[]string{},
@@ -385,7 +387,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 	return nil
 }
 
-func (s *NftLend) JobIncentiveForUnlock(ctx context.Context) error {
+func (s *NftLend) JobIncentiveStatus(ctx context.Context) error {
 	var retErr error
 	itMs, err := s.itd.Find(
 		daos.GetDBMainCtx(ctx),
@@ -399,13 +401,13 @@ func (s *NftLend) JobIncentiveForUnlock(ctx context.Context) error {
 		map[string][]interface{}{},
 		[]string{},
 		0,
-		9999,
+		999999,
 	)
 	if err != nil {
 		return errs.NewError(err)
 	}
 	for _, itM := range itMs {
-		err = s.IncentiveForLock(ctx, itM.ID)
+		err = s.IncentiveForReward(ctx, itM.ID)
 		if err != nil {
 			retErr = errs.MergeError(retErr, err)
 		}
@@ -426,7 +428,7 @@ func (s *NftLend) JobIncentiveForUnlock(ctx context.Context) error {
 		map[string][]interface{}{},
 		[]string{},
 		0,
-		9999,
+		999999,
 	)
 	if err != nil {
 		return errs.NewError(err)
@@ -512,10 +514,9 @@ func (s *NftLend) incentiveForUnlock(tx *gorm.DB, transactionID uint, checked bo
 		return errs.NewError(err)
 	}
 	return nil
-	return nil
 }
 
-func (s *NftLend) IncentiveForLock(ctx context.Context, transactionID uint) error {
+func (s *NftLend) IncentiveForReward(ctx context.Context, transactionID uint) error {
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(context.Background()),
 		func(tx *gorm.DB) error {
@@ -544,17 +545,26 @@ func (s *NftLend) IncentiveForLock(ctx context.Context, transactionID uint) erro
 			if itM.Status != models.IncentiveTransactionStatusPending {
 				return errs.NewError(errs.ErrBadRequest)
 			}
-			user, err := s.getUser(
-				tx,
-				itM.Network,
-				itM.Address,
-				false,
-			)
-			if err != nil {
-				return errs.NewError(err)
+			if itM.UserID <= 0 {
+				user, err := s.getUser(
+					tx,
+					itM.Network,
+					itM.Address,
+					false,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				itM.UserID = user.ID
 			}
-			itM.UserID = user.ID
-			itM.Status = models.IncentiveTransactionStatusLocked
+			var reference string
+			if itM.LockUntilAt != nil {
+				itM.Status = models.IncentiveTransactionStatusLocked
+				reference = fmt.Sprintf("it_%d_locked", itM.ID)
+			} else {
+				itM.Status = models.IncentiveTransactionStatusDone
+				reference = fmt.Sprintf("it_%d_done", itM.ID)
+			}
 			err = s.itd.Save(
 				tx,
 				itM,
@@ -562,7 +572,6 @@ func (s *NftLend) IncentiveForLock(ctx context.Context, transactionID uint) erro
 			if err != nil {
 				return errs.NewError(err)
 			}
-			reference := fmt.Sprintf("it_%d_locked", itM.ID)
 			userBalance, err := s.getUserBalance(
 				tx,
 				itM.UserID,
@@ -589,13 +598,20 @@ func (s *NftLend) IncentiveForLock(ctx context.Context, transactionID uint) erro
 			if err != nil {
 				return errs.NewError(err)
 			}
+			var isLocked bool
+			switch itM.Status {
+			case models.IncentiveTransactionStatusLocked:
+				{
+					isLocked = true
+				}
+			}
 			err = s.transactionUserBalance(
 				tx,
 				itM.Network,
 				itM.UserID,
 				itM.CurrencyID,
 				itM.Amount,
-				true,
+				isLocked,
 				false,
 				reference,
 			)

@@ -15,38 +15,8 @@ import (
 
 func (s *NftLend) UserVerifyEmail(ctx context.Context, req *serializers.UserVerifyEmailReq) error {
 	req.Email = strings.ToLower(req.Email)
-	var err error
-	if req.Address == "" {
-		return errs.NewError(errs.ErrBadRequest)
-	}
-	switch req.Network {
-	case models.NetworkSOL,
-		models.NetworkAVAX,
-		models.NetworkBOBA,
-		models.NetworkBSC,
-		models.NetworkETH,
-		models.NetworkMATIC:
-		{
-		}
-	case models.NetworkNEAR:
-		{
-			// err := s.bcs.Near.ValidateMessageSignature(
-			// 	s.conf.Contract.NearNftypawnAddress,
-			// 	fmt.Sprintf("%s-%d", req.Email, req.Timestamp),
-			// 	req.Signature,
-			// 	req.Address,
-			// )
-			// if err != nil {
-			// 	return errs.NewError(err)
-			// }
-		}
-	default:
-		{
-			return errs.NewError(errs.ErrBadRequest)
-		}
-	}
 	var vM *models.Verification
-	err = daos.WithTransaction(
+	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
 			user, err := s.getUser(tx, req.Network, req.Address, false)
