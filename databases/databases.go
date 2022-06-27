@@ -91,8 +91,6 @@ func MigrateDBMain(db *gorm.DB) error {
 	db.Model(&models.IncentiveTransaction{}).AddUniqueIndex("incentive_transactions_main_uindex", "user_id", "incentive_program_id", "type", "loan_id")
 	db.Model(&models.IncentiveTransaction{}).AddIndex("incentive_transactions_user_id_index", "user_id")
 
-	db.Model(&models.IncentiveTransaction{}).AddIndex("incentive_transactions_user_id_uindex", "user_id")
-
 	db.Model(&models.Verification{}).AddIndex("verifications_user_id_index", "user_id")
 	db.Model(&models.Verification{}).AddIndex("verifications_email_index", "email")
 
