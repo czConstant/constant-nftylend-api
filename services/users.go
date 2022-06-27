@@ -402,7 +402,7 @@ func (s *NftLend) GetUserBalanceTransactions(ctx context.Context, network models
 		filters["currency_id = ?"] = []interface{}{currencyID}
 	}
 	if currencySymbol != "" {
-		currency, err := s.getLendCurrencyBySymbol(
+		currency, err := s.getCurrencyByNetworkSymbol(
 			daos.GetDBMainCtx(ctx),
 			network,
 			currencySymbol,
@@ -472,7 +472,7 @@ func (s *NftLend) GetUserCurrencyBalance(ctx context.Context, network models.Net
 }
 
 func (s *NftLend) getUserCurrencyBalance(tx *gorm.DB, network models.Network, userID uint, symbol string) (*models.UserBalance, error) {
-	pwpToken, err := s.getLendCurrencyBySymbol(
+	pwpToken, err := s.getCurrencyByNetworkSymbol(
 		tx,
 		network,
 		symbol,

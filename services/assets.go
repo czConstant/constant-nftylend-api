@@ -96,7 +96,7 @@ func (s *NftLend) updateAssetTransactions(ctx context.Context, assetId uint) err
 		if asset.Network == models.NetworkSOL &&
 			(asset.MagicEdenCrawAt == nil ||
 				asset.MagicEdenCrawAt.Before(time.Now().Add(-24*time.Hour))) {
-			c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), models.NetworkSOL, "SOL")
+			c, err := s.getCurrencyByNetworkSymbol(daos.GetDBMainCtx(ctx), models.NetworkSOL, "SOL")
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -164,7 +164,7 @@ func (s *NftLend) updateAssetTransactions(ctx context.Context, assetId uint) err
 			}
 			rs, _ := s.stc.GetSolnartSaleHistories(tokenAddress)
 			for _, r := range rs {
-				c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), models.NetworkSOL, r.Currency)
+				c, err := s.getCurrencyByNetworkSymbol(daos.GetDBMainCtx(ctx), models.NetworkSOL, r.Currency)
 				if err != nil {
 					return errs.NewError(err)
 				}
@@ -258,7 +258,7 @@ func (s *NftLend) updateAssetTransactions(ctx context.Context, assetId uint) err
 		if asset.Network == models.NetworkNEAR &&
 			(asset.ParasCrawAt == nil ||
 				asset.ParasCrawAt.Before(time.Now().Add(-24*time.Hour))) {
-			c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), models.NetworkNEAR, "NEAR")
+			c, err := s.getCurrencyByNetworkSymbol(daos.GetDBMainCtx(ctx), models.NetworkNEAR, "NEAR")
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -323,7 +323,7 @@ func (s *NftLend) updateAssetTransactions(ctx context.Context, assetId uint) err
 		if asset.Network == models.NetworkMATIC &&
 			(asset.NftbankCrawAt == nil ||
 				asset.NftbankCrawAt.Before(time.Now().Add(-24*time.Hour))) {
-			c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), models.NetworkMATIC, "ETH")
+			c, err := s.getCurrencyByNetworkSymbol(daos.GetDBMainCtx(ctx), models.NetworkMATIC, "ETH")
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -404,7 +404,7 @@ func (s *NftLend) solseaMsgReceived(msg string) {
 		if err != nil {
 			return
 		}
-		c, err := s.getLendCurrencyBySymbol(daos.GetDBMainCtx(context.Background()), models.NetworkSOL, "SOL")
+		c, err := s.getCurrencyByNetworkSymbol(daos.GetDBMainCtx(context.Background()), models.NetworkSOL, "SOL")
 		if err != nil {
 			return
 		}
@@ -516,14 +516,14 @@ func (s *NftLend) GetAssetFloorPrice(ctx context.Context, assetID uint) (numeric
 	switch m.Network {
 	case models.NetworkMATIC:
 		{
-			saleCurrency, err = s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), models.NetworkNEAR, "ETH")
+			saleCurrency, err = s.getCurrencyByNetworkSymbol(daos.GetDBMainCtx(ctx), models.NetworkNEAR, "ETH")
 			if err != nil {
 				return numeric.BigFloat{}, nil, errs.NewError(err)
 			}
 		}
 	case models.NetworkNEAR:
 		{
-			saleCurrency, err = s.getLendCurrencyBySymbol(daos.GetDBMainCtx(ctx), models.NetworkNEAR, "NEAR")
+			saleCurrency, err = s.getCurrencyByNetworkSymbol(daos.GetDBMainCtx(ctx), models.NetworkNEAR, "NEAR")
 			if err != nil {
 				return numeric.BigFloat{}, nil, errs.NewError(err)
 			}

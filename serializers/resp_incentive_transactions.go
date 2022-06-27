@@ -64,6 +64,8 @@ func NewIncentiveTransactionRespArr(arr []*models.IncentiveTransaction) []*Incen
 }
 
 type AffiliateStatsResp struct {
+	CurrencyID        uint
+	Currency          *CurrencyResp
 	CommissionsRate   float64          `json:"commissions_rate"`
 	TotalCommissions  numeric.BigFloat `json:"total_commissions"`
 	TotalUsers        uint             `json:"total_users"`
@@ -79,6 +81,8 @@ func NewAffiliateStatsRespResp(m *models.AffiliateStats, commissionsRate float64
 		TotalCommissions:  m.TotalCommissions,
 		TotalUsers:        m.TotalUsers,
 		TotalTransactions: m.TotalTransactions,
+		CurrencyID:        m.CurrencyID,
+		Currency:          NewCurrencyResp(m.Currency),
 	}
 	return resp
 }

@@ -258,10 +258,18 @@ func (s *NftLend) GetPlatformStats(ctx context.Context) (*models.PlatformStats, 
 	return m, nil
 }
 
-func (s *NftLend) GetBorrowerStats(ctx context.Context, borrower string) (*models.BorrowerStats, error) {
+func (s *NftLend) GetBorrowerStats(ctx context.Context, network models.Network, address string) (*models.BorrowerStats, error) {
+	user, err := s.GetUser(
+		ctx,
+		network,
+		address,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
 	m, err := s.ld.GetBorrowerStats(
 		daos.GetDBMainCtx(ctx),
-		borrower,
+		user.ID,
 	)
 	if err != nil {
 		return nil, errs.NewError(err)
@@ -269,6 +277,14 @@ func (s *NftLend) GetBorrowerStats(ctx context.Context, borrower string) (*model
 	if m == nil {
 		return nil, errs.NewError(errs.ErrBadRequest)
 	}
+	score, err := s.ud.GetUserCreditScore(
+		daos.GetDBMainCtx(ctx),
+		user.ID,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	m.CreditScore = score
 	return m, nil
 }
 

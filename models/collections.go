@@ -47,6 +47,7 @@ type BorrowerStats struct {
 	TotalLoans     uint
 	TotalDoneLoans uint
 	TotalVolume    numeric.BigFloat
+	CreditScore    float64
 }
 
 type PlatformStats struct {

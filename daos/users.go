@@ -113,3 +113,17 @@ func (d *User) GetUserLendStats(tx *gorm.DB, lenderID uint) (*models.UserLendSta
 	}
 	return &rs, nil
 }
+
+func (d *User) GetUserCreditScore(tx *gorm.DB, userID uint) (float64, error) {
+	var rs struct {
+		TotalCredit float64
+	}
+	err := tx.Raw(
+		"call CalculateCreditPoint(?)",
+		userID,
+	).Find(&rs).Error
+	if err != nil {
+		return 0, errs.NewError(err)
+	}
+	return rs.TotalCredit, nil
+}

@@ -104,7 +104,7 @@ func (d *Loan) GetCollectionStats(tx *gorm.DB, collectionId uint) (*models.Colle
 	return &rs, nil
 }
 
-func (d *Loan) GetBorrowerStats(tx *gorm.DB, borrower string) (*models.BorrowerStats, error) {
+func (d *Loan) GetBorrowerStats(tx *gorm.DB, borrowerUserID uint) (*models.BorrowerStats, error) {
 	var rs models.BorrowerStats
 	err := tx.Raw(`
 	select ifnull(
@@ -139,9 +139,9 @@ func (d *Loan) GetBorrowerStats(tx *gorm.DB, borrower string) (*models.BorrowerS
 					), 0
 			) total_volume
 		from loans
-		where owner = ?;
+		where borrower_user_id = ?;
 	`,
-		borrower,
+		borrowerUserID,
 	).Find(&rs).Error
 	if err != nil {
 		return nil, errs.NewError(err)
