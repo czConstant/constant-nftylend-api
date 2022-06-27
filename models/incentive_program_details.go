@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/czConstant/constant-nftylend-api/types/numeric"
 	"github.com/jinzhu/gorm"
 )
@@ -35,4 +37,6 @@ type IncentiveProgramDetail struct {
 	UserRank           UserRank
 	LoanValidDuration  uint `gorm:"default:0"`
 	LockDuration       uint `gorm:"default:0"`
+	Start              *time.Time
+	End                *time.Time
 }

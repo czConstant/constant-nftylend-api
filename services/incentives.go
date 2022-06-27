@@ -165,25 +165,13 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 		ipdM, err := s.ipdd.First(
 			tx,
 			map[string][]interface{}{
-				`exists(
-						select 1
-						from incentive_programs
-						where 1 = 1
-						  and incentive_programs.network = ?
-						  and incentive_program_details.incentive_program_id = incentive_programs.id
-						  and (? between incentive_programs.start and incentive_programs.end)
-						  and incentive_programs.status = ?
-					)`: []interface{}{
-					loan.Network,
-					checkIncentiveTime,
-					models.IncentiveProgramStatusActived,
-				},
 				"user_rank = ? or user_rank = ?": []interface{}{
 					models.UserRankAll,
 					user.Rank,
 				},
-				"type = ?":                 []interface{}{incentiveTransactionType},
-				"loan_valid_duration <= ?": []interface{}{uint(loan.ValidAt.Sub(*loan.StartedAt).Seconds())},
+				"(? between start and end)": []interface{}{checkIncentiveTime},
+				"type = ?":                  []interface{}{incentiveTransactionType},
+				"loan_valid_duration <= ?":  []interface{}{uint(loan.ValidAt.Sub(*loan.StartedAt).Seconds())},
 			},
 			map[string][]interface{}{
 				"IncentiveProgram": []interface{}{},
