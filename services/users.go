@@ -686,8 +686,9 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 			if err != nil {
 				return errs.NewError(err)
 			}
-			if userBalance.GetAvaiableBalance().Cmp(&req.Amount.Float) < 0 {
-				req.Amount = numeric.BigFloat{*userBalance.GetAvaiableBalance()}
+			amount := userBalance.GetAvaiableBalance()
+			if amount.Cmp(big.NewFloat(0)) <= 0 {
+				return errs.NewError(errs.ErrBadRequest)
 			}
 			currency, err := s.cd.FirstByID(
 				tx,
@@ -708,7 +709,7 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 				CurrencyID:    userBalance.CurrencyID,
 				Type:          models.UserBalanceTransactionTypeClaim,
 				ToAddress:     user.Address,
-				Amount:        numeric.BigFloat{*models.NegativeBigFloat(&req.Amount.Float)},
+				Amount:        numeric.BigFloat{*models.NegativeBigFloat(amount)},
 				Status:        models.UserBalanceTransactionStatusDone,
 			}
 			err = s.ubtd.Create(
