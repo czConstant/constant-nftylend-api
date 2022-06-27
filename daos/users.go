@@ -1,8 +1,11 @@
 package daos
 
 import (
+	"math/big"
+
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/models"
+	"github.com/czConstant/constant-nftylend-api/types/numeric"
 	"github.com/jinzhu/gorm"
 )
 
@@ -112,4 +115,18 @@ func (d *User) GetUserLendStats(tx *gorm.DB, lenderID uint) (*models.UserLendSta
 		return nil, errs.NewError(err)
 	}
 	return &rs, nil
+}
+
+func (d *User) GetUserCreditScore(tx *gorm.DB, userID uint) (numeric.BigFloat, error) {
+	var rs struct {
+		TotalCredit numeric.BigFloat
+	}
+	err := tx.Raw(
+		"call CalculateCreditPoint(?)",
+		userID,
+	).Find(&rs).Error
+	if err != nil {
+		return numeric.BigFloat{*big.NewFloat(0)}, errs.NewError(err)
+	}
+	return rs.TotalCredit, nil
 }

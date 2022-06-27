@@ -11,9 +11,15 @@ import (
 
 func (s *Server) GetBorrowerStats(c *gin.Context) {
 	ctx := s.requestContext(c)
+	network, address, err := s.getNetworkAddress(c)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
 	stats, err := s.nls.GetBorrowerStats(
 		ctx,
-		s.stringFromContextParam(c, "address"),
+		network,
+		address,
 	)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
