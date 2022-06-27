@@ -617,6 +617,13 @@ func (s *NftLend) transactionUserBalance(tx *gorm.DB, network models.Network, us
 	if err != nil {
 		return errs.NewError(err)
 	}
+	err = s.ubd.BalanceChecked(
+		tx,
+		userBalance.ID,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
 	return nil
 }
 
