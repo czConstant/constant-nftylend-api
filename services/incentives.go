@@ -221,10 +221,12 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 						itM, err = s.itd.First(
 							tx,
 							map[string][]interface{}{
-								"incentive_program_id = ?": []interface{}{ipdM.IncentiveProgramID},
-								"type = ?":                 []interface{}{revokeType},
-								"loan_id = ?":              []interface{}{loan.ID},
-								"status = ?":               []interface{}{models.IncentiveTransactionStatusLocked},
+								"incentive_program_id = ?":  []interface{}{ipdM.IncentiveProgramID},
+								"type = ?":                  []interface{}{revokeType},
+								"loan_id = ?":               []interface{}{loan.ID},
+								"status = ?":                []interface{}{models.IncentiveTransactionStatusLocked},
+								"lock_until_at is not null": []interface{}{},
+								"lock_until_at <= ?":        []interface{}{time.Now()},
 							},
 							map[string][]interface{}{},
 							[]string{},
