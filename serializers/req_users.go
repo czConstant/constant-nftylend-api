@@ -20,7 +20,6 @@ type UserConnectedReq struct {
 type ClaimUserBalanceReq struct {
 	SignatureTimestampReq
 	CurrencyID uint             `json:"currency_id"`
-	ToAddress  string           `json:"to_address"`
 	Amount     numeric.BigFloat `json:"amount"`
 }
 
