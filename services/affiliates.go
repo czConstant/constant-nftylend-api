@@ -37,6 +37,8 @@ func (s *NftLend) GetAffiliateStats(ctx context.Context, network models.Network,
 	if err != nil {
 		return nil, errs.NewError(err)
 	}
+	m.CurrencyID = nToken.ID
+	m.Currency = nToken
 	return m, nil
 }
 

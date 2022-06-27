@@ -38,6 +38,8 @@ type IncentiveTransaction struct {
 }
 
 type AffiliateStats struct {
+	CurrencyID        uint
+	Currency          *Currency
 	TotalCommissions  numeric.BigFloat
 	TotalUsers        uint
 	TotalTransactions uint
