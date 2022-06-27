@@ -7,17 +7,18 @@ import (
 )
 
 type UserResp struct {
-	ID              uint           `json:"id"`
-	CreatedAt       time.Time      `json:"created_at"`
-	UpdatedAt       time.Time      `json:"updated_at"`
-	Network         models.Network `json:"network"`
-	Address         string         `json:"address"`
-	Email           string         `json:"email"`
-	Username        string         `json:"username"`
-	NewsNotiEnabled bool           `json:"news_noti_enabled"`
-	LoanNotiEnabled bool           `json:"loan_noti_enabled"`
-	SeenNotiID      uint           `json:"seen_noti_id"`
-	IsVerified      bool           `json:"is_verified"`
+	ID              uint            `json:"id"`
+	CreatedAt       time.Time       `json:"created_at"`
+	UpdatedAt       time.Time       `json:"updated_at"`
+	Network         models.Network  `json:"network"`
+	Address         string          `json:"address"`
+	Email           string          `json:"email"`
+	Username        string          `json:"username"`
+	Type            models.UserType `json:"type"`
+	NewsNotiEnabled bool            `json:"news_noti_enabled"`
+	LoanNotiEnabled bool            `json:"loan_noti_enabled"`
+	SeenNotiID      uint            `json:"seen_noti_id"`
+	IsVerified      bool            `json:"is_verified"`
 }
 
 func NewUserResp(m *models.User) *UserResp {
@@ -32,6 +33,7 @@ func NewUserResp(m *models.User) *UserResp {
 		Address:         m.Address,
 		Email:           m.Email,
 		Username:        m.Username,
+		Type:            m.Type,
 		NewsNotiEnabled: m.NewsNotiEnabled,
 		LoanNotiEnabled: m.LoanNotiEnabled,
 		IsVerified:      m.IsVerified,
