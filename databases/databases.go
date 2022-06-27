@@ -71,8 +71,12 @@ func MigrateDBMain(db *gorm.DB) error {
 	db.Model(&models.Loan{}).AddUniqueIndex("loans_main_uindex", "network", "borrower_user_id", "asset_id", "started_at")
 	db.Model(&models.Loan{}).AddIndex("loans_collection_id_index", "collection_id")
 	db.Model(&models.Loan{}).AddIndex("loans_asset_id_index", "asset_id")
+	db.Model(&models.Loan{}).AddIndex("loans_borrower_user_id_index", "borrower_user_id")
+	db.Model(&models.Loan{}).AddIndex("loans_lender_user_id_index", "lender_user_id")
 
+	db.Model(&models.LoanOffer{}).AddUniqueIndex("loan_offers_main_index", "loan_id", "nonce_hex")
 	db.Model(&models.LoanOffer{}).AddIndex("loan_offers_loan_id_index", "loan_id")
+	db.Model(&models.LoanOffer{}).AddIndex("loan_offers_lender_user_id_index", "lender_user_id")
 
 	db.Model(&models.LoanTransaction{}).AddIndex("loan_transactions_loan_id_index", "loan_id")
 
