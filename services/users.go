@@ -739,7 +739,7 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 			case models.NetworkNEAR:
 				{
 					amount := models.NegativeBigFloat(&userBalanceTransaction.Amount.Float)
-					switch currency.ContractAddress {
+					switch currency.Symbol {
 					case models.SymbolNEARToken:
 						{
 							hash, err = s.bcs.Near.Transfer(
