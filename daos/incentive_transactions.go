@@ -87,7 +87,7 @@ func (d *IncentiveTransaction) GetAffiliateVolumes(tx *gorm.DB, userID uint, cur
 	switch rptBy {
 	case "week":
 		{
-			rptExpr = "from_unixtime(ceil((unix_timestamp(date(created_at)) - (4 * 24 * 3600)) / (7 * 24 * 3600)) * (7 * 24 * 3600) - (3 * 24 * 3600))"
+			rptExpr = "from_unixtime(floor((unix_timestamp(date(created_at)) - (4 * 24 * 3600)) / (7 * 24 * 3600)) * (7 * 24 * 3600) + (4 * 24 * 3600))"
 		}
 	case "month":
 		{
