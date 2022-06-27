@@ -687,7 +687,7 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 				return errs.NewError(err)
 			}
 			if userBalance.GetAvaiableBalance().Cmp(&req.Amount.Float) < 0 {
-				return errs.NewError(errs.ErrBadRequest)
+				req.Amount = numeric.BigFloat{*userBalance.GetAvaiableBalance()}
 			}
 			if !strings.EqualFold(user.Address, req.ToAddress) {
 				return errs.NewError(errs.ErrBadRequest)
