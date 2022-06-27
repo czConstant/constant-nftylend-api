@@ -87,6 +87,7 @@ func (s *NftLend) GetAffiliateShareRate(ctx context.Context, network models.Netw
 	if m != nil {
 		if m.RewardType == models.IncentiveTransactionRewardTypeRateOfLoan {
 			shareRate, _ = m.Amount.Float.Float64()
+			shareRate = models.DivFloats(shareRate, 0.01)
 		}
 	}
 	return shareRate, nil
