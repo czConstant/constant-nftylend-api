@@ -66,18 +66,18 @@ func (s *Server) ClaimUserBalance(c *gin.Context) {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	// err := s.validateTimestampWithSignature(
-	// 	ctx,
-	// 	req.Network,
-	// 	req.Address,
-	// 	req.Signature,
-	// 	req.Timestamp,
-	// )
-	// if err != nil {
-	// 	ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
-	// 	return
-	// }
-	err := s.nls.ClaimUserBalance(ctx, &req)
+	err := s.validateTimestampWithSignature(
+		ctx,
+		req.Network,
+		req.Address,
+		req.Signature,
+		req.Timestamp,
+	)
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	err = s.nls.ClaimUserBalance(ctx, &req)
 	if err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
