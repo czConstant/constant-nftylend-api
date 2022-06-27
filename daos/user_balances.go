@@ -1,6 +1,8 @@
 package daos
 
 import (
+	"math/big"
+
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/models"
 	"github.com/jinzhu/gorm"
@@ -18,6 +20,9 @@ func (d *UserBalance) FirstByID(tx *gorm.DB, id uint, preloads map[string][]inte
 		}
 		return nil, err
 	}
+	if m.GetAvaiableBalance().Cmp(big.NewFloat(0)) < 0 {
+		return nil, errs.NewError(errs.ErrBadRequest)
+	}
 	return &m, nil
 }
 
@@ -28,6 +33,9 @@ func (d *UserBalance) First(tx *gorm.DB, filters map[string][]interface{}, prelo
 			return nil, nil
 		}
 		return nil, err
+	}
+	if m.GetAvaiableBalance().Cmp(big.NewFloat(0)) < 0 {
+		return nil, errs.NewError(errs.ErrBadRequest)
 	}
 	return &m, nil
 }
@@ -53,4 +61,20 @@ func (d *UserBalance) Find4Page(tx *gorm.DB, filters map[string][]interface{}, p
 		return nil, 0, errs.NewError(err)
 	}
 	return ms, c, nil
+}
+
+func (d *UserBalance) BalanceChecked(tx *gorm.DB, id uint) error {
+	m, err := d.FirstByID(
+		tx,
+		id,
+		map[string][]interface{}{},
+		true,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	if m.GetAvaiableBalance().Cmp(big.NewFloat(0)) < 0 {
+		return errs.NewError(errs.ErrBadRequest)
+	}
+	return nil
 }
