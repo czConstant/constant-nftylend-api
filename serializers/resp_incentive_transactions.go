@@ -16,6 +16,8 @@ type IncentiveTransactionResp struct {
 	Type               models.IncentiveTransactionType   `json:"type"`
 	UserID             uint                              `json:"user_id"`
 	User               *UserResp                         `json:"user"`
+	RefUserID          uint                              `json:"ref_user_id"`
+	RefUser            *UserResp                         `json:"ref_user"`
 	CurrencyID         uint                              `json:"currency_id"`
 	Currency           *CurrencyResp                     `json:"currency"`
 	LoanID             uint                              `json:"loan_id"`
@@ -39,6 +41,8 @@ func NewIncentiveTransactionResp(m *models.IncentiveTransaction) *IncentiveTrans
 		Type:               m.Type,
 		UserID:             m.UserID,
 		User:               NewMiniUserResp(m.User),
+		RefUserID:          m.RefUserID,
+		RefUser:            NewMiniUserResp(m.RefUser),
 		CurrencyID:         m.CurrencyID,
 		Currency:           NewCurrencyResp(m.Currency),
 		LoanID:             m.LoanID,
