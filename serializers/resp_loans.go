@@ -109,7 +109,7 @@ type BorrowerStatsResp struct {
 	TotalLoans     uint             `json:"total_loans"`
 	TotalDoneLoans uint             `json:"total_done_loans"`
 	TotalVolume    numeric.BigFloat `json:"total_volume"`
-	CreditScore    numeric.BigFloat `json:"credit_score"`
+	CreditScore    float64          `json:"credit_score"`
 }
 
 func NewBorrowerStatsResp(m *models.BorrowerStats) *BorrowerStatsResp {
