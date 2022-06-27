@@ -327,17 +327,18 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 						transactionStatus = models.IncentiveTransactionStatusDone
 					}
 					itM = &models.IncentiveTransaction{
-						Network:            ipM.Network,
-						IncentiveProgramID: ipM.ID,
-						Type:               ipdM.Type,
-						UserID:             user.ID,
-						CurrencyID:         currencyID,
-						LoanID:             loanID,
-						Amount:             amount,
-						LockUntilAt:        lockUntilAt,
-						UnlockedAt:         nil,
-						Status:             transactionStatus,
-						RefUserID:          refUserID,
+						Network:                  ipM.Network,
+						IncentiveProgramID:       ipM.ID,
+						IncentiveProgramDetailID: ipdM.ID,
+						Type:                     ipdM.Type,
+						UserID:                   user.ID,
+						CurrencyID:               currencyID,
+						LoanID:                   loanID,
+						Amount:                   amount,
+						LockUntilAt:              lockUntilAt,
+						UnlockedAt:               nil,
+						Status:                   transactionStatus,
+						RefUserID:                refUserID,
 					}
 					err = s.itd.Create(
 						tx,

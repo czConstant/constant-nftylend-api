@@ -19,22 +19,23 @@ const (
 
 type IncentiveTransaction struct {
 	gorm.Model
-	Address            string
-	Network            Network
-	IncentiveProgramID uint
-	Type               IncentiveTransactionType
-	UserID             uint
-	User               *User
-	RefUserID          uint
-	RefUser            *User
-	CurrencyID         uint
-	Currency           *Currency
-	LoanID             uint
-	Loan               *Loan
-	Amount             numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
-	LockUntilAt        *time.Time
-	UnlockedAt         *time.Time
-	Status             IncentiveTransactionStatus
+	Address                  string
+	Network                  Network
+	IncentiveProgramID       uint
+	IncentiveProgramDetailID uint
+	Type                     IncentiveTransactionType
+	UserID                   uint
+	User                     *User
+	RefUserID                uint
+	RefUser                  *User
+	CurrencyID               uint
+	Currency                 *Currency
+	LoanID                   uint
+	Loan                     *Loan
+	Amount                   numeric.BigFloat `gorm:"type:decimal(48,24);default:0"`
+	LockUntilAt              *time.Time
+	UnlockedAt               *time.Time
+	Status                   IncentiveTransactionStatus
 }
 
 type AffiliateStats struct {
