@@ -385,7 +385,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 	return nil
 }
 
-func (s *NftLend) JobIncentiveForUnlock(ctx context.Context) error {
+func (s *NftLend) JobIncentiveStatus(ctx context.Context) error {
 	var retErr error
 	itMs, err := s.itd.Find(
 		daos.GetDBMainCtx(ctx),
@@ -405,7 +405,7 @@ func (s *NftLend) JobIncentiveForUnlock(ctx context.Context) error {
 		return errs.NewError(err)
 	}
 	for _, itM := range itMs {
-		err = s.IncentiveForLock(ctx, itM.ID)
+		err = s.IncentiveForReward(ctx, itM.ID)
 		if err != nil {
 			retErr = errs.MergeError(retErr, err)
 		}
@@ -512,10 +512,9 @@ func (s *NftLend) incentiveForUnlock(tx *gorm.DB, transactionID uint, checked bo
 		return errs.NewError(err)
 	}
 	return nil
-	return nil
 }
 
-func (s *NftLend) IncentiveForLock(ctx context.Context, transactionID uint) error {
+func (s *NftLend) IncentiveForReward(ctx context.Context, transactionID uint) error {
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(context.Background()),
 		func(tx *gorm.DB) error {
@@ -553,8 +552,15 @@ func (s *NftLend) IncentiveForLock(ctx context.Context, transactionID uint) erro
 			if err != nil {
 				return errs.NewError(err)
 			}
+			var reference string
 			itM.UserID = user.ID
-			itM.Status = models.IncentiveTransactionStatusLocked
+			if itM.LockUntilAt != nil {
+				itM.Status = models.IncentiveTransactionStatusLocked
+				reference = fmt.Sprintf("it_%d_locked", itM.ID)
+			} else {
+				itM.Status = models.IncentiveTransactionStatusDone
+				reference = fmt.Sprintf("it_%d_done", itM.ID)
+			}
 			err = s.itd.Save(
 				tx,
 				itM,
@@ -562,7 +568,6 @@ func (s *NftLend) IncentiveForLock(ctx context.Context, transactionID uint) erro
 			if err != nil {
 				return errs.NewError(err)
 			}
-			reference := fmt.Sprintf("it_%d_locked", itM.ID)
 			userBalance, err := s.getUserBalance(
 				tx,
 				itM.UserID,
@@ -589,13 +594,17 @@ func (s *NftLend) IncentiveForLock(ctx context.Context, transactionID uint) erro
 			if err != nil {
 				return errs.NewError(err)
 			}
+			var isLocked bool
+			if itM.Status == models.IncentiveTransactionStatusLocked {
+				isLocked = true
+			}
 			err = s.transactionUserBalance(
 				tx,
 				itM.Network,
 				itM.UserID,
 				itM.CurrencyID,
 				itM.Amount,
-				true,
+				isLocked,
 				false,
 				reference,
 			)

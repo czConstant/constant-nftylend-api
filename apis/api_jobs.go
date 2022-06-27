@@ -62,7 +62,7 @@ func (s *Server) JobEmailSchedule(c *gin.Context) {
 func (s *Server) JobIncentiveForUnlock(c *gin.Context) {
 	ctx := s.requestContext(c)
 	var retErr error
-	err := s.nls.JobIncentiveForUnlock(ctx)
+	err := s.nls.JobIncentiveStatus(ctx)
 	if err != nil {
 		retErr = errs.MergeError(retErr, err)
 	}
