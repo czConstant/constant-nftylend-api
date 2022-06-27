@@ -399,7 +399,7 @@ func (s *NftLend) JobIncentiveStatus(ctx context.Context) error {
 		map[string][]interface{}{},
 		[]string{},
 		0,
-		9999,
+		999999,
 	)
 	if err != nil {
 		return errs.NewError(err)
@@ -426,7 +426,7 @@ func (s *NftLend) JobIncentiveStatus(ctx context.Context) error {
 		map[string][]interface{}{},
 		[]string{},
 		0,
-		9999,
+		999999,
 	)
 	if err != nil {
 		return errs.NewError(err)
