@@ -39,11 +39,16 @@ func (s *Server) GetAffiliateStats(c *gin.Context) {
 
 func (s *Server) GetAffiliateVolumes(c *gin.Context) {
 	ctx := s.requestContext(c)
+	network, address, err := s.getNetworkAddress(c)
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
 	_, limit := s.pagingFromContext(c)
 	rpts, err := s.nls.GetAffiliateVolumes(
 		ctx,
-		models.Network(s.stringFromContextQuery(c, "network")),
-		s.stringFromContextQuery(c, "address"),
+		network,
+		address,
 		s.stringFromContextQuery(c, "rpt_by"),
 		uint(limit),
 	)
@@ -57,11 +62,16 @@ func (s *Server) GetAffiliateVolumes(c *gin.Context) {
 
 func (s *Server) GetAffiliateTransactions(c *gin.Context) {
 	ctx := s.requestContext(c)
+	network, address, err := s.getNetworkAddress(c)
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
 	page, limit := s.pagingFromContext(c)
 	statuses := s.stringArrayFromContextQuery(c, "status")
 	txns, count, err := s.nls.GetIncentiveTransactions(ctx,
-		models.Network(s.stringFromContextQuery(c, "network")),
-		s.stringFromContextQuery(c, "address"),
+		network,
+		address,
 		[]string{
 			string(models.IncentiveTransactionTypeAffiliateBorrowerLoanDone),
 			string(models.IncentiveTransactionTypeAffiliateLenderLoanDone),
