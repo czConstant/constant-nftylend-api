@@ -689,7 +689,7 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 			if userBalance.GetAvaiableBalance().Cmp(&req.Amount.Float) < 0 {
 				req.Amount = numeric.BigFloat{*userBalance.GetAvaiableBalance()}
 			}
-			if !strings.EqualFold(user.Address, req.ToAddress) {
+			if strings.Compare(strings.ToLower(user.Address), strings.ToLower(req.ToAddress)) != 0 {
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			currency, err := s.cd.FirstByID(
