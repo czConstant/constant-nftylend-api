@@ -21,7 +21,7 @@ func (s *NftLend) GetAffiliateStats(ctx context.Context, network models.Network,
 	if err != nil {
 		return nil, errs.NewError(err)
 	}
-	nToken, err := s.getLendCurrencyBySymbol(
+	nToken, err := s.getCurrencyByNetworkSymbol(
 		daos.GetDBMainCtx(ctx),
 		network,
 		models.SymbolNEARToken,
@@ -102,7 +102,7 @@ func (s *NftLend) GetAffiliateVolumes(ctx context.Context, network models.Networ
 	if err != nil {
 		return nil, errs.NewError(err)
 	}
-	nToken, err := s.getLendCurrencyBySymbol(
+	nToken, err := s.getCurrencyByNetworkSymbol(
 		daos.GetDBMainCtx(ctx),
 		network,
 		models.SymbolNEARToken,

@@ -264,7 +264,7 @@ func (s *NftLend) GetCurrencyByID(tx *gorm.DB, id uint, chain models.Network) (*
 	return c, nil
 }
 
-func (s *NftLend) getLendCurrencyBySymbol(tx *gorm.DB, network models.Network, symbol string) (*models.Currency, error) {
+func (s *NftLend) getCurrencyByNetworkSymbol(tx *gorm.DB, network models.Network, symbol string) (*models.Currency, error) {
 	c, err := s.cd.First(
 		tx,
 		map[string][]interface{}{

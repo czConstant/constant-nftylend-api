@@ -202,7 +202,7 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 			switch msg.Type {
 			case models.ProposalTypeGovernment:
 				{
-					pwpToken, err := s.getLendCurrencyBySymbol(
+					pwpToken, err := s.getCurrencyByNetworkSymbol(
 						tx,
 						req.Network,
 						models.SymbolPWPToken,
@@ -231,7 +231,7 @@ func (s *NftLend) CreateProposal(ctx context.Context, req *serializers.CreatePro
 				}
 			case models.ProposalTypeProposal:
 				{
-					pwpToken, err := s.getLendCurrencyBySymbol(
+					pwpToken, err := s.getCurrencyByNetworkSymbol(
 						tx,
 						req.Network,
 						models.SymbolPWPToken,
@@ -516,7 +516,7 @@ func (s *NftLend) CreateProposalVote(ctx context.Context, req *serializers.Creat
 			switch proposal.Type {
 			case models.ProposalTypeGovernment:
 				{
-					pwpToken, err := s.getLendCurrencyBySymbol(
+					pwpToken, err := s.getCurrencyByNetworkSymbol(
 						tx,
 						req.Network,
 						models.SymbolPWPToken,
