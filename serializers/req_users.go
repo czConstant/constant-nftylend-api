@@ -1,9 +1,5 @@
 package serializers
 
-import (
-	"github.com/czConstant/constant-nftylend-api/types/numeric"
-)
-
 type UpdateUserSettingReq struct {
 	SignatureTimestampReq
 	Email           string `json:"email"`
@@ -19,8 +15,7 @@ type UserConnectedReq struct {
 
 type ClaimUserBalanceReq struct {
 	SignatureTimestampReq
-	CurrencyID uint             `json:"currency_id"`
-	Amount     numeric.BigFloat `json:"amount"`
+	CurrencyID uint `json:"currency_id"`
 }
 
 type UserVerifyEmailReq struct {
