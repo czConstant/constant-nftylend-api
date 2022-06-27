@@ -543,17 +543,19 @@ func (s *NftLend) IncentiveForReward(ctx context.Context, transactionID uint) er
 			if itM.Status != models.IncentiveTransactionStatusPending {
 				return errs.NewError(errs.ErrBadRequest)
 			}
-			user, err := s.getUser(
-				tx,
-				itM.Network,
-				itM.Address,
-				false,
-			)
-			if err != nil {
-				return errs.NewError(err)
+			if itM.UserID <= 0 {
+				user, err := s.getUser(
+					tx,
+					itM.Network,
+					itM.Address,
+					false,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				itM.UserID = user.ID
 			}
 			var reference string
-			itM.UserID = user.ID
 			if itM.LockUntilAt != nil {
 				itM.Status = models.IncentiveTransactionStatusLocked
 				reference = fmt.Sprintf("it_%d_locked", itM.ID)
@@ -595,8 +597,11 @@ func (s *NftLend) IncentiveForReward(ctx context.Context, transactionID uint) er
 				return errs.NewError(err)
 			}
 			var isLocked bool
-			if itM.Status == models.IncentiveTransactionStatusLocked {
-				isLocked = true
+			switch itM.Status {
+			case models.IncentiveTransactionStatusLocked:
+				{
+					isLocked = true
+				}
 			}
 			err = s.transactionUserBalance(
 				tx,
