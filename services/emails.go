@@ -7,7 +7,6 @@ import (
 	"github.com/czConstant/constant-nftylend-api/daos"
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/models"
-	"github.com/czConstant/constant-nftylend-api/serializers"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/mailer"
 )
 
@@ -670,21 +669,24 @@ func (s *NftLend) EmailForEmailVerification(ctx context.Context, vID uint) error
 	return nil
 }
 
-func (s *NftLend) EmailForAffiliateSubmitted(ctx context.Context, req *serializers.AffiliateSubmittedReq) error {
-	user, err := s.GetUser(
-		ctx,
-		req.Network,
-		req.Address,
+func (s *NftLend) EmailForAffiliateSubmitted(ctx context.Context, asID uint) error {
+	asM, err := s.asd.FirstByID(
+		daos.GetDBMainCtx(ctx),
+		asID,
+		map[string][]interface{}{
+			"User": []interface{}{},
+		},
+		false,
 	)
 	if err != nil {
 		return errs.NewError(err)
 	}
 	reqMap := map[string]interface{}{
-		"address":     user.Address,
-		"contact":     req.Contact,
-		"full_name":   req.FullName,
-		"website":     req.Website,
-		"description": req.Description,
+		"address":     asM.User.Address,
+		"contact":     asM.Contact,
+		"full_name":   asM.FullName,
+		"website":     asM.Website,
+		"description": asM.Description,
 	}
 	err = s.sendEmailToEmail(
 		ctx,

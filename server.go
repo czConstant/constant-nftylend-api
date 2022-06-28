@@ -123,6 +123,8 @@ func main() {
 
 		vd = &daos.Verification{}
 
+		asd = &daos.AffiliateSubmission{}
+
 		stc = &saletrack.Client{
 			NftbankKey: conf.SaleTrack.NftbankKey,
 		}
@@ -165,6 +167,7 @@ func main() {
 			itd,
 
 			vd,
+			asd,
 		)
 	)
 

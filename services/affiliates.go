@@ -9,8 +9,36 @@ import (
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/helpers"
 	"github.com/czConstant/constant-nftylend-api/models"
+	"github.com/czConstant/constant-nftylend-api/serializers"
 	"github.com/czConstant/constant-nftylend-api/types/numeric"
 )
+
+func (s *NftLend) CreateAffiliateSubmission(ctx context.Context, req *serializers.AffiliateSubmittedReq) error {
+	user, err := s.GetUser(
+		ctx,
+		req.Network,
+		req.Address,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	err = s.clsd.Create(
+		daos.GetDBMainCtx(ctx),
+		&models.AffiliateSubmission{
+			Network:     req.Network,
+			UserID:      user.ID,
+			Contact:     req.Contact,
+			Website:     req.Website,
+			FullName:    req.FullName,
+			Description: req.Description,
+			Status:      models.AffiliateSubmissionStatusSubmitted,
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
 
 func (s *NftLend) GetAffiliateStats(ctx context.Context, network models.Network, address string) (*models.AffiliateStats, error) {
 	user, err := s.GetUser(
