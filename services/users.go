@@ -702,6 +702,9 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 			if !currency.ClaimEnabled {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			if currency.PoolAddress == "" {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			userBalanceTransaction := &models.UserBalanceTransaction{
 				Network:       userBalance.Network,
 				UserID:        userBalance.UserID,
@@ -731,9 +734,6 @@ func (s *NftLend) ClaimUserBalance(ctx context.Context, req *serializers.ClaimUs
 			)
 			if err != nil {
 				return errs.NewError(err)
-			}
-			if currency.PoolAddress == "" {
-				return errs.NewError(errs.ErrBadRequest)
 			}
 			var hash string
 			switch currency.Network {
