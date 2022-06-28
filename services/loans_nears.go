@@ -41,6 +41,9 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 			if err != nil {
 				return errs.NewError(err)
 			}
+			if saleInfo == nil {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			currency, err := s.getLendCurrency(tx, saleInfo.LoanCurrency)
 			if err != nil {
 				return errs.NewError(err)
