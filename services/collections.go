@@ -26,6 +26,7 @@ func (s *NftLend) CreateCollectionSubmission(ctx context.Context, req *serialize
 			ContactInfo:     req.ContactInfo,
 			Verified:        req.Verified,
 			WhoVerified:     req.WhoVerified,
+			Status:          models.CollectionSubmissionStatusSubmitted,
 		},
 	)
 	if err != nil {

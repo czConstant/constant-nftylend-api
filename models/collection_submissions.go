@@ -5,7 +5,8 @@ import "github.com/jinzhu/gorm"
 type CollectionSubmissionStatus string
 
 const (
-	CollectionSubmissionStatusApproved CollectionSubmissionStatus = "approved"
+	CollectionSubmissionStatusApproved  CollectionSubmissionStatus = "approved"
+	CollectionSubmissionStatusSubmitted CollectionSubmissionStatus = "submitted"
 )
 
 type CollectionSubmission struct {
