@@ -202,6 +202,19 @@ func (s *Server) logApiMiddleware() gin.HandlerFunc {
 			if !c.GetBool("log_body") {
 				bodyRequest = ""
 			}
+			network, address, _ := s.getNetworkAddress(c)
+			if bodyResponse != "" {
+				var rsBody struct {
+					Network string `json:"network"`
+					Address string `json:"address"`
+				}
+				if rsBody.Network != "" {
+					network = models.Network(rsBody.Network)
+				}
+				if rsBody.Address != "" {
+					address = rsBody.Address
+				}
+			}
 			logger.Info(
 				"api_response_time",
 				"request info",
@@ -218,8 +231,10 @@ func (s *Server) logApiMiddleware() gin.HandlerFunc {
 				zap.Any("country", c.Request.Header.Get("country")),
 				zap.Any("error_text", errText),
 				zap.Any("stacktrace", stacktraceText),
-				zap.Any("body_request", helpers.SubStringBodyResponse(bodyRequest, 1000)),
-				zap.Any("body_response", helpers.SubStringBodyResponse(bodyResponse, 1000)),
+				zap.Any("body_request", helpers.SubStringBodyResponse(bodyRequest, 10000)),
+				zap.Any("body_response", helpers.SubStringBodyResponse(bodyResponse, 10000)),
+				zap.Any("network", network),
+				zap.Any("address", address),
 			)
 			if os.Getenv("DEV") == "true" {
 				fmt.Println(stacktraceText)
