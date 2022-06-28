@@ -386,7 +386,7 @@ func (s *NftLend) GetCollections(ctx context.Context, page int, limit int) ([]*m
 		map[string][]interface{}{
 			"network in (?)":  []interface{}{s.getSupportedNetworks()},
 			"new_loan_id > ?": []interface{}{0},
-			`exists(
+			`approved = true or exists(
 				select 1
 				from collection_submissions
 				where collections.network = collection_submissions.network
