@@ -11,6 +11,7 @@ const (
 	EMAIL_LENDER_LOAN_REPAID       = "nftpawn_lender_loan_repaid"
 	EMAIL_LENDER_LOAN_LIQUIDATED   = "nftpawn_lender_loan_liquidated"
 	EMAIL_USER_VERIFY_EMAIL        = "nftpawn_user_verify_email"
+	EMAIL_AFFILIATE_SUBMISSION     = "nftpawn_affiliate_submission"
 )
 
 type EmailQueue struct {

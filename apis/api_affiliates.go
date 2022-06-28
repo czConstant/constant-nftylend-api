@@ -9,6 +9,32 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func (s *Server) CreateAffiliateSubmitted(c *gin.Context) {
+	ctx := s.requestContext(c)
+	var req serializers.AffiliateSubmittedReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	err := s.validateTimestampWithSignature(
+		ctx,
+		req.Network,
+		req.Address,
+		req.Signature,
+		req.Timestamp,
+	)
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	err = s.nls.EmailForAffiliateSubmitted(ctx, &req)
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
+}
+
 func (s *Server) GetAffiliateStats(c *gin.Context) {
 	ctx := s.requestContext(c)
 	network, address, err := s.getNetworkAddress(c)
