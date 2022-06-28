@@ -22,17 +22,25 @@ func (s *NftLend) CreateAffiliateSubmission(ctx context.Context, req *serializer
 	if err != nil {
 		return errs.NewError(err)
 	}
+	asM := &models.AffiliateSubmission{
+		Network:     req.Network,
+		UserID:      user.ID,
+		Contact:     req.Contact,
+		Website:     req.Website,
+		FullName:    req.FullName,
+		Description: req.Description,
+		Status:      models.AffiliateSubmissionStatusSubmitted,
+	}
 	err = s.clsd.Create(
 		daos.GetDBMainCtx(ctx),
-		&models.AffiliateSubmission{
-			Network:     req.Network,
-			UserID:      user.ID,
-			Contact:     req.Contact,
-			Website:     req.Website,
-			FullName:    req.FullName,
-			Description: req.Description,
-			Status:      models.AffiliateSubmissionStatusSubmitted,
-		},
+		asM,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	err = s.EmailForAffiliateSubmitted(
+		ctx,
+		asM.ID,
 	)
 	if err != nil {
 		return errs.NewError(err)
