@@ -16,18 +16,7 @@ func (s *Server) CreateAffiliateSubmitted(c *gin.Context) {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	err := s.validateTimestampWithSignature(
-		ctx,
-		req.Network,
-		req.Address,
-		req.Signature,
-		req.Timestamp,
-	)
-	if err != nil {
-		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
-		return
-	}
-	err = s.nls.CreateAffiliateSubmission(ctx, &req)
+	err := s.nls.CreateAffiliateSubmission(ctx, &req)
 	if err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

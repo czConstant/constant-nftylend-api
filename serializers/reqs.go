@@ -16,3 +16,8 @@ type SignatureTimestampReq struct {
 	Timestamp int64          `json:"timestamp"`
 	Signature string         `json:"signature"`
 }
+
+type BaseReq struct {
+	Network models.Network `json:"network"`
+	Address string         `json:"address"`
+}
