@@ -122,6 +122,8 @@ func (s *NftLend) UserVerifyEmailToken(ctx context.Context, req *serializers.Use
 				return errs.NewError(err)
 			}
 			user.IsVerified = true
+			user.LoanNotiEnabled = true
+			user.NewsNotiEnabled = true
 			user.Email = vM.Email
 			err = s.ud.Save(
 				tx,
