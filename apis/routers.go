@@ -69,7 +69,7 @@ func (s *Server) Routers() {
 		collectionnftAPI.GET("/list", s.GetCollections)
 		collectionnftAPI.GET("/detail/:seo_url", s.GetCollectionDetail)
 		collectionnftAPI.GET("/verified", s.GetCollectionAssetVerified)
-		collectionnftAPI.POST("/submitted", s.CreateCollectionSubmitted)
+		collectionnftAPI.POST("/submitted", s.CreateCollectionSubmission)
 		collectionnftAPI.GET("/near-whitelist-creators", s.GetNearApprovedCreators)
 		collectionnftAPI.GET("/near-whitelist-collections", s.GetNearApprovedCollections)
 	}

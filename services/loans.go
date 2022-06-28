@@ -86,11 +86,11 @@ func (s *NftLend) GetListingLoans(
 	}
 	filters[`exists(
 		select 1
-		from collection_submitteds
-		where collections.network = collection_submitteds.network
-		  and collections.creator = collection_submitteds.creator
-		  and collection_submitteds.status = ?
-	)`] = []interface{}{models.CollectionSubmittedStatusApproved}
+		from collection_submissions
+		where collections.network = collection_submissions.network
+		  and collections.creator = collection_submissions.creator
+		  and collection_submissions.status = ?
+	)`] = []interface{}{models.CollectionSubmissionStatusApproved}
 	loans, count, err := s.ld.FindJoin4Page(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{

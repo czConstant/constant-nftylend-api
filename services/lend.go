@@ -24,7 +24,7 @@ type NftLend struct {
 	ud   *daos.User
 	cd   *daos.Currency
 	cld  *daos.Collection
-	clsd *daos.CollectionSubmitted
+	clsd *daos.CollectionSubmission
 	ad   *daos.Asset
 	atd  *daos.AssetTransaction
 	ld   *daos.Loan
@@ -57,7 +57,7 @@ func NewNftLend(
 	ud *daos.User,
 	cd *daos.Currency,
 	cld *daos.Collection,
-	clsd *daos.CollectionSubmitted,
+	clsd *daos.CollectionSubmission,
 	ad *daos.Asset,
 	atd *daos.AssetTransaction,
 	ld *daos.Loan,

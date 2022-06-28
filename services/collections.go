@@ -14,10 +14,10 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func (s *NftLend) CreateCollectionSubmitted(ctx context.Context, req *serializers.CollectionSubmittedReq) error {
+func (s *NftLend) CreateCollectionSubmission(ctx context.Context, req *serializers.CollectionSubmissionReq) error {
 	err := s.clsd.Create(
 		daos.GetDBMainCtx(ctx),
-		&models.CollectionSubmitted{
+		&models.CollectionSubmission{
 			Network:         req.Network,
 			Name:            req.Name,
 			Description:     req.Description,
@@ -39,8 +39,8 @@ func (s *NftLend) GetNearApprovedCreators(ctx context.Context) ([]string, error)
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
 			"network = ?": []interface{}{models.NetworkNEAR},
-			"status in (?)": []interface{}{[]models.CollectionSubmittedStatus{
-				models.CollectionSubmittedStatusApproved,
+			"status in (?)": []interface{}{[]models.CollectionSubmissionStatus{
+				models.CollectionSubmissionStatusApproved,
 			}},
 		},
 		map[string][]interface{}{},
@@ -58,13 +58,13 @@ func (s *NftLend) GetNearApprovedCreators(ctx context.Context) ([]string, error)
 	return rets, nil
 }
 
-func (s *NftLend) GetNearApprovedCollections(ctx context.Context) ([]*models.CollectionSubmitted, error) {
+func (s *NftLend) GetNearApprovedCollections(ctx context.Context) ([]*models.CollectionSubmission, error) {
 	ms, err := s.clsd.Find(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
 			"network = ?": []interface{}{models.NetworkNEAR},
-			"status in (?)": []interface{}{[]models.CollectionSubmittedStatus{
-				models.CollectionSubmittedStatusApproved,
+			"status in (?)": []interface{}{[]models.CollectionSubmissionStatus{
+				models.CollectionSubmissionStatusApproved,
 			}},
 		},
 		map[string][]interface{}{},
@@ -165,12 +165,12 @@ func (s *NftLend) JobUpdateStatsCollection(ctx context.Context) error {
 			"network = ?":               []interface{}{models.NetworkNEAR},
 			"paras_collection_id != ''": []interface{}{},
 			`exists (
-				select 1 from collection_submitteds
-				where collection_submitteds.network = collections.network
-					and collection_submitteds.creator = collections.creator
-					and collection_submitteds.status = ?
+				select 1 from collection_submissions
+				where collection_submissions.network = collections.network
+					and collection_submissions.creator = collections.creator
+					and collection_submissions.status = ?
 			)`: []interface{}{
-				models.CollectionSubmittedStatusApproved,
+				models.CollectionSubmissionStatusApproved,
 			},
 		},
 		map[string][]interface{}{},
@@ -293,7 +293,7 @@ func (s *NftLend) GetCollectionVerified(ctx context.Context, network models.Netw
 				map[string][]interface{}{
 					"network = ?": []interface{}{m.Network},
 					"creator = ?": []interface{}{m.Creator},
-					"status = ?":  []interface{}{models.CollectionSubmittedStatusApproved},
+					"status = ?":  []interface{}{models.CollectionSubmissionStatusApproved},
 				},
 				map[string][]interface{}{},
 				[]string{},
@@ -388,11 +388,11 @@ func (s *NftLend) GetCollections(ctx context.Context, page int, limit int) ([]*m
 			"new_loan_id > ?": []interface{}{0},
 			`exists(
 				select 1
-				from collection_submitteds
-				where collections.network = collection_submitteds.network
-				  and collections.creator = collection_submitteds.creator
-				  and collection_submitteds.status = ?
-			)`: []interface{}{models.CollectionSubmittedStatusApproved},
+				from collection_submissions
+				where collections.network = collection_submissions.network
+				  and collections.creator = collection_submissions.creator
+				  and collection_submissions.status = ?
+			)`: []interface{}{models.CollectionSubmissionStatusApproved},
 		},
 		map[string][]interface{}{
 			"Currency":      []interface{}{},

@@ -10,14 +10,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (s *Server) CreateCollectionSubmitted(c *gin.Context) {
+func (s *Server) CreateCollectionSubmission(c *gin.Context) {
 	ctx := s.requestContext(c)
-	var req serializers.CollectionSubmittedReq
+	var req serializers.CollectionSubmissionReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	err := s.nls.CreateCollectionSubmitted(ctx, &req)
+	err := s.nls.CreateCollectionSubmission(ctx, &req)
 	if err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
@@ -42,7 +42,7 @@ func (s *Server) GetNearApprovedCollections(c *gin.Context) {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewCollectionSubmittedRespArr(ms)})
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewCollectionSubmissionRespArr(ms)})
 }
 
 func (s *Server) GetCollectionAssetVerified(c *gin.Context) {

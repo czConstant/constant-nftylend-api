@@ -2,7 +2,7 @@ package serializers
 
 import "github.com/czConstant/constant-nftylend-api/models"
 
-type CollectionSubmittedReq struct {
+type CollectionSubmissionReq struct {
 	Network         models.Network `json:"network"`
 	Name            string         `json:"name"`
 	Description     string         `json:"description"`

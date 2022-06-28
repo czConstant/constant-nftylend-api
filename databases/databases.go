@@ -35,7 +35,7 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.Asset)(nil),
 		(*models.AssetTransaction)(nil),
 		(*models.Collection)(nil),
-		(*models.CollectionSubmitted)(nil),
+		(*models.CollectionSubmission)(nil),
 		(*models.Loan)(nil),
 		(*models.LoanOffer)(nil),
 		(*models.LoanTransaction)(nil),
@@ -59,7 +59,7 @@ func MigrateDBMain(db *gorm.DB) error {
 	db.Model(&models.Collection{}).AddUniqueIndex("collections_main_uindex", "seo_url")
 	db.Model(&models.Collection{}).AddIndex("collections_creator_index", "creator")
 
-	db.Model(&models.CollectionSubmitted{}).AddIndex("collection_submitteds_creator_index", "creator")
+	db.Model(&models.CollectionSubmission{}).AddIndex("collection_submissions_creator_index", "creator")
 
 	db.Model(&models.Asset{}).AddUniqueIndex("assets_main_uindex", "seo_url")
 	db.Model(&models.Asset{}).AddIndex("assets_collection_id_index", "collection_id")

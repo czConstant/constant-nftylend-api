@@ -2,13 +2,13 @@ package models
 
 import "github.com/jinzhu/gorm"
 
-type CollectionSubmittedStatus string
+type CollectionSubmissionStatus string
 
 const (
-	CollectionSubmittedStatusApproved CollectionSubmittedStatus = "approved"
+	CollectionSubmissionStatusApproved CollectionSubmissionStatus = "approved"
 )
 
-type CollectionSubmitted struct {
+type CollectionSubmission struct {
 	gorm.Model
 	Network         Network
 	Name            string
@@ -19,5 +19,5 @@ type CollectionSubmitted struct {
 	ContactInfo     string
 	Verified        bool `gorm:"default:0"`
 	WhoVerified     string
-	Status          CollectionSubmittedStatus
+	Status          CollectionSubmissionStatus
 }

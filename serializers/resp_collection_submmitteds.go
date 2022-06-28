@@ -6,27 +6,27 @@ import (
 	"github.com/czConstant/constant-nftylend-api/models"
 )
 
-type CollectionSubmittedResp struct {
-	ID              uint                             `json:"id"`
-	CreatedAt       time.Time                        `json:"created_at"`
-	UpdatedAt       time.Time                        `json:"updated_at"`
-	Network         models.Network                   `json:"network"`
-	Name            string                           `json:"name"`
-	Description     string                           `json:"description"`
-	Creator         string                           `json:"creator"`
-	ContractAddress string                           `json:"contract_address"`
-	TokenSeriesID   string                           `json:"token_series_id"`
-	ContactInfo     string                           `json:"contact_info"`
-	Verified        bool                             `json:"verified"`
-	WhoVerified     string                           `json:"who_verified"`
-	Status          models.CollectionSubmittedStatus `json:"status"`
+type CollectionSubmissionResp struct {
+	ID              uint                              `json:"id"`
+	CreatedAt       time.Time                         `json:"created_at"`
+	UpdatedAt       time.Time                         `json:"updated_at"`
+	Network         models.Network                    `json:"network"`
+	Name            string                            `json:"name"`
+	Description     string                            `json:"description"`
+	Creator         string                            `json:"creator"`
+	ContractAddress string                            `json:"contract_address"`
+	TokenSeriesID   string                            `json:"token_series_id"`
+	ContactInfo     string                            `json:"contact_info"`
+	Verified        bool                              `json:"verified"`
+	WhoVerified     string                            `json:"who_verified"`
+	Status          models.CollectionSubmissionStatus `json:"status"`
 }
 
-func NewCollectionSubmittedResp(m *models.CollectionSubmitted) *CollectionSubmittedResp {
+func NewCollectionSubmissionResp(m *models.CollectionSubmission) *CollectionSubmissionResp {
 	if m == nil {
 		return nil
 	}
-	resp := &CollectionSubmittedResp{
+	resp := &CollectionSubmissionResp{
 		ID:            m.ID,
 		CreatedAt:     m.CreatedAt,
 		UpdatedAt:     m.UpdatedAt,
@@ -42,10 +42,10 @@ func NewCollectionSubmittedResp(m *models.CollectionSubmitted) *CollectionSubmit
 	return resp
 }
 
-func NewCollectionSubmittedRespArr(arr []*models.CollectionSubmitted) []*CollectionSubmittedResp {
-	resps := []*CollectionSubmittedResp{}
+func NewCollectionSubmissionRespArr(arr []*models.CollectionSubmission) []*CollectionSubmissionResp {
+	resps := []*CollectionSubmissionResp{}
 	for _, m := range arr {
-		resps = append(resps, NewCollectionSubmittedResp(m))
+		resps = append(resps, NewCollectionSubmissionResp(m))
 	}
 	return resps
 }

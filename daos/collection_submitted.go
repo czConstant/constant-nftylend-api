@@ -6,12 +6,12 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-type CollectionSubmitted struct {
+type CollectionSubmission struct {
 	DAO
 }
 
-func (d *CollectionSubmitted) FirstByID(tx *gorm.DB, id uint, preloads map[string][]interface{}, forUpdate bool) (*models.CollectionSubmitted, error) {
-	var m models.CollectionSubmitted
+func (d *CollectionSubmission) FirstByID(tx *gorm.DB, id uint, preloads map[string][]interface{}, forUpdate bool) (*models.CollectionSubmission, error) {
+	var m models.CollectionSubmission
 	if err := d.first(tx, &m, map[string][]interface{}{"id = ?": []interface{}{id}}, preloads, nil, forUpdate); err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -21,8 +21,8 @@ func (d *CollectionSubmitted) FirstByID(tx *gorm.DB, id uint, preloads map[strin
 	return &m, nil
 }
 
-func (d *CollectionSubmitted) First(tx *gorm.DB, filters map[string][]interface{}, preloads map[string][]interface{}, orders []string) (*models.CollectionSubmitted, error) {
-	var m models.CollectionSubmitted
+func (d *CollectionSubmission) First(tx *gorm.DB, filters map[string][]interface{}, preloads map[string][]interface{}, orders []string) (*models.CollectionSubmission, error) {
+	var m models.CollectionSubmission
 	if err := d.first(tx, &m, filters, preloads, orders, false); err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -32,23 +32,23 @@ func (d *CollectionSubmitted) First(tx *gorm.DB, filters map[string][]interface{
 	return &m, nil
 }
 
-func (d *CollectionSubmitted) Find(tx *gorm.DB, filters map[string][]interface{}, preloads map[string][]interface{}, orders []string, offset int, limit int) ([]*models.CollectionSubmitted, error) {
-	var ms []*models.CollectionSubmitted
+func (d *CollectionSubmission) Find(tx *gorm.DB, filters map[string][]interface{}, preloads map[string][]interface{}, orders []string, offset int, limit int) ([]*models.CollectionSubmission, error) {
+	var ms []*models.CollectionSubmission
 	if err := d.find(tx, &ms, filters, preloads, orders, offset, limit, false); err != nil {
 		return nil, err
 	}
 	return ms, nil
 }
 
-func (d *CollectionSubmitted) Find4Page(tx *gorm.DB, filters map[string][]interface{}, preloads map[string][]interface{}, orders []string, page int, limit int) ([]*models.CollectionSubmitted, uint, error) {
+func (d *CollectionSubmission) Find4Page(tx *gorm.DB, filters map[string][]interface{}, preloads map[string][]interface{}, orders []string, page int, limit int) ([]*models.CollectionSubmission, uint, error) {
 	var (
 		offset = (page - 1) * limit
 	)
-	var ms []*models.CollectionSubmitted
+	var ms []*models.CollectionSubmission
 	if err := d.find(tx, &ms, filters, preloads, orders, offset, limit, false); err != nil {
 		return nil, 0, errs.NewError(err)
 	}
-	c, err := d.count(tx, &models.CollectionSubmitted{}, filters)
+	c, err := d.count(tx, &models.CollectionSubmission{}, filters)
 	if err != nil {
 		return nil, 0, errs.NewError(err)
 	}
