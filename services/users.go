@@ -270,10 +270,6 @@ func (s *NftLend) UserUpdateSetting(ctx context.Context, req *serializers.Update
 			if err != nil {
 				return errs.NewError(err)
 			}
-			if req.Email != "" {
-				req.Email = strings.TrimSpace(strings.ToLower(req.Email))
-				user.Email = req.Email
-			}
 			if req.Username != "" {
 				req.Username = strings.TrimSpace(strings.ToLower(req.Username))
 				uCheck, err := s.ud.First(
