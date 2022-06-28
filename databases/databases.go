@@ -52,6 +52,7 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.IncentiveProgramDetail)(nil),
 		(*models.IncentiveTransaction)(nil),
 		(*models.Verification)(nil),
+		(*models.AffiliateSubmission)(nil),
 	}
 	if err := db.AutoMigrate(allTables...).Error; err != nil {
 		return err
