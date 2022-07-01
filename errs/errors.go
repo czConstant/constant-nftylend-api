@@ -42,6 +42,9 @@ var (
 	ErrPlayerNotFound          = &Error{Code: -333011, Message: "Player not found"}
 
 	ErrPriceOutOfDate = &Error{Code: -9036, Message: "price is out of date"}
+
+	ErrVerificationLimited = &Error{Code: -2001, Message: "your email verification is limited in 10 minutes"}
+	ErrVerificationExpired = &Error{Code: -2001, Message: "your email verification is expired"}
 )
 
 type Error struct {

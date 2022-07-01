@@ -23,6 +23,11 @@ func (s *NftLend) UserVerifyEmail(ctx context.Context, req *serializers.UserVeri
 			if err != nil {
 				return errs.NewError(err)
 			}
+			if user.IsVerified {
+				if user.Email == req.Email {
+					return errs.NewError(errs.ErrBadRequest)
+				}
+			}
 			vMs, err := s.vd.Find(
 				tx,
 				map[string][]interface{}{
@@ -40,6 +45,9 @@ func (s *NftLend) UserVerifyEmail(ctx context.Context, req *serializers.UserVeri
 				return errs.NewError(err)
 			}
 			for _, vM := range vMs {
+				if vM.ExpiredAt.After(time.Now().Add(-10 * time.Minute)) {
+					return errs.NewError(errs.ErrVerificationLimited)
+				}
 				vM.Status = models.VerificationStatusCancelled
 				err = s.vd.Save(
 					tx,
@@ -102,7 +110,7 @@ func (s *NftLend) UserVerifyEmailToken(ctx context.Context, req *serializers.Use
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			if vM.ExpiredAt.Before(time.Now()) {
-				return errs.NewError(errs.ErrBadRequest)
+				return errs.NewError(errs.ErrVerificationExpired)
 			}
 			vM.Status = models.VerificationStatusVerified
 			err = s.vd.Save(
