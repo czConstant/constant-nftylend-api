@@ -118,7 +118,7 @@ func (s *NftLend) getUser(tx *gorm.DB, network models.Network, address string, f
 }
 
 func (s *NftLend) UserConnected(ctx context.Context, network models.Network, address string, referrerCode string) (*models.User, error) {
-	referrerCode = strings.ToLower(referrerCode)
+	referrerCode = strings.TrimSpace(strings.ToLower(referrerCode))
 	var user *models.User
 	var err error
 	if address == "" {
@@ -167,7 +167,7 @@ func (s *NftLend) UserConnected(ctx context.Context, network models.Network, add
 						return errs.NewError(errs.ErrBadRequest)
 					}
 				}
-				user.ReferrerCode = strings.TrimSpace(strings.ToLower(referrerCode))
+				user.ReferrerCode = referrerCode
 				if user.ReferrerCode != "" &&
 					user.ReferrerCode != user.Username {
 					referrer, err := s.ud.First(
