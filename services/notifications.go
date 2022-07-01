@@ -98,6 +98,9 @@ func (s *NftLend) SeenNotification(ctx context.Context, req *serializers.SeenNot
 	if req.Address == "" {
 		return errs.NewError(errs.ErrBadRequest)
 	}
+	if req.SeenNotiID <= 0 {
+		return errs.NewError(errs.ErrBadRequest)
+	}
 	switch req.Network {
 	case models.NetworkSOL,
 		models.NetworkAVAX,
@@ -123,17 +126,32 @@ func (s *NftLend) SeenNotification(ctx context.Context, req *serializers.SeenNot
 			if user.NewNotiID < req.SeenNotiID {
 				return errs.NewError(errs.ErrBadRequest)
 			}
+			m, err := s.nd.FirstByID(
+				tx,
+				req.SeenNotiID,
+				map[string][]interface{}{},
+				false,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if m == nil {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			if m.UserID != user.ID {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			newNotiNum, err := s.nd.Count(
 				tx,
 				map[string][]interface{}{
 					"user_id = ?": []interface{}{user.ID},
-					"id > ?":      []interface{}{req.SeenNotiID},
+					"id > ?":      []interface{}{m.ID},
 				},
 			)
 			if err != nil {
 				return errs.NewError(err)
 			}
-			user.SeenNotiID = req.SeenNotiID
+			user.SeenNotiID = m.ID
 			user.NewNotiNum = newNotiNum
 			if err != nil {
 				return errs.NewError(err)
