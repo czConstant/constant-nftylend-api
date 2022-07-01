@@ -124,6 +124,18 @@ func (s *NftLend) UserVerifyEmailToken(ctx context.Context, req *serializers.Use
 			if vM == nil {
 				return errs.NewError(errs.ErrVerificationInvalid)
 			}
+			vM, err = s.vd.FirstByID(
+				tx,
+				vM.ID,
+				map[string][]interface{}{},
+				true,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if vM.Status != models.VerificationStatusVerifying {
+				return errs.NewError(errs.ErrVerificationInvalid)
+			}
 			if vM.ExpiredAt.Before(time.Now()) {
 				return errs.NewError(errs.ErrVerificationExpired)
 			}
