@@ -130,7 +130,10 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						"id != ?":      []interface{}{loan.ID},
 						"network = ?":  []interface{}{loan.Network},
 						"asset_id = ?": []interface{}{loan.AssetID},
-						"status = ?":   []interface{}{models.LoanStatusCreated},
+						"status = ? or started_at > ?": []interface{}{
+							models.LoanStatusCreated,
+							loan.StartedAt,
+						},
 					},
 					map[string][]interface{}{},
 					[]string{},
@@ -147,10 +150,10 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				loans, err := s.ld.Find(
 					tx,
 					map[string][]interface{}{
-						"id < ?":       []interface{}{loan.ID},
-						"network = ?":  []interface{}{loan.Network},
-						"asset_id = ?": []interface{}{loan.AssetID},
-						"status = ?":   []interface{}{models.LoanStatusNew},
+						"network = ?":    []interface{}{loan.Network},
+						"asset_id = ?":   []interface{}{loan.AssetID},
+						"status = ?":     []interface{}{models.LoanStatusNew},
+						"started_at < ?": []interface{}{loan.StartedAt},
 					},
 					map[string][]interface{}{},
 					[]string{},
