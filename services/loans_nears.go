@@ -147,7 +147,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 				loans, err := s.ld.Find(
 					tx,
 					map[string][]interface{}{
-						"id != ?":      []interface{}{loan.ID},
+						"id < ?":       []interface{}{loan.ID},
 						"network = ?":  []interface{}{loan.Network},
 						"asset_id = ?": []interface{}{loan.AssetID},
 						"status = ?":   []interface{}{models.LoanStatusNew},
