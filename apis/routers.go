@@ -69,7 +69,7 @@ func (s *Server) Routers() {
 		collectionnftAPI.GET("/list", s.GetCollections)
 		collectionnftAPI.GET("/detail/:seo_url", s.GetCollectionDetail)
 		collectionnftAPI.GET("/verified", s.GetCollectionAssetVerified)
-		collectionnftAPI.POST("/submitted", s.CreateCollectionSubmission)
+		collectionnftAPI.POST("/submitted", s.recaptchaV3Middleware(), s.CreateCollectionSubmission)
 		collectionnftAPI.GET("/near-whitelist-creators", s.GetNearApprovedCreators)
 		collectionnftAPI.GET("/near-whitelist-collections", s.GetNearApprovedCollections)
 	}
@@ -88,7 +88,7 @@ func (s *Server) Routers() {
 	proposalAPI := nftAPI.Group("/proposals")
 	{
 		proposalAPI.GET("/list", s.GetProposals)
-		proposalAPI.POST("/create", s.CreateProposal)
+		proposalAPI.POST("/create", s.recaptchaV3Middleware(), s.CreateProposal)
 		proposalAPI.GET("/detail/:proposal_id", s.GetProposalDetail)
 		proposalAPI.GET("/votes/list/:proposal_id", s.GetProposalVotes)
 		proposalAPI.GET("/votes/vote/:proposal_id", s.GetUserProposalVote)
@@ -113,13 +113,13 @@ func (s *Server) Routers() {
 	userNftAPI := nftAPI.Group("/users")
 	{
 		userNftAPI.GET("/settings", s.UserGetSettings)
-		userNftAPI.POST("/settings", s.UserUpdateSetting)
+		userNftAPI.POST("/settings", s.recaptchaV3Middleware(), s.UserUpdateSetting)
 		userNftAPI.POST("/connected", s.UserConnected)
 		userNftAPI.GET("/stats", s.GetUserStats)
 		userNftAPI.GET("/balances/pwp", s.GetUserPWPCurrencyBalance)
 		userNftAPI.GET("/balances/near", s.GetUserNEARCurrencyBalance)
 		userNftAPI.GET("/balances/transactions", s.GetUserBalanceTransactions)
-		userNftAPI.POST("/balances/claim", s.ClaimUserBalance)
+		userNftAPI.POST("/balances/claim", s.recaptchaV3Middleware(), s.ClaimUserBalance)
 	}
 	notiAPI := nftAPI.Group("/notifications")
 	{
@@ -128,7 +128,7 @@ func (s *Server) Routers() {
 	}
 	verificationAPI := nftAPI.Group("/verifications")
 	{
-		verificationAPI.POST("/verify-email", s.UserVerifyEmail)
+		verificationAPI.POST("/verify-email", s.recaptchaV3Middleware(), s.UserVerifyEmail)
 		verificationAPI.POST("/verify-token", s.UserVerifyEmailToken)
 	}
 	affiliateAPI := nftAPI.Group("/affiliates")
@@ -136,6 +136,6 @@ func (s *Server) Routers() {
 		affiliateAPI.GET("/stats", s.GetAffiliateStats)
 		affiliateAPI.GET("/volumes", s.GetAffiliateVolumes)
 		affiliateAPI.GET("/transactions", s.GetAffiliateTransactions)
-		affiliateAPI.POST("/submitted", s.CreateAffiliateSubmitted)
+		affiliateAPI.POST("/submitted", s.recaptchaV3Middleware(), s.CreateAffiliateSubmitted)
 	}
 }
