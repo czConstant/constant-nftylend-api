@@ -97,7 +97,7 @@ func (s *NftLend) SeenNotification(ctx context.Context, req *serializers.SeenNot
 	err = daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			user, err = s.getUser(tx, req.Network, req.Address, false)
+			user, err = s.getUser(tx, req.Network, req.Address, true)
 			if err != nil {
 				return errs.NewError(err)
 			}
