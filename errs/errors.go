@@ -43,9 +43,10 @@ var (
 
 	ErrPriceOutOfDate = &Error{Code: -9036, Message: "price is out of date"}
 
-	ErrVerificationLimited = &Error{Code: -2001, Message: "your email verification is limited in 10 minutes"}
-	ErrVerificationExpired = &Error{Code: -2002, Message: "your email verification is expired"}
-	ErrVerificationInvalid = &Error{Code: -2003, Message: "your email verification is invalid"}
+	ErrVerificationLimited10Minutes = &Error{Code: -2001, Message: "your email verification is limited in 10 minutes"}
+	ErrVerificationExpired          = &Error{Code: -2002, Message: "your email verification is expired"}
+	ErrVerificationInvalid          = &Error{Code: -2003, Message: "your email verification is invalid"}
+	ErrVerificationLimited24Hours   = &Error{Code: -2004, Message: "your email verification is limited 5 requests in 24 hours"}
 )
 
 type Error struct {

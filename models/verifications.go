@@ -15,6 +15,7 @@ const (
 	VerificationStatusVerifying VerificationStatus = "verifying"
 	VerificationStatusVerified  VerificationStatus = "verified"
 	VerificationStatusCancelled VerificationStatus = "cancelled"
+	VerificationStatusExpired   VerificationStatus = "expired"
 )
 
 type Verification struct {

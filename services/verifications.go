@@ -28,6 +28,21 @@ func (s *NftLend) UserVerifyEmail(ctx context.Context, req *serializers.UserVeri
 					return errs.NewError(errs.ErrBadRequest)
 				}
 			}
+			count, err := s.vd.Count(
+				tx,
+				map[string][]interface{}{
+					"network = ?":     []interface{}{req.Network},
+					"user_id = ?":     []interface{}{user.ID},
+					"type = ?":        []interface{}{models.VerificationTypeEmail},
+					"created_at >= ?": []interface{}{helpers.TimeNowAdd(-24 * time.Hour)},
+				},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if count >= 5 {
+				return errs.NewError(errs.ErrVerificationLimited24Hours)
+			}
 			vMs, err := s.vd.Find(
 				tx,
 				map[string][]interface{}{
@@ -46,7 +61,7 @@ func (s *NftLend) UserVerifyEmail(ctx context.Context, req *serializers.UserVeri
 			}
 			for _, vM := range vMs {
 				if vM.ExpiredAt.After(time.Now().Add(-10 * time.Minute)) {
-					return errs.NewError(errs.ErrVerificationLimited)
+					return errs.NewError(errs.ErrVerificationLimited10Minutes)
 				}
 				vM.Status = models.VerificationStatusCancelled
 				err = s.vd.Save(
