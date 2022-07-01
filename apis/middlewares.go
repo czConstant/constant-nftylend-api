@@ -84,22 +84,6 @@ func (s *Server) requestContext(c *gin.Context) context.Context {
 	return c.Request.Context()
 }
 
-func (s *Server) GetUserToken(c *gin.Context) (string, error) {
-	auth := c.GetHeader("Authorization")
-	if auth == "" {
-		auth = c.Query("auth_token")
-		if auth == "" {
-			return "", errs.NewError(errs.ErrTokenInvalid)
-		}
-		return auth, nil
-	}
-	auths := strings.Split(auth, " ")
-	if len(auths) < 2 {
-		return "", errs.NewError(errs.ErrTokenInvalid)
-	}
-	return auths[1], nil
-}
-
 func (s *Server) authorizeJobMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if configs.GetConfig().JobToken != "" &&

@@ -14,34 +14,11 @@ import (
 )
 
 var (
-	ErrSystemError              = &Error{Code: -1001, Message: "system error"}
-	ErrInvalidEmail             = &Error{Code: -1002, Message: "invalid email"}
-	ErrInvalidPassword          = &Error{Code: -1003, Message: "invalid password"}
-	ErrEmailNotExists           = &Error{Code: -1004, Message: "email doesn't exist"}
-	ErrEmailAlreadyExists       = &Error{Code: -1005, Message: "email already exists"}
-	ErrInvalidCredentials       = &Error{Code: -1006, Message: "invalid credentials"}
-	ErrBadRequest               = &Error{Code: -1007, Message: "bad request"}
-	ErrBadPermission            = &Error{Code: -1008, Message: "bad permission"}
-	ErrBadBodyRequest           = &Error{Code: -1009, Message: "bad body request"}
-	ErrVerificationTokenExpired = &Error{Code: -1010, Message: "verification token expired"}
-	ErrOTPIsInvalid             = &Error{Code: -1045, Message: "OTP not matched or invalidated!"}
-	ErrUserNotFound             = &Error{Code: -1046, Message: "User not found"}
-	ErrInvalidRecaptcha         = &Error{Code: -1076, Message: "invalid recaptcha"}
-
-	ErrAddressInvalid          = &Error{Code: -333001, Message: "address invalid"}
-	ErrTokenInvalid            = &Error{Code: -333002, Message: "token invalid"}
-	ErrNetworkInvalid          = &Error{Code: -333003, Message: "Network invalid"}
-	ErrStrategyNotFound        = &Error{Code: -333004, Message: "Strategy not found"}
-	ErrTeamNotFound            = &Error{Code: -333005, Message: "Team not found"}
-	ErrCurrencyNotFound        = &Error{Code: -333006, Message: "Currency not found"}
-	ErrOrderNotFound           = &Error{Code: -333007, Message: "Order not found"}
-	ErrContractNotFound        = &Error{Code: -333008, Message: "Contract not found"}
-	ErrContractAlreadyReviewed = &Error{Code: -333009, Message: "Contract has reviewed"}
-	ErrQueueNotFound           = &Error{Code: -333008, Message: "Contract queue not found"}
-	ErrRatingInvalid           = &Error{Code: -333010, Message: "Invalid rating"}
-	ErrPlayerNotFound          = &Error{Code: -333011, Message: "Player not found"}
-
-	ErrPriceOutOfDate = &Error{Code: -9036, Message: "price is out of date"}
+	ErrSystemError        = &Error{Code: -1001, Message: "system error"}
+	ErrInvalidCredentials = &Error{Code: -1006, Message: "invalid credentials"}
+	ErrBadRequest         = &Error{Code: -1007, Message: "bad request"}
+	ErrOTPIsInvalid       = &Error{Code: -1045, Message: "OTP not matched or invalidated!"}
+	ErrInvalidRecaptcha   = &Error{Code: -1076, Message: "invalid recaptcha"}
 
 	ErrVerificationLimited10Minutes = &Error{Code: -2001, Message: "your email verification is limited in 10 minutes"}
 	ErrVerificationExpired          = &Error{Code: -2002, Message: "your email verification is expired"}
