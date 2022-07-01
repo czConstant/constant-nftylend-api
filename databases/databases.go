@@ -74,12 +74,18 @@ func MigrateDBMain(db *gorm.DB) error {
 	db.Model(&models.Loan{}).AddIndex("loans_asset_id_index", "asset_id")
 	db.Model(&models.Loan{}).AddIndex("loans_borrower_user_id_index", "borrower_user_id")
 	db.Model(&models.Loan{}).AddIndex("loans_lender_user_id_index", "lender_user_id")
+	db.Model(&models.Loan{}).AddIndex("loans_offer_expired_at_index", "offer_expired_at")
+	db.Model(&models.Loan{}).AddIndex("loans_offer_overdue_at_index", "offer_overdue_at")
 
 	db.Model(&models.LoanOffer{}).AddUniqueIndex("loan_offers_main_index", "loan_id", "nonce_hex")
 	db.Model(&models.LoanOffer{}).AddIndex("loan_offers_loan_id_index", "loan_id")
 	db.Model(&models.LoanOffer{}).AddIndex("loan_offers_lender_user_id_index", "lender_user_id")
 
 	db.Model(&models.LoanTransaction{}).AddIndex("loan_transactions_loan_id_index", "loan_id")
+
+	db.Model(&models.NotificationTemplate{}).AddUniqueIndex("notification_templates_type_uindex", "type")
+
+	db.Model(&models.Notification{}).AddIndex("notifications_user_id_index", "user_id")
 
 	db.Model(&models.User{}).AddUniqueIndex("users_main_uindex", "network", "address_checked")
 	db.Model(&models.User{}).AddUniqueIndex("users_referral_uindex", "network", "username")
