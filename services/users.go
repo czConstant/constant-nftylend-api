@@ -167,14 +167,14 @@ func (s *NftLend) UserConnected(ctx context.Context, network models.Network, add
 						return errs.NewError(errs.ErrBadRequest)
 					}
 				}
-				referrerCode = strings.TrimSpace(strings.ToLower(referrerCode))
-				if referrerCode != "" {
-					user.ReferrerCode = referrerCode
+				user.ReferrerCode = strings.TrimSpace(strings.ToLower(referrerCode))
+				if user.ReferrerCode != "" &&
+					user.ReferrerCode != user.Username {
 					referrer, err := s.ud.First(
 						tx,
 						map[string][]interface{}{
 							"network = ?":  []interface{}{network},
-							"username = ?": []interface{}{referrerCode},
+							"username = ?": []interface{}{user.ReferrerCode},
 							"id != ?":      []interface{}{user.ID},
 						},
 						map[string][]interface{}{},
