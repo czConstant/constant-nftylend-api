@@ -42,7 +42,7 @@ func (s *NftLend) CreateNotification(ctx context.Context, network models.Network
 				if err != nil {
 					return errs.NewError(err)
 				}
-				numNoti, err := s.nd.Count(
+				newNotiNum, err := s.nd.Count(
 					tx,
 					map[string][]interface{}{
 						"user_id = ?": []interface{}{user.ID},
@@ -53,7 +53,7 @@ func (s *NftLend) CreateNotification(ctx context.Context, network models.Network
 					return errs.NewError(err)
 				}
 				user.NewNotiID = noti.ID
-				user.NumNoti = numNoti
+				user.NewNotiNum = newNotiNum
 				s.ud.Save(
 					tx,
 					noti,
@@ -123,7 +123,7 @@ func (s *NftLend) SeenNotification(ctx context.Context, req *serializers.SeenNot
 			if user.NewNotiID < req.SeenNotiID {
 				return errs.NewError(errs.ErrBadRequest)
 			}
-			numNoti, err := s.nd.Count(
+			newNotiNum, err := s.nd.Count(
 				tx,
 				map[string][]interface{}{
 					"user_id = ?": []interface{}{user.ID},
@@ -134,7 +134,7 @@ func (s *NftLend) SeenNotification(ctx context.Context, req *serializers.SeenNot
 				return errs.NewError(err)
 			}
 			user.SeenNotiID = req.SeenNotiID
-			user.NumNoti = numNoti
+			user.NewNotiNum = newNotiNum
 			if err != nil {
 				return errs.NewError(err)
 			}
