@@ -28,6 +28,7 @@ type User struct {
 	NewsNotiEnabled bool `gorm:"default:0"`
 	LoanNotiEnabled bool `gorm:"default:0"`
 	SeenNotiID      uint `gorm:"default:0"`
+	NewNotiID       uint `gorm:"default:0"`
 	ReferrerCode    string
 	ReferrerUserID  uint
 	Rank            UserRank

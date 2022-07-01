@@ -14,7 +14,7 @@ func (s *NftLend) CreateNotification(ctx context.Context, network models.Network
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			user, err := s.getUser(tx, network, address, false)
+			user, err := s.getUser(tx, network, address, true)
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -36,6 +36,14 @@ func (s *NftLend) CreateNotification(ctx context.Context, network models.Network
 					return errs.NewError(err)
 				}
 				s.nd.Create(
+					tx,
+					noti,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				user.NewNotiID = noti.ID
+				s.ud.Save(
 					tx,
 					noti,
 				)
