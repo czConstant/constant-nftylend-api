@@ -2,7 +2,6 @@ package serializers
 
 type UpdateUserSettingReq struct {
 	SignatureTimestampReq
-	Email           string `json:"email"`
 	Username        string `json:"username"`
 	NewsNotiEnabled *bool  `json:"news_noti_enabled"`
 	LoanNotiEnabled *bool  `json:"loan_noti_enabled"`
