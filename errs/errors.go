@@ -45,6 +45,7 @@ var (
 
 	ErrVerificationLimited = &Error{Code: -2001, Message: "your email verification is limited in 10 minutes"}
 	ErrVerificationExpired = &Error{Code: -2002, Message: "your email verification is expired"}
+	ErrVerificationInvalid = &Error{Code: -2003, Message: "your email verification is invalid"}
 )
 
 type Error struct {

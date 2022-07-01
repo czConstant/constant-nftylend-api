@@ -107,7 +107,7 @@ func (s *NftLend) UserVerifyEmailToken(ctx context.Context, req *serializers.Use
 				return errs.NewError(err)
 			}
 			if vM == nil {
-				return errs.NewError(errs.ErrBadRequest)
+				return errs.NewError(errs.ErrVerificationInvalid)
 			}
 			if vM.ExpiredAt.Before(time.Now()) {
 				return errs.NewError(errs.ErrVerificationExpired)
