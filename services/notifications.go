@@ -42,7 +42,18 @@ func (s *NftLend) CreateNotification(ctx context.Context, network models.Network
 				if err != nil {
 					return errs.NewError(err)
 				}
+				numNoti, err := s.nd.Count(
+					tx,
+					map[string][]interface{}{
+						"user_id = ?": []interface{}{user.ID},
+						"id > ?":      []interface{}{user.SeenNotiID},
+					},
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
 				user.NewNotiID = noti.ID
+				user.NumNoti = numNoti
 				s.ud.Save(
 					tx,
 					noti,
@@ -109,21 +120,21 @@ func (s *NftLend) SeenNotification(ctx context.Context, req *serializers.SeenNot
 			if err != nil {
 				return errs.NewError(err)
 			}
-			noti, err := s.nd.First(
+			if user.NewNotiID < req.SeenNotiID {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			numNoti, err := s.nd.Count(
 				tx,
 				map[string][]interface{}{
 					"user_id = ?": []interface{}{user.ID},
+					"id > ?":      []interface{}{req.SeenNotiID},
 				},
-				map[string][]interface{}{},
-				[]string{"id desc"},
 			)
-			if noti == nil {
-				return errs.NewError(errs.ErrBadRequest)
-			}
-			if noti.ID < req.SeenNotiID {
-				return errs.NewError(errs.ErrBadRequest)
+			if err != nil {
+				return errs.NewError(err)
 			}
 			user.SeenNotiID = req.SeenNotiID
+			user.NumNoti = numNoti
 			if err != nil {
 				return errs.NewError(err)
 			}

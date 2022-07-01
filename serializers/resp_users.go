@@ -19,6 +19,7 @@ type UserResp struct {
 	LoanNotiEnabled bool            `json:"loan_noti_enabled"`
 	SeenNotiID      uint            `json:"seen_noti_id"`
 	NewNotiID       uint            `json:"new_noti_id"`
+	NumNoti         uint            `json:"num_noti"`
 	IsVerified      bool            `json:"is_verified"`
 	IsConnected     bool            `json:"is_connected"`
 }
@@ -42,6 +43,7 @@ func NewUserResp(m *models.User) *UserResp {
 		IsConnected:     m.IsConnected,
 		SeenNotiID:      m.SeenNotiID,
 		NewNotiID:       m.NewNotiID,
+		NumNoti:         m.NumNoti,
 	}
 	return resp
 }

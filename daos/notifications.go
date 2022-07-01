@@ -54,3 +54,11 @@ func (d *Notification) Find4Page(tx *gorm.DB, filters map[string][]interface{}, 
 	}
 	return ms, c, nil
 }
+
+func (d *Notification) Count(tx *gorm.DB, filters map[string][]interface{}) (uint, error) {
+	c, err := d.count(tx, &models.Notification{}, filters)
+	if err != nil {
+		return 0, errs.NewError(err)
+	}
+	return c, nil
+}
