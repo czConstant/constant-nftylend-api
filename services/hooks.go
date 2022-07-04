@@ -1655,3 +1655,92 @@ func (s *NftLend) JobEvmNftypawnFilterLogs(ctx context.Context, network models.N
 	}
 	return retErr
 }
+
+func (s *NftLend) HoolNearNftTransfer(ctx context.Context, contractAddress string, tokenID string) error {
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			asset, err := s.ad.First(
+				tx,
+				map[string][]interface{}{
+					"network = ?":          []interface{}{models.NetworkNEAR},
+					"contract_address = ?": []interface{}{contractAddress},
+					"token_id = ?":         []interface{}{tokenID},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if asset != nil {
+				loans, err := s.ld.Find(
+					tx,
+					map[string][]interface{}{
+						"network = ?":  []interface{}{models.NetworkNEAR},
+						"asset_id = ?": []interface{}{asset.ID},
+						"status = ?":   []interface{}{models.LoanStatusNew},
+					},
+					map[string][]interface{}{},
+					[]string{},
+					0,
+					999999,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if len(loans) > 0 {
+					nftMeta, err := s.bcs.Near.GetNftToken(contractAddress, tokenID)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					for _, loan := range loans {
+						borrower, err := s.ud.FirstByID(
+							tx,
+							loan.BorrowerUserID,
+							map[string][]interface{}{},
+							false,
+						)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						if borrower.AddressChecked != strings.ToLower(nftMeta.OwnerID) {
+							loan, err = s.ld.FirstByID(
+								tx,
+								loan.ID,
+								map[string][]interface{}{},
+								true,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							if loan.Status != models.LoanStatusNew {
+								return errs.NewError(errs.ErrBadRequest)
+							}
+							loan.Status = models.LoanStatusCancelled
+							err = s.ld.Save(
+								tx,
+								loan,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							err = s.updateIncentiveForLoan(
+								tx,
+								loan,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+						}
+					}
+				}
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
