@@ -56,7 +56,7 @@ func (s *NftLend) CreateNotification(ctx context.Context, network models.Network
 				user.NewNotiNum = newNotiNum
 				s.ud.Save(
 					tx,
-					noti,
+					user,
 				)
 				if err != nil {
 					return errs.NewError(err)
