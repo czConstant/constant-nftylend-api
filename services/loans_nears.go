@@ -66,7 +66,8 @@ func (s *NftLend) NearUpdateNftOwnable(ctx context.Context, contractAddress stri
 						if err != nil {
 							return errs.NewError(err)
 						}
-						if borrower.AddressChecked != strings.ToLower(nftMeta.OwnerID) {
+						if borrower.AddressChecked != strings.ToLower(nftMeta.OwnerID) &&
+							s.getEvmContractAddress(models.NetworkNEAR) != strings.ToLower(nftMeta.OwnerID) {
 							loan, err = s.ld.FirstByID(
 								tx,
 								loan.ID,
