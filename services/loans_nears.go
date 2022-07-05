@@ -18,6 +18,95 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+func (s *NftLend) UpdateNftOwnable(ctx context.Context, contractAddress string, tokenID string) error {
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			asset, err := s.ad.First(
+				tx,
+				map[string][]interface{}{
+					"network = ?":          []interface{}{models.NetworkNEAR},
+					"contract_address = ?": []interface{}{contractAddress},
+					"token_id = ?":         []interface{}{tokenID},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if asset != nil {
+				loans, err := s.ld.Find(
+					tx,
+					map[string][]interface{}{
+						"network = ?":  []interface{}{models.NetworkNEAR},
+						"asset_id = ?": []interface{}{asset.ID},
+						"status = ?":   []interface{}{models.LoanStatusNew},
+					},
+					map[string][]interface{}{},
+					[]string{},
+					0,
+					999999,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if len(loans) > 0 {
+					nftMeta, err := s.bcs.Near.GetNftToken(contractAddress, tokenID)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					for _, loan := range loans {
+						borrower, err := s.ud.FirstByID(
+							tx,
+							loan.BorrowerUserID,
+							map[string][]interface{}{},
+							false,
+						)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						if borrower.AddressChecked != strings.ToLower(nftMeta.OwnerID) {
+							loan, err = s.ld.FirstByID(
+								tx,
+								loan.ID,
+								map[string][]interface{}{},
+								true,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							if loan.Status != models.LoanStatusNew {
+								return errs.NewError(errs.ErrBadRequest)
+							}
+							loan.Status = models.LoanStatusCancelled
+							err = s.ld.Save(
+								tx,
+								loan,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							err = s.updateIncentiveForLoan(
+								tx,
+								loan,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+						}
+					}
+				}
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
 func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoanNearReq, lastUpdatedClient string) (*models.Loan, bool, error) {
 	emailQueue := []*models.EmailQueue{}
 	var isUpdated bool
@@ -27,6 +116,14 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 		return nil, false, errs.NewError(errs.ErrBadRequest)
 	}
 	req.ContractAddress = strings.ToLower(req.ContractAddress)
+	err := s.UpdateNftOwnable(
+		ctx,
+		req.ContractAddress,
+		req.TokenID,
+	)
+	if err != nil {
+		return nil, false, errs.NewError(err)
+	}
 	asset, err := s.CreateNearAsset(ctx, req.ContractAddress, req.TokenID)
 	if err != nil {
 		return nil, false, errs.NewError(err)
@@ -48,12 +145,27 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 			if err != nil {
 				return errs.NewError(err)
 			}
+			borrower, err := s.getUser(
+				tx,
+				models.NetworkNEAR,
+				saleInfo.OwnerID,
+				false,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			v, err := models.ConvertString2BigInt(saleInfo.CreatedAt)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			createdAt := helpers.TimeFromUnix(int64(v.Uint64()))
 			loan, err = s.ld.First(
 				tx,
 				map[string][]interface{}{
-					"network = ?":   []interface{}{models.NetworkNEAR},
-					"asset_id = ?":  []interface{}{asset.ID},
-					"nonce_hex = ?": []interface{}{saleInfo.CreatedAt},
+					"network = ?":          []interface{}{models.NetworkNEAR},
+					"asset_id = ?":         []interface{}{asset.ID},
+					"borrower_user_id = ?": []interface{}{borrower.ID},
+					"started_at = ?":       []interface{}{createdAt},
 				},
 				map[string][]interface{}{},
 				[]string{},
@@ -64,20 +176,6 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 			principalAmount := models.ConvertWeiToBigFloat(&saleInfo.LoanPrincipalAmount.Int, currency.Decimals)
 			interestRate, _ := models.ConvertWeiToBigFloat(big.NewInt(int64(saleInfo.LoanInterestRate)), 4).Float64()
 			if loan == nil {
-				v, err := models.ConvertString2BigInt(saleInfo.CreatedAt)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				createdAt := helpers.TimeFromUnix(int64(v.Uint64()))
-				borrower, err := s.getUser(
-					tx,
-					models.NetworkNEAR,
-					saleInfo.OwnerID,
-					false,
-				)
-				if err != nil {
-					return errs.NewError(err)
-				}
 				loan = &models.Loan{
 					Network:         models.NetworkNEAR,
 					Owner:           saleInfo.OwnerID,

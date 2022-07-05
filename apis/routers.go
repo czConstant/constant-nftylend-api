@@ -99,7 +99,6 @@ func (s *Server) Routers() {
 		hookInternalnftAPI.POST("/solana-instruction", s.LenInternalHookSolanaInstruction)
 		hookInternalnftAPI.POST("/near-sync", s.NearSync)
 		hookInternalnftAPI.POST("/near-pwp-sync", s.NearPwpSync)
-		hookInternalnftAPI.POST("/near-nft-sync", s.NearNftSync)
 	}
 	jobsNftAPI := nftAPI.Group("/jobs")
 	jobsNftAPI.Use(s.authorizeJobMiddleware())
