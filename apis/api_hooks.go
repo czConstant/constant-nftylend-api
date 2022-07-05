@@ -136,3 +136,28 @@ func (s *Server) NearPwpSync(c *gin.Context) {
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
 }
+
+func (s *Server) NearNftTransfer(c *gin.Context) {
+	ctx := s.requestContext(c)
+	var req struct {
+		Hash        string `json:"hash"`
+		FromAddress string `json:"from_address"`
+		ToAddress   string `json:"to_address"`
+		NftContract string `json:"nft_contract"`
+		TokenID     string `json:"token_id"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	err := s.nls.NearUpdateNftOwnable(
+		ctx,
+		req.NftContract,
+		req.TokenID,
+	)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
+}

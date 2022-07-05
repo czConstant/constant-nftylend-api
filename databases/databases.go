@@ -63,6 +63,7 @@ func MigrateDBMain(db *gorm.DB) error {
 	db.Model(&models.CollectionSubmission{}).AddIndex("collection_submissions_creator_index", "creator")
 
 	db.Model(&models.Asset{}).AddUniqueIndex("assets_main_uindex", "seo_url")
+	db.Model(&models.Asset{}).AddUniqueIndex("assets_info_uindex", "network", "contract_address", "token_id")
 	db.Model(&models.Asset{}).AddIndex("assets_collection_id_index", "collection_id")
 	db.Model(&models.Asset{}).AddIndex("assets_search_text_index", "search_text")
 

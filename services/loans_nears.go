@@ -18,7 +18,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func (s *NftLend) UpdateNftOwnable(ctx context.Context, contractAddress string, tokenID string) error {
+func (s *NftLend) NearUpdateNftOwnable(ctx context.Context, contractAddress string, tokenID string) error {
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
@@ -108,6 +108,7 @@ func (s *NftLend) UpdateNftOwnable(ctx context.Context, contractAddress string, 
 }
 
 func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoanNearReq, lastUpdatedClient string) (*models.Loan, bool, error) {
+	req.ContractAddress = strings.TrimSpace(strings.ToLower(req.ContractAddress))
 	emailQueue := []*models.EmailQueue{}
 	var isUpdated bool
 	var loan *models.Loan
@@ -115,8 +116,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 		req.TokenID == "" {
 		return nil, false, errs.NewError(errs.ErrBadRequest)
 	}
-	req.ContractAddress = strings.ToLower(req.ContractAddress)
-	err := s.UpdateNftOwnable(
+	err := s.NearUpdateNftOwnable(
 		ctx,
 		req.ContractAddress,
 		req.TokenID,
