@@ -310,7 +310,6 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 			switch saleInfo.Status {
 			case 0:
 				{
-					loan.Status = models.LoanStatusNew
 				}
 			case 1:
 				{
