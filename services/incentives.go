@@ -512,7 +512,7 @@ func (s *NftLend) incentiveForUnlock(tx *gorm.DB, transactionID uint, checked bo
 		return errs.NewError(errs.ErrBadRequest)
 	}
 	itM.UnlockedAt = helpers.TimeNow()
-	itM.Status = models.IncentiveTransactionStatusUnlocked
+	itM.Status = models.IncentiveTransactionStatusDone
 	err = s.itd.Save(
 		tx,
 		itM,

@@ -10,11 +10,10 @@ import (
 type IncentiveTransactionStatus string
 
 const (
-	IncentiveTransactionStatusPending  IncentiveTransactionStatus = "pending"
-	IncentiveTransactionStatusLocked   IncentiveTransactionStatus = "locked"
-	IncentiveTransactionStatusUnlocked IncentiveTransactionStatus = "unlocked"
-	IncentiveTransactionStatusRevoked  IncentiveTransactionStatus = "revoked"
-	IncentiveTransactionStatusDone     IncentiveTransactionStatus = "done"
+	IncentiveTransactionStatusPending IncentiveTransactionStatus = "pending"
+	IncentiveTransactionStatusLocked  IncentiveTransactionStatus = "locked"
+	IncentiveTransactionStatusRevoked IncentiveTransactionStatus = "revoked"
+	IncentiveTransactionStatusDone    IncentiveTransactionStatus = "done"
 )
 
 type IncentiveTransaction struct {
