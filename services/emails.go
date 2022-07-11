@@ -278,8 +278,8 @@ func (s *NftLend) sendEmailToUser(ctx context.Context, address string, network m
 		if user.Email != "" {
 			reqMap["web_url"] = s.conf.WebUrl
 			err := mailer.Send(
-				"hello@nftpawn.financial",
-				"Admin",
+				s.conf.Mailer.Sender,
+				"Nftpawn Team",
 				user.Email,
 				"",
 				emailType,
@@ -299,8 +299,8 @@ func (s *NftLend) sendEmailToUser(ctx context.Context, address string, network m
 func (s *NftLend) sendEmailToEmail(ctx context.Context, email string, emailType string, reqMap map[string]interface{}) error {
 	reqMap["web_url"] = s.conf.WebUrl
 	err := mailer.Send(
-		"hello@nftpawn.financial",
-		"Admin",
+		s.conf.Mailer.Sender,
+		"Nftpawn Team",
 		email,
 		"",
 		emailType,

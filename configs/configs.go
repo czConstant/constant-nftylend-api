@@ -61,7 +61,8 @@ type Config struct {
 	} `json:"contract"`
 	Blockchain bcclient.Config `json:"blockchain"`
 	Mailer     struct {
-		URL string `json:"url"`
+		URL    string `json:"url"`
+		Sender string `json:"sender"`
 	} `json:"mailer"`
 	Ipfs struct {
 		URL       string `json:"url"`
