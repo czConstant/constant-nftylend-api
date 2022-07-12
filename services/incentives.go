@@ -218,7 +218,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 								"loan_id = ?":               []interface{}{loan.ID},
 								"status = ?":                []interface{}{models.IncentiveTransactionStatusLocked},
 								"lock_until_at is not null": []interface{}{},
-								"lock_until_at <= ?":        []interface{}{time.Now()},
+								"lock_until_at >= ?":        []interface{}{time.Now()},
 							},
 							map[string][]interface{}{},
 							[]string{},
