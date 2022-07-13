@@ -446,6 +446,7 @@ func (s *NftLend) JobIncentiveStatus(ctx context.Context) error {
 				models.IncentiveTransactionTypeLenderLoanMatched,
 				models.IncentiveTransactionTypeUserAirdropReward,
 				models.IncentiveTransactionTypeUserAmaReward,
+				models.IncentiveTransactionTypeBorrowerLoanListedDaily,
 			}},
 			"status = ?":                []interface{}{models.IncentiveTransactionStatusLocked},
 			"lock_until_at is not null": []interface{}{},
@@ -506,7 +507,8 @@ func (s *NftLend) incentiveForUnlock(tx *gorm.DB, transactionID uint, checked bo
 	case models.IncentiveTransactionTypeBorrowerLoanListed,
 		models.IncentiveTransactionTypeLenderLoanMatched,
 		models.IncentiveTransactionTypeUserAirdropReward,
-		models.IncentiveTransactionTypeUserAmaReward:
+		models.IncentiveTransactionTypeUserAmaReward,
+		models.IncentiveTransactionTypeBorrowerLoanListedDaily:
 		{
 		}
 	default:
