@@ -35,6 +35,7 @@ type IncentiveTransaction struct {
 	LockUntilAt              *time.Time
 	UnlockedAt               *time.Time
 	Status                   IncentiveTransactionStatus
+	Version                  int64 `gorm:"default:0"`
 }
 
 type AffiliateStats struct {
