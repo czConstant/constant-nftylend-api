@@ -66,6 +66,10 @@ func (s *Server) JobIncentiveForUnlock(c *gin.Context) {
 	if err != nil {
 		retErr = errs.MergeError(retErr, err)
 	}
+	err = s.nls.JobIncentiveListing(ctx)
+	if err != nil {
+		retErr = errs.MergeError(retErr, err)
+	}
 	if retErr != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(retErr)})
 		return

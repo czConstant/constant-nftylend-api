@@ -67,6 +67,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 	var checkIncentiveTime *time.Time
 	var userID uint
 	var refUserID uint
+	var version int64
 	switch incentiveTransactionType {
 	case models.IncentiveTransactionTypeBorrowerLoanListed:
 		{
@@ -147,6 +148,12 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 			refUserID = lender.ID
 			checkIncentiveTime = loan.OfferStartedAt
 		}
+	case models.IncentiveTransactionTypeBorrowerLoanListedDaily:
+		{
+			userID = loan.BorrowerUserID
+			checkIncentiveTime = helpers.TimeNow()
+			version = time.Now().Truncate(24 * time.Hour).Unix()
+		}
 	default:
 		{
 			return errs.NewError(errs.ErrBadRequest)
@@ -198,6 +205,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 					"incentive_program_id = ?": []interface{}{ipM.ID},
 					"type = ?":                 []interface{}{ipdM.Type},
 					"loan_id = ?":              []interface{}{loan.ID},
+					"version = ?":              []interface{}{version},
 				},
 				map[string][]interface{}{},
 				[]string{},
@@ -330,6 +338,7 @@ func (s *NftLend) IncentiveForLoan(tx *gorm.DB, incentiveTransactionType models.
 						UnlockedAt:               nil,
 						Status:                   transactionStatus,
 						RefUserID:                refUserID,
+						Version:                  version,
 					}
 					err = s.itd.Create(
 						tx,
@@ -631,6 +640,64 @@ func (s *NftLend) IncentiveForReward(ctx context.Context, transactionID uint) er
 				isLocked,
 				false,
 				reference,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *NftLend) JobIncentiveListing(ctx context.Context) error {
+	var retErr error
+	loans, err := s.ld.Find(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"status = ?":    []interface{}{models.LoanStatusNew},
+			"valid_at >= ?": []interface{}{time.Now()},
+		},
+		map[string][]interface{}{},
+		[]string{},
+		0,
+		999999,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	for _, loan := range loans {
+		err = s.IncentiveListingLoanForID(ctx, loan.ID)
+		if err != nil {
+			retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, loan.ID))
+		}
+	}
+	return retErr
+}
+
+func (s *NftLend) IncentiveListingLoanForID(ctx context.Context, loanID uint) error {
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(context.Background()),
+		func(tx *gorm.DB) error {
+			loan, err := s.ld.FirstByID(
+				tx,
+				loanID,
+				map[string][]interface{}{},
+				false,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if loan.Status != models.LoanStatusNew {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			err = s.IncentiveForLoan(
+				tx,
+				models.IncentiveTransactionTypeBorrowerLoanListedDaily,
+				loan.ID,
 			)
 			if err != nil {
 				return errs.NewError(err)
