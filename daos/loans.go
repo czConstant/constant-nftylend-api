@@ -248,7 +248,11 @@ func (d *Loan) GetLeaderBoardByMonth(tx *gorm.DB, network models.Network, t time
 										then 2
 									else 0
 								end)                                            matched_point,
-							sum(case when lender_user_id > 0 then 1 else 0 end) total_point
+								sum(case
+									when lender_user_id > 0
+										then 2
+									else 0
+								end)											total_point
 					from loans
 					where 1 = 1
 						and lender_user_id > 0
