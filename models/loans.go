@@ -103,3 +103,11 @@ func (m *Loan) EarlyOfferPaymentAmount() *big.Float {
 	amount = *QuoBigFloats(AddBigFloats(&amount, m.MaturedOfferPaymentAmount()), big.NewFloat(2))
 	return &amount
 }
+
+type LeaderBoardData struct {
+	UserID        uint
+	User          *User
+	MatchingPoint int64
+	MatchedPoint  int64
+	TotalPoint    int64
+}

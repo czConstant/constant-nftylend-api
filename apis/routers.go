@@ -84,6 +84,7 @@ func (s *Server) Routers() {
 		loannftAPI.POST("/create", s.CreateLoan)
 		loannftAPI.POST("/offers/create/:loan_id", s.CreateLoanOffer)
 		loannftAPI.POST("/near/sync", s.NearUpdateLoan)
+		loannftAPI.GET("/leader-board", s.GetLeaderBoardAtNow)
 	}
 	proposalAPI := nftAPI.Group("/proposals")
 	{

@@ -207,3 +207,16 @@ func (s *Server) NearUpdateLoan(c *gin.Context) {
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: isUpdated})
 }
+
+func (s *Server) GetLeaderBoardAtNow(c *gin.Context) {
+	ctx := s.requestContext(c)
+	ms, err := s.nls.GetLeaderBoardAtNow(
+		ctx,
+		models.Network(s.stringFromContextQuery(c, "network")),
+	)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewLeaderBoardDataRespArr(ms)})
+}

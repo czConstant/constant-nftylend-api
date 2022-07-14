@@ -144,3 +144,33 @@ func NewPlatformStatsResp(m *models.PlatformStats) *PlatformStatsResp {
 	}
 	return resp
 }
+
+type LeaderBoardDataResp struct {
+	UserID        uint      `json:"user_id"`
+	User          *UserResp `json:"user"`
+	MatchingPoint int64     `json:"matching_point"`
+	MatchedPoint  int64     `json:"matched_point"`
+	TotalPoint    int64     `json:"total_point"`
+}
+
+func NewLeaderBoardDataResp(m *models.LeaderBoardData) *LeaderBoardDataResp {
+	if m == nil {
+		return nil
+	}
+	resp := &LeaderBoardDataResp{
+		UserID:        m.UserID,
+		User:          NewUserResp(m.User),
+		MatchingPoint: m.MatchingPoint,
+		MatchedPoint:  m.MatchedPoint,
+		TotalPoint:    m.TotalPoint,
+	}
+	return resp
+}
+
+func NewLeaderBoardDataRespArr(arr []*models.LeaderBoardData) []*LeaderBoardDataResp {
+	resps := []*LeaderBoardDataResp{}
+	for _, m := range arr {
+		resps = append(resps, NewLeaderBoardDataResp(m))
+	}
+	return resps
+}

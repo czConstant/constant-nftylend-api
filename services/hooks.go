@@ -1086,6 +1086,7 @@ func (s *NftLend) ProcessSolanaInstruction(ctx context.Context, insId uint) erro
 								}
 								loan.CancelTxHash = ins.TransactionHash
 								loan.Status = models.LoanStatusCancelled
+								loan.FinishedAt = helpers.TimeNow()
 								err = s.ld.Save(
 									tx,
 									loan,

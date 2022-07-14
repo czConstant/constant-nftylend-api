@@ -81,6 +81,7 @@ func (s *NftLend) NearUpdateNftOwnable(ctx context.Context, contractAddress stri
 								return errs.NewError(errs.ErrBadRequest)
 							}
 							loan.Status = models.LoanStatusCancelled
+							loan.FinishedAt = helpers.TimeNow()
 							err = s.ld.Save(
 								tx,
 								loan,
@@ -276,6 +277,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 						return errs.NewError(errs.ErrBadRequest)
 					}
 					l.Status = models.LoanStatusCancelled
+					l.FinishedAt = helpers.TimeNow()
 					err = s.ld.Save(
 						tx,
 						l,
@@ -342,6 +344,7 @@ func (s *NftLend) NearUpdateLoan(ctx context.Context, req *serializers.CreateLoa
 			case 5:
 				{
 					loan.Status = models.LoanStatusCancelled
+					loan.FinishedAt = helpers.TimeNow()
 				}
 			default:
 				{
