@@ -233,7 +233,7 @@ func (d *Loan) GetLeaderBoardByMonth(tx *gorm.DB, network models.Network, t time
 					from loans
 					where 1 = 1
 						and network = ?
-						and created_at >= '?
+						and created_at >= ?
 					group by borrower_user_id
 				) rs
 			union all
