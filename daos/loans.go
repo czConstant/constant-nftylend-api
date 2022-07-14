@@ -255,6 +255,7 @@ func (d *Loan) GetLeaderBoardByMonth(tx *gorm.DB, network models.Network, t time
 				) rs
 		) rs
 	group by user_id
+	having sum(matching_point + matched_point) > 0
 	order by sum(matching_point + matched_point) desc
 	`,
 		network,
