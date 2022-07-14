@@ -212,47 +212,40 @@ func (d *Loan) GetLeaderBoardByMonth(tx *gorm.DB, network models.Network, t time
 	var rs []*models.LeaderBoardData
 	err := tx.Raw(`
 	select user_id,
-       sum(matching_point) matching_point,
-       sum(matched_point)  matched_point,
-       sum(total_point)    total_point
+       sum(matching_point)                 matching_point,
+       sum(matched_point)                  matched_point,
+       sum(matching_point + matched_point) total_point
 	from (
 			select *
 			from (
-					select borrower_user_id                                      user_id,
+					select borrower_user_id user_id,
 							sum(case
 									when lender_user_id = 0
 										and (finished_at is null or finished_at >= valid_at)
 										then 1
 									else 0
-								end)                                              matching_point,
+								end)         matching_point,
 							sum(case
 									when lender_user_id > 0
 										then 1
 									else 0
-								end)                                              matched_point,
-							sum((case when lender_user_id = 0 then 1 else 0 end) +
-								(case when lender_user_id > 0 then 1 else 0 end)) total_point
+								end)         matched_point
 					from loans
 					where 1 = 1
 						and network = ?
-						and created_at >= ?
+						and created_at >= '?
 					group by borrower_user_id
 				) rs
 			union all
 			select *
 			from (
-					select lender_user_id                                      user_id,
-							0                                                   matching_point,
+					select lender_user_id user_id,
+							0              matching_point,
 							sum(case
 									when lender_user_id > 0
 										then 2
 									else 0
-								end)                                            matched_point,
-								sum(case
-									when lender_user_id > 0
-										then 2
-									else 0
-								end)											total_point
+								end)       matched_point
 					from loans
 					where 1 = 1
 						and lender_user_id > 0
@@ -262,7 +255,7 @@ func (d *Loan) GetLeaderBoardByMonth(tx *gorm.DB, network models.Network, t time
 				) rs
 		) rs
 	group by user_id
-	order by sum(total_point) desc
+	order by sum(matching_point + matched_point) desc
 	`,
 		network,
 		t,
