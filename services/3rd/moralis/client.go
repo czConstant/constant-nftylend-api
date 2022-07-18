@@ -82,7 +82,7 @@ type GetNFTsResp struct {
 
 func (c *Client) GetNFTs(chain string, address string, cursor string, limit int) (*GetNFTsResp, error) {
 	if limit <= 0 {
-		limit = 500
+		limit = 100
 	}
 	rs := GetNFTsResp{}
 	_, err := c.getJSON(
