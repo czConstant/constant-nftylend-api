@@ -33,5 +33,23 @@ func (s *NftLend) GetLeaderBoardAtNow(ctx context.Context, network models.Networ
 }
 
 func (s *NftLend) GetLeaderBoardDetail(ctx context.Context, network models.Network, rptDate *time.Time) (*models.Leaderboard, error) {
-	return nil, nil
+	if rptDate == nil {
+		t := helpers.GetStartDayOfMonth(time.Now())
+		rptDate = &t
+	} else {
+		t := helpers.GetStartDayOfMonth(*rptDate)
+		rptDate = &t
+	}
+	m, err := s.lbd.First(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"rpt_date = ?": []interface{}{rptDate},
+		},
+		map[string][]interface{}{},
+		[]string{},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return m, nil
 }
