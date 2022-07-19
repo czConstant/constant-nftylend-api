@@ -235,9 +235,19 @@ func (s *Server) GetLeaderBoardAtNow(c *gin.Context) {
 			ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 			return
 		}
+		prevLbM, err := s.nls.GetPrevLeaderBoardDetail(
+			ctx,
+			models.Network(s.stringFromContextQuery(c, "network")),
+			rptDate,
+		)
+		if err != nil {
+			ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+			return
+		}
 		resp = map[string]interface{}{
-			"detail":  serializers.NewLeaderboardResp(lbM),
-			"results": serializers.NewLeaderBoardDataRespArr(ms),
+			"detail":      serializers.NewLeaderboardResp(lbM),
+			"results":     serializers.NewLeaderBoardDataRespArr(ms),
+			"prev_detail": serializers.NewLeaderboardResp(prevLbM),
 		}
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: resp})
