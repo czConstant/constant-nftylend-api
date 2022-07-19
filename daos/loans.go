@@ -274,3 +274,21 @@ func (d *Loan) GetLeaderBoardByMonth(tx *gorm.DB, network models.Network, t time
 	}
 	return rs, nil
 }
+
+func (d *Loan) GetLenderStats(tx *gorm.DB, borrowerUserID uint) (*models.LenderStats, error) {
+	var rs models.LenderStats
+	err := tx.Raw(`
+	select count(1)                                  total_loans,
+		sum(offer_principal_amount * currency_price) total_volume,
+		avg(offer_interest_rate)                     avg_rate,
+		avg(offer_principal_amount * currency_price) lend_to_value
+	from loans
+	where lender_user_id = ?
+	`,
+		borrowerUserID,
+	).Find(&rs).Error
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return &rs, nil
+}

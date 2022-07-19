@@ -28,6 +28,25 @@ func (s *Server) GetBorrowerStats(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewBorrowerStatsResp(stats)})
 }
 
+func (s *Server) GetLenderStats(c *gin.Context) {
+	ctx := s.requestContext(c)
+	network, address, err := s.getNetworkAddress(c)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	stats, err := s.nls.GetLenderStats(
+		ctx,
+		network,
+		address,
+	)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewLenderStatsResp(stats)})
+}
+
 func (s *Server) GetPlatformStats(c *gin.Context) {
 	ctx := s.requestContext(c)
 	stats, err := s.nls.GetPlatformStats(

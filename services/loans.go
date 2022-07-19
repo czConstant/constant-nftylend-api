@@ -288,6 +288,28 @@ func (s *NftLend) GetBorrowerStats(ctx context.Context, network models.Network, 
 	return m, nil
 }
 
+func (s *NftLend) GetLenderStats(ctx context.Context, network models.Network, address string) (*models.LenderStats, error) {
+	user, err := s.GetUser(
+		ctx,
+		network,
+		address,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	m, err := s.ld.GetLenderStats(
+		daos.GetDBMainCtx(ctx),
+		user.ID,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	if m == nil {
+		return nil, errs.NewError(errs.ErrBadRequest)
+	}
+	return m, nil
+}
+
 func (s *NftLend) GetLoanTransactions(ctx context.Context, assetID uint, page int, limit int) ([]*models.LoanTransaction, uint, error) {
 	filters := map[string][]interface{}{}
 	filters["network in (?)"] = []interface{}{s.getSupportedNetworks()}
