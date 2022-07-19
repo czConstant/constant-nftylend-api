@@ -26,6 +26,11 @@ var MoralisNetworkMap = map[string]map[string]string{
 		string(NetworkAVAX):  "0xa869",
 		string(NetworkBSC):   "0x61",
 	},
+	"devnet": map[string]string{
+		string(NetworkMATIC): "mumbai",
+		string(NetworkAVAX):  "0xa869",
+		string(NetworkBSC):   "0x61",
+	},
 }
 
 const (
