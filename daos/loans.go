@@ -234,6 +234,7 @@ func (d *Loan) GetLeaderBoardByMonth(tx *gorm.DB, network models.Network, t time
 					where 1 = 1
 						and network = ?
 						and created_at >= ?
+						and created_at < add_date(?, interval 1 month)
 					group by borrower_user_id
 				) rs
 			union all
@@ -251,6 +252,7 @@ func (d *Loan) GetLeaderBoardByMonth(tx *gorm.DB, network models.Network, t time
 						and lender_user_id > 0
 						and network = ?
 						and created_at >= ?
+						and created_at < add_date(?, interval 1 month)
 					group by lender_user_id
 				) rs
 		) rs
@@ -260,7 +262,9 @@ func (d *Loan) GetLeaderBoardByMonth(tx *gorm.DB, network models.Network, t time
 	`,
 		network,
 		t,
+		t,
 		network,
+		t,
 		t,
 	).
 		Preload("User").

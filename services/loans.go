@@ -674,18 +674,3 @@ func (s *NftLend) EvmSynAsset(ctx context.Context, network models.Network, contr
 	}
 	return asset, nil
 }
-
-func (s *NftLend) GetLeaderBoardAtNow(ctx context.Context, network models.Network) ([]*models.LeaderBoardData, error) {
-	m, err := s.ld.GetLeaderBoardByMonth(
-		daos.GetDBMainCtx(ctx),
-		network,
-		helpers.GetStartDayOfMonth(time.Now()),
-	)
-	if err != nil {
-		return nil, errs.NewError(err)
-	}
-	if m == nil {
-		return nil, errs.NewError(errs.ErrBadRequest)
-	}
-	return m, nil
-}

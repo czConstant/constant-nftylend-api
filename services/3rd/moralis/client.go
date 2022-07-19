@@ -86,7 +86,7 @@ func (c *Client) GetNFTs(chain string, address string, cursor string, limit int)
 	}
 	rs := GetNFTsResp{}
 	_, err := c.getJSON(
-		fmt.Sprintf("https://deep-index.moralis.io/api/v2/%s/nft?chain=%s&format=decimal&cursor=%s&limit=%d", url.QueryEscape(address), url.QueryEscape(chain), url.QueryEscape(cursor), limit),
+		fmt.Sprintf("https://deep-index.moralis.io/api/v2/%s/nft?chain=%s&format=decimal&cursor=%s&limit=%d", url.QueryEscape(chain), url.QueryEscape(address), url.QueryEscape(cursor), limit),
 		map[string]string{
 			"X-API-Key": c.APIKey,
 		},

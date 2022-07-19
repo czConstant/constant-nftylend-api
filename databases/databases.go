@@ -53,6 +53,7 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.IncentiveTransaction)(nil),
 		(*models.Verification)(nil),
 		(*models.AffiliateSubmission)(nil),
+		(*models.Leaderboard)(nil),
 	}
 	if err := db.AutoMigrate(allTables...).Error; err != nil {
 		return err
@@ -118,6 +119,8 @@ func MigrateDBMain(db *gorm.DB) error {
 	db.Model(&models.Verification{}).AddUniqueIndex("verifications_token_uindex", "token")
 	db.Model(&models.Verification{}).AddIndex("verifications_created_at_index", "created_at")
 	db.Model(&models.Verification{}).AddIndex("verifications_user_id_index", "user_id")
+
+	db.Model(&models.Leaderboard{}).AddUniqueIndex("leaderboards_rpt_date_uindex", "rpt_date")
 
 	return nil
 }

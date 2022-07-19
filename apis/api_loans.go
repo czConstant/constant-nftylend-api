@@ -210,9 +210,15 @@ func (s *Server) NearUpdateLoan(c *gin.Context) {
 
 func (s *Server) GetLeaderBoardAtNow(c *gin.Context) {
 	ctx := s.requestContext(c)
+	rptDate, err := s.dateFromContextQuery(c, "rpt_date")
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
 	ms, err := s.nls.GetLeaderBoardAtNow(
 		ctx,
 		models.Network(s.stringFromContextQuery(c, "network")),
+		rptDate,
 	)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
