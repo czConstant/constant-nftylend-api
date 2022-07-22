@@ -21,6 +21,7 @@ import (
 	"github.com/czConstant/constant-nftylend-api/logger"
 	"github.com/czConstant/constant-nftylend-api/services"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/ipfs"
+	"github.com/czConstant/constant-nftylend-api/services/3rd/kitwallet"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/mailer"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/moralis"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/saletrack"
@@ -139,12 +140,19 @@ func main() {
 			BasicAuth: conf.Ipfs.BasicAuth,
 		}
 
+		kwc = &kitwallet.Client{
+			URL:     conf.Kitwallet.URL,
+			Origin:  conf.Kitwallet.Origin,
+			Referer: conf.Kitwallet.Referer,
+		}
+
 		s = services.NewNftLend(
 			conf,
 			bcs,
 			stc,
 			ifc,
 			mc,
+			kwc,
 			ud,
 			cd,
 			cld,

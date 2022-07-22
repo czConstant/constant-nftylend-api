@@ -67,4 +67,9 @@ type Config struct {
 		URL       string `json:"url"`
 		BasicAuth string `json:"basic_auth"`
 	} `json:"ipfs"`
+	Kitwallet struct {
+		URL     string `json:"url"`
+		Origin  string `json:"origin"`
+		Referer string `json:"referer"`
+	} `json:"kitwallet"`
 }

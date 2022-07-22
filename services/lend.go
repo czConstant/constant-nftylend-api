@@ -10,6 +10,7 @@ import (
 	"github.com/czConstant/constant-nftylend-api/errs"
 	"github.com/czConstant/constant-nftylend-api/models"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/ipfs"
+	"github.com/czConstant/constant-nftylend-api/services/3rd/kitwallet"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/moralis"
 	"github.com/czConstant/constant-nftylend-api/services/3rd/saletrack"
 	"github.com/jinzhu/gorm"
@@ -21,6 +22,7 @@ type NftLend struct {
 	stc  *saletrack.Client
 	ifc  *ipfs.Client
 	mc   *moralis.Client
+	kwc  *kitwallet.Client
 	ud   *daos.User
 	cd   *daos.Currency
 	cld  *daos.Collection
@@ -57,6 +59,7 @@ func NewNftLend(
 	stc *saletrack.Client,
 	ifc *ipfs.Client,
 	mc *moralis.Client,
+	kwc *kitwallet.Client,
 	ud *daos.User,
 	cd *daos.Currency,
 	cld *daos.Collection,
@@ -93,6 +96,7 @@ func NewNftLend(
 		stc:  stc,
 		ifc:  ifc,
 		mc:   mc,
+		kwc:  kwc,
 		ud:   ud,
 		cd:   cd,
 		cld:  cld,

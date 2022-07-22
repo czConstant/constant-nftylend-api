@@ -49,6 +49,7 @@ func (s *Server) Routers() {
 		})
 		nftAPI.GET("/configs", s.AppConfigs)
 		nftAPI.GET("/moralis/:address/nft", s.MoralisGetNFTs)
+		nftAPI.GET("/kitwallet/account/:address/likelyNFTs", s.GetKitwalletAccountNfts)
 		nftAPI.GET("/ipfs/:hash", s.GetIpfsInfo)
 	}
 	nftAPI.POST("/blockchain/update-block/:block", s.NftLendUpdateBlock)

@@ -66,3 +66,13 @@ func (s *Server) GetAseetTransactions(c *gin.Context) {
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssetTransactionRespArr(tnxs), Count: &count})
 }
+
+func (s *Server) GetKitwalletAccountNfts(c *gin.Context) {
+	ctx := s.requestContext(c)
+	m, err := s.nls.GetKitwalletAccountNfts(ctx, s.stringFromContextParam(c, "address"))
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxSTRING(c, http.StatusOK, string(m))
+}

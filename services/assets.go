@@ -594,3 +594,11 @@ func (s *NftLend) GetAssetFloorPrice(ctx context.Context, assetID uint) (numeric
 	}
 	return assetFloorPrice, saleCurrency, nil
 }
+
+func (s *NftLend) GetKitwalletAccountNfts(ctx context.Context, address string) ([]byte, error) {
+	rs, err := s.kwc.GetNFTs(address)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return rs, nil
+}
