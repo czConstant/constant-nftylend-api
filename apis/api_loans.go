@@ -70,6 +70,7 @@ func (s *Server) GetListingLoans(c *gin.Context) {
 	maxDuration, _ := s.uintFromContextQuery(c, "max_duration")
 	minInterestRate, _ := s.float64FromContextQuery(c, "min_interest_rate")
 	maxInterestRate, _ := s.float64FromContextQuery(c, "max_interest_rate")
+	config := s.stringFromContextQuery(c, "config")
 	excludeIds, _ := s.uintArrayFromContextQuery(c, "exclude_ids")
 	var sort []string
 	switch s.stringFromContextQuery(c, "sort") {
@@ -111,6 +112,7 @@ func (s *Server) GetListingLoans(c *gin.Context) {
 		maxDuration,
 		minInterestRate,
 		maxInterestRate,
+		config,
 		search,
 		excludeIds,
 		sort,

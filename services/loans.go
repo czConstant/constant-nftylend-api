@@ -27,6 +27,7 @@ func (s *NftLend) GetListingLoans(
 	maxDuration uint,
 	minInterestRate float64,
 	maxInterestRate float64,
+	config string,
 	search string,
 	excludeIds []uint,
 	sort []string,
@@ -80,6 +81,9 @@ func (s *NftLend) GetListingLoans(
 	}
 	if maxInterestRate > 0 {
 		filters["loans.interest_rate <= ?"] = []interface{}{maxInterestRate}
+	}
+	if config != "" {
+		filters["loans.config <= ?"] = []interface{}{config}
 	}
 	if len(sort) == 0 {
 		sort = []string{"id desc"}
