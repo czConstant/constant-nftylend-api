@@ -89,6 +89,14 @@ func (s *Server) GetListingLoans(c *gin.Context) {
 		{
 			sort = []string{"principal_amount desc"}
 		}
+	case "valid_at":
+		{
+			sort = []string{"valid_at asc"}
+		}
+	case "-valid_at":
+		{
+			sort = []string{"valid_at desc"}
+		}
 	}
 	search := s.stringFromContextQuery(c, "search")
 	collectionSeoUrl := s.stringFromContextQuery(c, "collection_seo_url")
