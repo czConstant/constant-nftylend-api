@@ -88,13 +88,13 @@ func (s *NftLend) GetListingLoans(
 	if len(sort) == 0 {
 		sort = []string{"id desc"}
 	}
-	filters[`exists(
-		select 1
-		from collection_submissions
-		where collections.network = collection_submissions.network
-		  and collections.creator = collection_submissions.creator
-		  and collection_submissions.status = ?
-	)`] = []interface{}{models.CollectionSubmissionStatusApproved}
+	// filters[`exists(
+	// 	select 1
+	// 	from collection_submissions
+	// 	where collections.network = collection_submissions.network
+	// 	  and collections.creator = collection_submissions.creator
+	// 	  and collection_submissions.status = ?
+	// )`] = []interface{}{models.CollectionSubmissionStatusApproved}
 	loans, count, err := s.ld.FindJoin4Page(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
